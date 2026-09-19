@@ -12,6 +12,8 @@ namespace Reclamation.Prototype
         private readonly ReservationRegistry _reservations = new();
 
         public Stockpile Destination => destination;
+        public ShelterBlueprint Shelter { get; private set; }
+        public void SetShelter(ShelterBlueprint shelter) => Shelter = shelter;
         public int OpenReservationCount => _reservations.Count;
 
         public void Configure(Stockpile stockpile, IEnumerable<ResourcePile> resourceSources)

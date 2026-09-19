@@ -11,12 +11,14 @@ namespace Reclamation.Tests
     public sealed class HaulingIntegrationTests
     {
         private readonly List<GameObject> objects = new();
+        private readonly List<HaulWorker> crew = new();
         private NavMeshData data;
         private NavMeshDataInstance instance;
         private Stockpile stock;
         private ResourcePile pile;
         private HaulWorker worker;
         private HaulJobBoard board;
+        private int expectedWood;
 
         private T Make<T>(string name, Vector3 position) where T : Component
         {
@@ -29,6 +31,7 @@ namespace Reclamation.Tests
         [SetUp]
         public void Setup()
         {
+            expectedWood = 4;
             var source = new NavMeshBuildSource
             {
                 shape = NavMeshBuildSourceShape.Box,
@@ -46,6 +49,7 @@ namespace Reclamation.Tests
             board = Make<HaulJobBoard>("board", Vector3.zero);
             board.Configure(stock, new[] { pile });
             worker = Make<HaulWorker>("worker", Vector3.zero);
+            crew.Add(worker);
             worker.Configure("Tester", board);
             var agent = worker.GetComponent<NavMeshAgent>();
             agent.speed = 12;
@@ -59,30 +63,120 @@ namespace Reclamation.Tests
             for (int i = objects.Count - 1; i >= 0; i--)
                 if (objects[i] != null) Object.DestroyImmediate(objects[i]);
             objects.Clear();
+            crew.Clear();
             instance.Remove();
             if (data != null) Object.DestroyImmediate(data);
         }
 
         private void AssertConserved()
         {
-            Assert.That(pile.Amount + stock.StoredUnits + (worker.Carrying ? 1 : 0), Is.EqualTo(4));
+            int delivered = board.Shelter == null ? 0 : board.Shelter.DeliveredWood;
+            int carried = 0;
+            foreach (HaulWorker survivor in crew) if (survivor.Carrying) carried++;
+            Assert.That(pile.Amount + stock.StoredUnits + carried + delivered,
+                Is.EqualTo(expectedWood));
         }
 
         private IEnumerator FinishDelivery()
         {
             float deadline = Time.realtimeSinceStartup + 20f;
-            while (stock.StoredUnits < 4 && Time.realtimeSinceStartup < deadline)
+            while (stock.StoredUnits < expectedWood && Time.realtimeSinceStartup < deadline)
             {
                 AssertConserved();
                 yield return null;
             }
-            Assert.That(stock.StoredUnits, Is.EqualTo(4), worker.DecisionExplanation);
+            Assert.That(stock.StoredUnits, Is.EqualTo(expectedWood), worker.DecisionExplanation);
             AssertConserved();
         }
 
         [UnityTest]
         public IEnumerator HaulingConservesResourcesAcrossEveryFrame()
         {
+            yield return FinishDelivery();
+        }
+
+        private ShelterBlueprint AddShelter(bool fromStorage)
+        {
+            expectedWood = 8;
+            pile.Configure(fromStorage ? 0 : 8);
+            if (fromStorage) for (int i = 0; i < 8; i++) stock.DepositOne();
+            var site = Make<ShelterBlueprint>("shelter", new Vector3(4, 0, 5));
+            board.SetShelter(site);
+            return site;
+        }
+
+        private IEnumerator FinishShelter(ShelterBlueprint site)
+        {
+            float deadline = Time.realtimeSinceStartup + 45f;
+            while (!site.Complete && Time.realtimeSinceStartup < deadline)
+            {
+                AssertConserved();
+                yield return null;
+            }
+            Assert.That(site.Complete, Is.True, worker.DecisionExplanation);
+            AssertConserved();
+            Assert.That(site.DeliveredWood, Is.EqualTo(8));
+        }
+
+        [UnityTest] public IEnumerator ShelterUsesLooseWoodWithoutLoss()
+        {
+            yield return FinishShelter(AddShelter(false));
+        }
+
+        [UnityTest] public IEnumerator ThreeWorkersBuildWithoutOverdelivery()
+        {
+            var site = AddShelter(false);
+            expectedWood = 16;
+            pile.Configure(16);
+            for (int i = 0; i < 2; i++)
+            {
+                var extra = Make<HaulWorker>($"helper-{i}", new Vector3(0, 0, 2 + i * 2));
+                extra.Configure($"Helper {i}", board);
+                extra.GetComponent<NavMeshAgent>().speed = 12;
+                extra.GetComponent<NavMeshAgent>().acceleration = 100;
+                crew.Add(extra);
+            }
+            yield return FinishShelter(site);
+            float deadline = Time.realtimeSinceStartup + 25f;
+            while (stock.StoredUnits < 8 && Time.realtimeSinceStartup < deadline)
+            {
+                AssertConserved();
+                yield return null;
+            }
+            Assert.That(stock.StoredUnits, Is.EqualTo(8));
+            Assert.That(site.DeliveryClaims, Is.Zero);
+            AssertConserved();
+        }
+
+        [UnityTest] public IEnumerator ShelterUsesStoredWoodAndBuilderResumes()
+        {
+            var site = AddShelter(true);
+            float deadline = Time.realtimeSinceStartup + 30f;
+            while (site.Progress < 0.1f && Time.realtimeSinceStartup < deadline)
+            {
+                AssertConserved();
+                yield return null;
+            }
+            Assert.That(site.Progress, Is.GreaterThanOrEqualTo(0.1f));
+            worker.enabled = false;
+            float before = site.Progress;
+            yield return new WaitForSeconds(1);
+            Assert.That(site.Progress, Is.EqualTo(before));
+            AssertConserved();
+            worker.enabled = true;
+            yield return FinishShelter(site);
+        }
+
+        [UnityTest] public IEnumerator CancellingBlueprintReturnsDeliveredAndCarriedWood()
+        {
+            var site = AddShelter(true);
+            float deadline = Time.realtimeSinceStartup + 20f;
+            while (!(site.DeliveredWood > 0 && worker.Carrying)
+                && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(site.DeliveredWood, Is.GreaterThan(0));
+            Assert.That(worker.Carrying, Is.True);
+            Assert.That(site.TryCancel(stock), Is.True);
+            AssertConserved();
             yield return FinishDelivery();
         }
 

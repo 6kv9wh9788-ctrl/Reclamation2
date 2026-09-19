@@ -7,7 +7,11 @@ namespace Reclamation.Prototype
     [RequireComponent(typeof(NavMeshAgent))]
     public sealed class HaulWorker : MonoBehaviour
     {
-        public enum WorkerState { Idle, MovingToResource, MovingToStockpile, WaitingForWork }
+        public enum WorkerState
+        {
+            Idle, MovingToResource, MovingToStockpile, WaitingForWork,
+            MovingToSupplies, MovingToShelter, MovingToBuild, Building
+        }
 
         [SerializeField] private string workerName = "Survivor";
         [SerializeField] private HaulJobBoard jobBoard;
@@ -20,6 +24,7 @@ namespace Reclamation.Prototype
         private NavMeshPath _path;
         private NavMeshAgent _agent;
         private ResourcePile _claimedSource;
+        private ShelterBlueprint _shelter;
         private float _nextDecisionTime;
         private Vector3 _interactionPoint;
         private Vector3 _lastProgressPosition;
@@ -66,6 +71,8 @@ namespace Reclamation.Prototype
                 if (Time.time < _nextDecisionTime) return;
                 _nextDecisionTime = Time.time + decisionInterval;
 
+                if (TryStartShelterJob()) return;
+
                 if (carrying)
                 {
                     if (BeginTravel(jobBoard.Destination.transform.position))
@@ -105,14 +112,44 @@ namespace Reclamation.Prototype
                 return;
             }
 
+            bool shelterJob = State == WorkerState.MovingToShelter
+                || State == WorkerState.MovingToBuild || State == WorkerState.Building
+                || State == WorkerState.MovingToSupplies;
+            if (shelterJob && (_shelter == null || !_shelter.Available))
+            {
+                CancelCurrentJob("Blueprint unavailable; cargo retained");
+                return;
+            }
+
             Vector3 target = State == WorkerState.MovingToResource
-                ? _claimedSource.transform.position : jobBoard.Destination.transform.position;
+                ? _claimedSource.transform.position
+                : shelterJob && State != WorkerState.MovingToSupplies
+                    ? _shelter.WorkPoint : jobBoard.Destination.transform.position;
             // A moving/replaced target requires a fresh path.
             Vector3 horizontal = target - _interactionPoint;
             horizontal.y = 0f;
             if (horizontal.sqrMagnitude > 1f)
             {
                 CancelCurrentJob("Target moved; replanning");
+                return;
+            }
+
+            if (State == WorkerState.Building)
+            {
+                Vector3 workDistance = transform.position - _shelter.WorkPoint;
+                workDistance.y = 0;
+                if (workDistance.magnitude > 0.8f || !_shelter.TryWork(WorkerId, Time.deltaTime))
+                {
+                    CancelCurrentJob("Construction interrupted; progress retained");
+                    return;
+                }
+                DecisionExplanation = $"Building shelter: {_shelter.Progress:P0}";
+                if (_shelter.Complete)
+                {
+                    ReleaseReservations();
+                    State = WorkerState.Idle;
+                    DecisionExplanation = "Shelter completed";
+                }
                 return;
             }
 
@@ -151,6 +188,40 @@ namespace Reclamation.Prototype
                 ReleaseReservations();
                 DecisionExplanation = "Collected one wood; planning delivery";
             }
+            else if (State == WorkerState.MovingToSupplies)
+            {
+                if (!jobBoard.Destination.TryTakeOne())
+                {
+                    CancelCurrentJob("Storage empty; looking for loose wood");
+                    return;
+                }
+                carrying = true;
+                if (!BeginTravel(_shelter.WorkPoint))
+                {
+                    CancelCurrentJob("Blueprint unreachable; cargo retained");
+                    return;
+                }
+                State = WorkerState.MovingToShelter;
+                DecisionExplanation = "Delivering stored wood to shelter";
+                return;
+            }
+            else if (State == WorkerState.MovingToShelter)
+            {
+                if (!_shelter.TryDeliver(WorkerId))
+                {
+                    CancelCurrentJob("Delivery no longer needed; keeping wood");
+                    return;
+                }
+                carrying = false;
+                ReleaseReservations();
+                DecisionExplanation = "Delivered one wood to shelter";
+            }
+            else if (State == WorkerState.MovingToBuild)
+            {
+                State = WorkerState.Building;
+                DecisionExplanation = "Constructing shelter";
+                return;
+            }
             else
             {
                 jobBoard.Destination.DepositOne();
@@ -168,6 +239,38 @@ namespace Reclamation.Prototype
             if (CanReach(source.transform.position, out _)) return true;
             _failedUntil[id] = Time.time + 5f;
             return false;
+        }
+
+        private bool TryStartShelterJob()
+        {
+            ShelterBlueprint site = jobBoard.Shelter;
+            if (site == null || !site.Available || !CanReach(site.WorkPoint, out _)) return false;
+
+            if (!carrying && site.TryReserveBuild(WorkerId))
+            {
+                _shelter = site;
+                if (!BeginTravel(site.WorkPoint))
+                {
+                    CancelCurrentJob("Construction path unavailable");
+                    return false;
+                }
+                State = WorkerState.MovingToBuild;
+                DecisionExplanation = "Moving to build the funded shelter";
+                return true;
+            }
+
+            if (!carrying && jobBoard.Destination.StoredUnits == 0) return false;
+            if (!site.TryReserveDelivery(WorkerId)) return false;
+            _shelter = site;
+            Vector3 destination = carrying ? site.WorkPoint : jobBoard.Destination.transform.position;
+            if (!BeginTravel(destination))
+            {
+                CancelCurrentJob("Material delivery path unavailable");
+                return false;
+            }
+            State = carrying ? WorkerState.MovingToShelter : WorkerState.MovingToSupplies;
+            DecisionExplanation = carrying ? "Supplying shelter blueprint" : "Collecting stored wood for shelter";
+            return true;
         }
 
         private bool CanReach(Vector3 position, out Vector3 point)
@@ -191,6 +294,8 @@ namespace Reclamation.Prototype
         {
             // Release by owner even if Unity has already destroyed the source object.
             if (jobBoard != null) jobBoard.ReleaseAll(WorkerId);
+            if (_shelter != null) _shelter.Release(WorkerId);
+            _shelter = null;
             _claimedSource = null;
         }
 

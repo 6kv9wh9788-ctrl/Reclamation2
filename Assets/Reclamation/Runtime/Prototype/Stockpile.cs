@@ -8,6 +8,13 @@ namespace Reclamation.Prototype
 
         public int StoredUnits => storedUnits;
 
+        public bool TryTakeOne()
+        {
+            if (storedUnits <= 0) return false;
+            storedUnits--;
+            return true;
+        }
+
         public void DepositOne()
         {
             storedUnits++;

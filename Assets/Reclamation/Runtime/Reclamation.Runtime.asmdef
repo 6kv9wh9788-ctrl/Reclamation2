@@ -1,7 +1,7 @@
 {
   "name": "Reclamation.Runtime",
   "rootNamespace": "Reclamation",
-  "references": [],
+  "references": ["Unity.InputSystem"],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

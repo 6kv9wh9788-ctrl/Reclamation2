@@ -16,10 +16,21 @@ namespace Reclamation.Editor
         [MenuItem("Reclamation/Create Autonomous Hauling Lab")]
         public static void CreateScene()
         {
+            CreateSceneAt(ScenePath, false);
+        }
+
+        [MenuItem("Reclamation/Create Shelter Construction Lab")]
+        public static void CreateShelterScene()
+        {
+            CreateSceneAt("Assets/Scenes/ShelterConstructionLab.unity", true);
+        }
+
+        private static void CreateSceneAt(string scenePath, bool shelterMode)
+        {
             if (EditorApplication.isPlayingOrWillChangePlaymode) return;
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) != null &&
-                !EditorUtility.DisplayDialog("Replace hauling lab?",
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(scenePath) != null &&
+                !EditorUtility.DisplayDialog("Replace generated lab?",
                     "This replaces the generated lab scene. Save a separate copy if you have customized it.",
                     "Replace lab", "Cancel")) return;
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -49,6 +60,8 @@ namespace Reclamation.Editor
 
             var debugObject = new GameObject("Decision Debug Overlay");
             debugObject.AddComponent<SettlementDebugOverlay>().Configure(board, stockpile);
+            if (shelterMode)
+                debugObject.AddComponent<ShelterPlanner>().Configure(board);
 
             surface.BuildNavMesh();
             if (surface.navMeshData != null)
@@ -58,9 +71,9 @@ namespace Reclamation.Editor
                 AssetDatabase.CreateAsset(surface.navMeshData, navPath);
             }
             AssetDatabase.SaveAssets();
-            EditorSceneManager.SaveScene(scene, ScenePath);
+            EditorSceneManager.SaveScene(scene, scenePath);
             Selection.activeObject = boardObject;
-            Debug.Log($"Created {ScenePath}. Press Play to run the hauling simulation.");
+            Debug.Log($"Created {scenePath}. Press Play to run the simulation.");
         }
 
         private static void CreateLighting()

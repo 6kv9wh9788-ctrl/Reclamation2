@@ -34,7 +34,7 @@ materials; confirm replacement only if you do not need your existing lab edits.
 
 ### Local acceptance checks (not executed in the development workspace)
 
-1. Run all 12 EditMode tests, then all 4 PlayMode tests in Test Runner.
+1. Run all 18 EditMode tests, then all 8 PlayMode tests in Test Runner.
    PlayMode tests build a temporary NavMesh and check conservation every frame,
    interrupted delivery, and recovery when an unreachable source moves back.
    They intentionally create no camera or visible meshes: the Game view can be
@@ -60,10 +60,47 @@ Conservation rule: ground wood + carried wood + stored wood remains 16 in
 non-destructive tests. Deleting an entire survivor currently deletes its cargo;
 death/drop handling and save/load are not implemented in this checkpoint.
 
-This is a hauling reliability checkpoint, not the shelter-construction milestone.
-Construction follows after the local acceptance checks pass. The debug worker list
-is cached at startup; runtime spawning is not part of this lab.
+The debug worker list is cached at startup; runtime spawning is not part of this lab.
 
 ## Current boundary
 
-This milestone proves job selection, reservation, hauling, delivery, and debugging visibility. It does not yet include player controls, needs, construction, saving, combat, or final art.
+The hauling lab proves job selection, reservations, hauling, and debugging visibility.
+The shelter lab below adds mouse-driven blueprint placement and construction.
+Needs, third-person controls, saving, combat, and final art are not implemented.
+
+## Shelter construction milestone
+
+1. Choose **Reclamation > Create Shelter Construction Lab** in Edit Mode.
+   It creates a separate scene; the original hauling scene is not overwritten.
+2. Press Play. The left panel shows workers; the right panel controls construction.
+3. Click **Place shelter (8 wood)**, then move the pointer onto open ground.
+   A cyan footprint is valid; red means overlap or invalid navigation ground.
+   Left-click to place, or press Escape to cancel placement.
+4. Survivors supply the blueprint using carried wood or stockpile wood.
+   When all 8 units arrive, one survivor builds for 10 seconds.
+5. The cyan footprint becomes a simple wooden shelter.
+   With the original 16 wood, the final balance is 8 in the shelter and 8 in storage.
+6. Before completion, **Cancel blueprint / refund wood** returns delivered wood
+   to storage. In-transit wood stays with its carrier until it returns to storage.
+   Once refunded, you can place another blueprint.
+
+The panel counts ground + carried + stored + shelter wood. It should always equal
+16 unless you deliberately delete resources or survivors. Completion retains
+8 wood as material embodied in the shelter rather than silently deleting it.
+
+Additional acceptance checks:
+
+- Place the shelter before hauling finishes, then repeat after all wood is stored.
+- Cancel while a survivor is carrying construction supplies; the total stays 16.
+- Disable the worker who is building, then re-enable it. Progress is retained.
+  Another available worker may take over while the first is disabled.
+- Run Test Runner: 18 EditMode and 8 PlayMode tests. Construction PlayMode tests
+  check loose supply, stockpile supply, interrupted building, refunds, and three
+  competing workers. They still have no camera.
+
+Boundaries: one shelter per lab run, fixed cost and work duration, no beds,
+interior navigation, building collision, demolition, saving, or free camera yet.
+Stop Play Mode to reset the scenario. Runtime blueprints are not saved into the
+scene. Placement checks use this lab's ground/prop layers, not arbitrary scenes.
+Generated lab scenes and their new material/navigation assets can be committed
+with their .meta files after you have confirmed they work.
