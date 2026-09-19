@@ -34,7 +34,7 @@ materials; confirm replacement only if you do not need your existing lab edits.
 
 ### Local acceptance checks (not executed in the development workspace)
 
-1. Run all 18 EditMode tests, then all 8 PlayMode tests in Test Runner.
+1. Run all 24 EditMode tests, then all 11 PlayMode tests in Test Runner.
    PlayMode tests build a temporary NavMesh and check conservation every frame,
    interrupted delivery, and recovery when an unreachable source moves back.
    They intentionally create no camera or visible meshes: the Game view can be
@@ -94,7 +94,7 @@ Additional acceptance checks:
 - Cancel while a survivor is carrying construction supplies; the total stays 16.
 - Disable the worker who is building, then re-enable it. Progress is retained.
   Another available worker may take over while the first is disabled.
-- Run Test Runner: 18 EditMode and 8 PlayMode tests. Construction PlayMode tests
+- Run Test Runner: 24 EditMode and 11 PlayMode tests. Construction PlayMode tests
   check loose supply, stockpile supply, interrupted building, refunds, and three
   competing workers. They still have no camera.
 
@@ -104,3 +104,50 @@ Stop Play Mode to reset the scenario. Runtime blueprints are not saved into the
 scene. Placement checks use this lab's ground/prop layers, not arbitrary scenes.
 Generated lab scenes and their new material/navigation assets can be committed
 with their .meta files after you have confirmed they work.
+
+## Living neighborhood milestone
+
+Choose **Reclamation > Create Living Neighborhood Lab**, then press Play.
+This creates a separate scene at Assets/Scenes/LivingNeighborhoodLab.unity.
+
+The scene contains three homes, a café, a park, roads and sidewalks, and six
+civilians with assigned home and destination points. It starts at day 1, 07:45.
+At 1×, four game minutes pass per real second, so a full day takes six minutes.
+The panel provides Pause/Resume and 1×, 4×, and 12× speed controls. Clock and
+movement respond together without changing Unity's global time scale.
+
+Base routine:
+
+| Game time | Destination |
+| --- | --- |
+| Before 08:00 | Home |
+| 08:00–10:00 | Café |
+| 10:00–12:00 | Home |
+| 12:00–16:00 | Park |
+| 16:00–18:00 | Café |
+| After 18:00 | Home |
+
+Each civilian's entire schedule is delayed by a different offset from 0 to 60
+minutes. Destinations have individual standing points to reduce crowding.
+Schedules repeat daily. Routines are deterministic; this is not an outbreak yet.
+
+Acceptance:
+
+1. At 1×, wait a few seconds after Play. Avery should head to the café after 08:00;
+   the other residents follow at staggered times. Each status changes from walking
+   to at-destination only after reaching its assigned location.
+2. Pause while civilians are walking. Both clock and movement should stop.
+3. Resume and choose 4×. Watch café, home, and park visits across the day.
+4. Choose 12× and watch midnight advance to day 2; routines should repeat.
+5. Run all 24 EditMode and 11 PlayMode tests. The new tests cover clock rollover,
+   pause arithmetic, schedule boundaries/staggering, actual café travel, pause
+   during travel, and recovery from an unreachable destination.
+
+These are exterior visits: residents stand at home entrances, café forecourt
+places, and park locations. There are no interiors, work shifts, hunger, dialogue,
+infection, vehicles, traffic rules, save/load, or day/night lighting yet.
+The camera is fixed. Speed controls are for observing the prototype; high-speed
+crowd behavior and final animation remain future work.
+
+Do not regenerate the hauling or shelter lab to access the neighborhood.
+The three scenes coexist and their tests remain regression checks.
