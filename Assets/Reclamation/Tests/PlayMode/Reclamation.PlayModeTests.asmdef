@@ -1,0 +1,10 @@
+{
+  "name": "Reclamation.PlayModeTests",
+  "references": [
+    "Reclamation.Runtime"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false
+}

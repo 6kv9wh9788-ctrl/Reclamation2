@@ -6,6 +6,13 @@ namespace Reclamation.Prototype
     {
         [SerializeField] private HaulJobBoard jobBoard;
         [SerializeField] private Stockpile stockpile;
+        private HaulWorker[] workers;
+        private GUIStyle textStyle;
+
+        private void Start()
+        {
+            workers = FindObjectsByType<HaulWorker>(FindObjectsSortMode.None);
+        }
 
         public void Configure(HaulJobBoard board, Stockpile destination)
         {
@@ -15,20 +22,26 @@ namespace Reclamation.Prototype
 
         private void OnGUI()
         {
-            GUILayout.BeginArea(new Rect(16, 16, 520, 230), GUI.skin.box);
-            GUILayout.Label("RECLAMATION — AUTONOMOUS HAULING LAB");
-            GUILayout.Label($"Stockpile: {(stockpile == null ? 0 : stockpile.StoredUnits)} wood");
-            GUILayout.Label($"Active reservations: {(jobBoard == null ? 0 : jobBoard.OpenReservationCount)}");
+            if (textStyle == null)
+                textStyle = new GUIStyle(GUI.skin.label) { fontSize = 19, wordWrap = true };
+            Matrix4x4 previous = GUI.matrix;
+            float scale = Mathf.Max(0.6f, Screen.height / 900f);
+            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
+            GUILayout.BeginArea(new Rect(16, 16, 620, 340), GUI.skin.box);
+            GUILayout.Label("RECLAMATION — AUTONOMOUS HAULING LAB", textStyle);
+            GUILayout.Label($"Stockpile: {(stockpile == null ? 0 : stockpile.StoredUnits)} wood", textStyle);
+            GUILayout.Label($"Active reservations: {(jobBoard == null ? 0 : jobBoard.OpenReservationCount)}", textStyle);
             GUILayout.Space(8);
 
-            HaulWorker[] workers = FindObjectsByType<HaulWorker>(FindObjectsSortMode.None);
-            foreach (HaulWorker worker in workers)
+            if (workers != null) foreach (HaulWorker worker in workers)
             {
-                GUILayout.Label($"{worker.WorkerName} — {worker.State}");
-                GUILayout.Label($"    {worker.DecisionExplanation}");
+                if (worker == null) continue;
+                GUILayout.Label($"{worker.WorkerName} — {worker.State} — cargo: {(worker.Carrying ? 1 : 0)}", textStyle);
+                GUILayout.Label($"    {worker.DecisionExplanation}", textStyle);
             }
 
             GUILayout.EndArea();
+            GUI.matrix = previous;
         }
     }
 }

@@ -26,7 +26,8 @@ namespace Reclamation.Prototype
             Vector3 workerPosition,
             out ResourcePile claimedSource,
             out float winningScore,
-            out string explanation)
+            out string explanation,
+            System.Func<ResourcePile, bool> canUse = null)
         {
             claimedSource = null;
             winningScore = float.NegativeInfinity;
@@ -43,6 +44,8 @@ namespace Reclamation.Prototype
                 {
                     continue;
                 }
+
+                if (canUse != null && !canUse(source)) continue;
 
                 float distance = Vector3.Distance(workerPosition, source.transform.position);
                 float score = HaulJobScorer.Score(source.PolicyPriority, distance);

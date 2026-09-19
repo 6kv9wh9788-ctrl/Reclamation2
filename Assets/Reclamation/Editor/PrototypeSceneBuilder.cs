@@ -16,6 +16,12 @@ namespace Reclamation.Editor
         [MenuItem("Reclamation/Create Autonomous Hauling Lab")]
         public static void CreateScene()
         {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) != null &&
+                !EditorUtility.DisplayDialog("Replace hauling lab?",
+                    "This replaces the generated lab scene. Save a separate copy if you have customized it.",
+                    "Replace lab", "Cancel")) return;
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             CreateLighting();
@@ -45,6 +51,13 @@ namespace Reclamation.Editor
             debugObject.AddComponent<SettlementDebugOverlay>().Configure(board, stockpile);
 
             surface.BuildNavMesh();
+            if (surface.navMeshData != null)
+            {
+                string navPath = AssetDatabase.GenerateUniqueAssetPath(
+                    "Assets/Scenes/HaulingLabNavigation.asset");
+                AssetDatabase.CreateAsset(surface.navMeshData, navPath);
+            }
+            AssetDatabase.SaveAssets();
             EditorSceneManager.SaveScene(scene, ScenePath);
             Selection.activeObject = boardObject;
             Debug.Log($"Created {ScenePath}. Press Play to run the hauling simulation.");
@@ -126,8 +139,17 @@ namespace Reclamation.Editor
 
         private static void SetColor(GameObject target, Color color)
         {
-            var material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            material.color = color;
+            const string folder = "Assets/Reclamation/GeneratedMaterials";
+            if (!AssetDatabase.IsValidFolder(folder))
+                AssetDatabase.CreateFolder("Assets/Reclamation", "GeneratedMaterials");
+            string path = $"{folder}/Lab-{ColorUtility.ToHtmlStringRGBA(color)}.mat";
+            Material material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material == null)
+            {
+                material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                material.color = color;
+                AssetDatabase.CreateAsset(material, path);
+            }
             target.GetComponent<Renderer>().sharedMaterial = material;
         }
     }
