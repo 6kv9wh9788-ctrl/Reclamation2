@@ -16,6 +16,7 @@ namespace Reclamation.Tests
         private Stockpile stock;
         private ResourcePile pile;
         private HaulWorker worker;
+        private HaulJobBoard board;
 
         private T Make<T>(string name, Vector3 position) where T : Component
         {
@@ -42,7 +43,7 @@ namespace Reclamation.Tests
             stock = Make<Stockpile>("store", new Vector3(4, 0, 0));
             pile = Make<ResourcePile>("wood", new Vector3(-4, 0, 0));
             pile.Configure(4);
-            var board = Make<HaulJobBoard>("board", Vector3.zero);
+            board = Make<HaulJobBoard>("board", Vector3.zero);
             board.Configure(stock, new[] { pile });
             worker = Make<HaulWorker>("worker", Vector3.zero);
             worker.Configure("Tester", board);
@@ -96,6 +97,34 @@ namespace Reclamation.Tests
             Assert.That(worker.Carrying, Is.True);
             AssertConserved();
             stock.enabled = true;
+            yield return FinishDelivery();
+        }
+
+        [UnityTest]
+        public IEnumerator DisablingWorkerReleasesReservationAndPreservesCargo()
+        {
+            float deadline = Time.realtimeSinceStartup + 10f;
+            while (board.OpenReservationCount == 0 && Time.realtimeSinceStartup < deadline)
+                yield return null;
+            Assert.That(board.OpenReservationCount, Is.EqualTo(1));
+
+            worker.enabled = false;
+            yield return null;
+            Assert.That(board.OpenReservationCount, Is.Zero);
+            AssertConserved();
+            worker.enabled = true;
+
+            deadline = Time.realtimeSinceStartup + 10f;
+            while (!worker.Carrying && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(worker.Carrying, Is.True);
+            int storedBeforePause = stock.StoredUnits;
+            worker.enabled = false;
+            yield return new WaitForSeconds(1);
+            Assert.That(worker.Carrying, Is.True);
+            Assert.That(stock.StoredUnits, Is.EqualTo(storedBeforePause));
+            Assert.That(board.OpenReservationCount, Is.Zero);
+            AssertConserved();
+            worker.enabled = true;
             yield return FinishDelivery();
         }
 

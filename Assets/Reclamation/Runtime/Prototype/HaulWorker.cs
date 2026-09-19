@@ -194,7 +194,8 @@ namespace Reclamation.Prototype
             _claimedSource = null;
         }
 
-        private void CancelCurrentJob(string reason)
+        /// <summary>Interrupt work without discarding the survivor's inventory.</summary>
+        public void CancelCurrentJob(string reason)
         {
             if (_claimedSource != null) _failedUntil[_claimedSource.GetInstanceID()] = Time.time + 5f;
             ReleaseReservations();

@@ -34,9 +34,13 @@ materials; confirm replacement only if you do not need your existing lab edits.
 
 ### Local acceptance checks (not executed in the development workspace)
 
-1. Run all 12 EditMode tests, then all 3 PlayMode tests in Test Runner.
+1. Run all 12 EditMode tests, then all 4 PlayMode tests in Test Runner.
    PlayMode tests build a temporary NavMesh and check conservation every frame,
    interrupted delivery, and recovery when an unreachable source moves back.
+   They intentionally create no camera or visible meshes: the Game view can be
+   blank or say "No cameras rendering". Watch the Test Runner results instead.
+   A lifecycle test disables and re-enables the real worker component, verifying
+   reservation release, retained cargo, and resumed delivery.
 2. Generate the lab and press Play. All 16 wood should reach the stockpile.
 3. While a survivor carries wood, disable its HaulWorker component in the
    Inspector. The overlay should still show cargo 1. Re-enable it and confirm

@@ -63,7 +63,7 @@ namespace Reclamation.Tests
         }
 
         [Test]
-        public void DisableHandlerReleasesClaimButRetainsCargo()
+        public void CancellationReleasesClaimButRetainsCargo()
         {
             var pile = Make<ResourcePile>("wood");
             var board = Make<HaulJobBoard>("board");
@@ -76,9 +76,9 @@ namespace Reclamation.Tests
             serialized.ApplyModifiedPropertiesWithoutUndo();
             board.TryClaimBest(worker.WorkerId, Vector3.zero, out _, out _, out _);
 
-            // Explicitly exercise the handler: EditMode does not simulate the
-            // normal Play Mode component enable/disable lifecycle.
-            worker.SendMessage("OnDisable");
+            // Test the operation directly, without asking Unity to dispatch a
+            // Play Mode lifecycle message to an Edit Mode behaviour.
+            worker.CancelCurrentJob("Test interruption");
 
             Assert.That(worker.Carrying, Is.True);
             Assert.That(board.OpenReservationCount, Is.Zero);
