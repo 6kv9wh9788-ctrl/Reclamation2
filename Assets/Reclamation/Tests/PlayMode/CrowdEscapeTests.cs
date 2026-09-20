@@ -77,7 +77,7 @@ namespace Reclamation.Tests
         public IEnumerator ZombieBurstRunsOutAndCannotRestartImmediately()
         {
             var hunter = Person("Bursting hunter", new Vector3(-2, 0, 0));
-            var prey = Person("Prey", new Vector3(2, 0, 0));
+            var prey = Person("Prey", new Vector3(0.5f, 0, 0));
             hunter.Expose(0, 1, 1); hunter.Simulate(2);
             var nav = hunter.GetComponent<NavMeshAgent>();
             yield return null;
@@ -87,13 +87,13 @@ namespace Reclamation.Tests
             Assert.That(nav.velocity.sqrMagnitude, Is.GreaterThan(0.01f));
             hunter.AdvanceMovement(1, 1);
             Assert.That(hunter.IsSprinting, Is.True);
-            Assert.That(nav.speed, Is.EqualTo(5.2f).Within(0.001f));
+            Assert.That(nav.speed, Is.EqualTo(6.2f).Within(0.001f));
+            hunter.AdvanceMovement(2, 1);
+            Assert.That(hunter.IsSprinting, Is.False);
+            Assert.That(nav.speed, Is.EqualTo(3.6f).Within(0.001f));
             hunter.AdvanceMovement(1, 1);
             Assert.That(hunter.IsSprinting, Is.False);
-            Assert.That(nav.speed, Is.EqualTo(3.3f).Within(0.001f));
-            hunter.AdvanceMovement(1, 1);
-            Assert.That(hunter.IsSprinting, Is.False);
-            Assert.That(hunter.StaminaFraction, Is.EqualTo(0.1f).Within(0.001f));
+            Assert.That(hunter.StaminaFraction, Is.EqualTo(0.125f).Within(0.001f));
         }
 
         [UnityTest]

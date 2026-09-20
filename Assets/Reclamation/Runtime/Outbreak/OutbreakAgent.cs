@@ -23,7 +23,7 @@ namespace Reclamation.Outbreak
         private float nextRouteAt;
         private EscapeRoutePlanner escapePlanner;
         private readonly BurstStamina humanStamina = new(4, 12);
-        private readonly BurstStamina zombieStamina = new(2, 10);
+        private readonly BurstStamina zombieStamina = new(3, 8);
         private bool wantsBurst;
         private BurstStamina Stamina => State == InfectionState.Turned ? zombieStamina : humanStamina;
         public float StaminaFraction => Stamina.Fraction;
@@ -31,7 +31,7 @@ namespace Reclamation.Outbreak
         public string ExertionStatus => State == InfectionState.Neutralized ? "" :
             $"{(IsSprinting ? State == InfectionState.Turned ? "Burst" : "Sprint" : StaminaFraction < 1 ? "Recovering" : "Ready")} {StaminaFraction * 100:0}%";
         private float PursuitSpeed => State == InfectionState.Turned
-            ? (IsSprinting ? 5.2f : 3.3f) : (IsSprinting ? 5f : 2.8f);
+            ? (IsSprinting ? 6.2f : 3.6f) : (IsSprinting ? 5f : 2.8f);
         public bool IsFleeing => fleeing;
         public bool CanFlee => !isolated && (State == InfectionState.Healthy || State == InfectionState.Exposed);
         public string MovementStatus { get; private set; } = "Routine";
@@ -101,7 +101,9 @@ namespace Reclamation.Outbreak
             }
             bool changed = target != nextTarget;
             target = nextTarget;
-            wantsBurst = Vector3.Distance(transform.position, target.transform.position) <= 5;
+            // Save the burst for close range, where it can sustain contact instead of
+            // spending the whole charge approaching a sprinting civilian.
+            wantsBurst = Vector3.Distance(transform.position, target.transform.position) <= 3;
             SetMovementSpeed(PursuitSpeed, simulationSpeed);
             // Stop inside transmission range without steering into the target's center.
             nav.stoppingDistance = 0.95f;
