@@ -449,6 +449,10 @@ namespace Reclamation.Tests
             var human = Actor("Learner", Vector3.zero);
             var zombie = Actor("Zombie", Vector3.forward * 1.3f, true);
             yield return null;
+            // Turning occurs after Combatant.Awake. Give the director one tick to
+            // synchronize the zombie's combat health before using 80 as the hit sentinel.
+            Tick(0.1f, human, zombie);
+            Assert.That(zombie.Health, Is.EqualTo(80));
             int before = human.Experience;
             for (int i = 0; i < 8 && zombie.Health == 80; i++) Tick(0.1f, human, zombie);
             Assert.That(human.Experience, Is.EqualTo(before + 3));
