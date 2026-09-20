@@ -12,6 +12,9 @@ namespace Reclamation.Outbreak
         [SerializeField, Min(1)] private int shelterCapacity = 4;
         [SerializeField, Min(1)] private int quarantineCapacity = 2;
         private readonly Dictionary<OutbreakAgent, RefugeAssignment> assignments = new();
+        [SerializeField] private PerimeterDefense perimeter;
+        public PerimeterDefense Perimeter => perimeter;
+        public void AttachPerimeter(PerimeterDefense defense) => perimeter = defense;
 
         public int ShelterCapacity => shelterCapacity;
         public int QuarantineCapacity => quarantineCapacity;

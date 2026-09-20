@@ -80,7 +80,8 @@ namespace Reclamation.Outbreak
                     if (target == null || !target.Infectable || target == source) continue;
                     float distance = Vector3.Distance(source.transform.position, target.transform.position);
                     long key = ((long)source.GetInstanceID() << 32) ^ (uint)target.GetInstanceID();
-                    if (distance <= contactRadius)
+                    if (distance <= contactRadius && (safeZone == null || safeZone.Perimeter == null ||
+                        !safeZone.Perimeter.BlocksContact(source.transform.position, target.transform.position)))
                     {
                         exposure.TryGetValue(key, out float seconds);
                         seconds += scaledSeconds;
@@ -100,22 +101,26 @@ namespace Reclamation.Outbreak
 
         private void UpdateBehavior()
         {
+            PerimeterDefense perimeter = safeZone == null ? null : safeZone.Perimeter;
+            if (perimeter != null) perimeter.Tick(population, clock.Speed, clock.Paused);
             foreach (OutbreakAgent person in population)
             {
                 if (person == null || !person.gameObject.activeInHierarchy) continue;
+                if (perimeter != null && perimeter.IsWorker(person)) continue;
                 OutbreakAgent nearestThreat = null;
                 float dangerDistance = float.MaxValue;
                 foreach (OutbreakAgent other in population)
                 {
                     if (other == null || other == person || other.State != InfectionState.Turned
                         || !other.gameObject.activeInHierarchy || !other.Contagious) continue;
+                    if (perimeter != null && !person.CanReachPoint(other.FeetPosition)) continue;
                     float distance = Vector3.Distance(person.transform.position, other.transform.position);
                     if (distance < dangerDistance) { dangerDistance = distance; nearestThreat = other; }
                 }
                 if (person.State == InfectionState.Turned)
                 {
                     OutbreakAgent prey = FindNearestPrey(person);
-                    person.SetThreatTarget(prey, clock.Speed);
+                    person.SetThreatTarget(prey, clock.Speed, perimeter);
                 }
                 else if (nearestThreat != null && dangerDistance < (person.IsFleeing ? 9 : 7))
                     person.FleeFrom(nearestThreat.transform.position, clock.Speed, population);
@@ -128,12 +133,15 @@ namespace Reclamation.Outbreak
         private OutbreakAgent FindNearestPrey(OutbreakAgent hunter)
         {
             OutbreakAgent result = null; float best = float.MaxValue;
+            bool resultReachable = false;
             foreach (OutbreakAgent person in population)
             {
                 if (person == null || !person.gameObject.activeInHierarchy || person == hunter || person.Isolated || person.IsProtected ||
                     person.State == InfectionState.Turned || person.State == InfectionState.Neutralized) continue;
                 float distance = Vector3.Distance(hunter.transform.position, person.transform.position);
-                if (distance < best) { best = distance; result = person; }
+                bool reachable = hunter.CanReachPoint(person.FeetPosition);
+                if ((reachable && !resultReachable) || (reachable == resultReachable && distance < best))
+                { best = distance; result = person; resultReachable = reachable; }
             }
             return result;
         }
@@ -189,6 +197,21 @@ namespace Reclamation.Outbreak
                         $"QUARANTINE {safeZone.QuarantinedCount}/{safeZone.QuarantineCapacity} | " +
                         $"EN ROUTE {safeZone.EvacuatingCount}" + (safeZone.Breached ? " | BREACH" : ""), label);
                 GUILayout.Space(5);
+                if (safeZone != null && safeZone.Perimeter != null)
+                {
+                    var defense = safeZone.Perimeter;
+                    GUILayout.Label($"DEFENSE WOOD {defense.Wood} | RESERVED {defense.ReservedWood} | SPENT {defense.SpentWood}", label);
+                    GUILayout.BeginHorizontal();
+                    if (GUILayout.Button("Build next (4)", button)) defense.RequestWork(false);
+                    if (GUILayout.Button("Repair (2)", button)) defense.RequestWork(true);
+                    if (GUILayout.Button("Cancel work", button)) defense.CancelWork();
+                    GUILayout.EndHorizontal();
+                    if (GUILayout.Button("Open / close gate", button)) defense.ToggleGate(population);
+                    GUILayout.Label(defense.Status, label);
+                    foreach (var section in defense.Sections)
+                        if (section != null) GUILayout.Label($"{section.name}: {section.Health:0}/120" +
+                            (section.IsGate && section.Built ? section.Open ? " OPEN" : " CLOSED" : ""), label);
+                }
                 foreach (OutbreakAgent person in population)
                 {
                     if (person == null) continue;

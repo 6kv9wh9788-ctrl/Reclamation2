@@ -10,6 +10,13 @@ namespace Reclamation.Outbreak
     public sealed class OutbreakAgent : MonoBehaviour
     {
         [SerializeField] private string displayName;
+        [SerializeField] private ZombieClass zombieClass;
+        private bool sieging;
+        private bool defenseWorking;
+        private float nextDefenseRouteAt;
+        public ZombieClass Class => zombieClass;
+        public Vector3 FeetPosition => transform.position - Vector3.up * (nav != null ? nav.baseOffset : 0);
+        public void SetZombieClass(ZombieClass value) => zombieClass = value;
         private readonly InfectionTimeline timeline = new();
         private CivilianRoutine routine;
         private NavMeshAgent nav;
@@ -36,7 +43,8 @@ namespace Reclamation.Outbreak
             ? (IsSprinting ? 6.2f : 3.6f) : (IsSprinting ? 5f : 2.8f);
         public bool IsFleeing => fleeing;
         public RefugeAssignment ZoneAssignment => refugeAssignment;
-        public bool IsProtected => refugeAssignment == RefugeAssignment.Sheltered ||
+        public bool IsProtected => (refugeAssignment == RefugeAssignment.Sheltered &&
+            (safeZone == null || safeZone.Perimeter == null)) ||
             refugeAssignment == RefugeAssignment.Quarantined;
         public bool CanFlee => !isolated && (State == InfectionState.Healthy || State == InfectionState.Exposed);
         public string MovementStatus { get; private set; } = "Routine";
@@ -50,7 +58,7 @@ namespace Reclamation.Outbreak
         public bool Contagious => !isolated && (State == InfectionState.Symptomatic || State == InfectionState.Turned);
         public bool VisibleSymptoms => State == InfectionState.Symptomatic || State == InfectionState.Turned;
         public string PublicStatus => State == InfectionState.Neutralized ? "neutralized" :
-            State == InfectionState.Turned ? "TURNED" :
+            State == InfectionState.Turned ? zombieClass == ZombieClass.Brute ? "BRUTE" : "TURNED" :
             State == InfectionState.Symptomatic ? "symptomatic" :
             isolated ? "isolated" : "appears healthy";
 
@@ -96,13 +104,13 @@ namespace Reclamation.Outbreak
             return changed;
         }
 
-        public void SetThreatTarget(OutbreakAgent nextTarget, float simulationSpeed)
+        public void SetThreatTarget(OutbreakAgent nextTarget, float simulationSpeed, PerimeterDefense perimeter = null)
         {
             if (State != InfectionState.Turned || isolated || !CanNavigate || simulationPaused) return;
             if (nextTarget == null || !nextTarget.gameObject.activeInHierarchy || nextTarget.Isolated ||
                 nextTarget.State == InfectionState.Turned || nextTarget.State == InfectionState.Neutralized)
             {
-                target = null; wantsBurst = false; nav.ResetPath(); MovementStatus = "No eligible prey"; return;
+                target = null; wantsBurst = false; sieging = false; nav.ResetPath(); MovementStatus = "No eligible prey"; return;
             }
             bool changed = target != nextTarget;
             target = nextTarget;
@@ -112,13 +120,77 @@ namespace Reclamation.Outbreak
             SetMovementSpeed(PursuitSpeed, simulationSpeed);
             // Stop inside transmission range without steering into the target's center.
             nav.stoppingDistance = 0.95f;
-            if (!changed && Time.time < nextRouteAt) return;
+            if (!changed && Time.time < nextRouteAt)
+            {
+                if (sieging && perimeter != null) perimeter.TrySiege(this, simulationSpeed);
+                return;
+            }
             nextRouteAt = Time.time + 0.35f / Mathf.Max(1, simulationSpeed);
             Vector3 targetFeet = target.transform.position - Vector3.up * target.nav.baseOffset;
             if (NavMesh.SamplePosition(targetFeet, out NavMeshHit hit, 0.65f, nav.areaMask)
                 && nav.CalculatePath(hit.position, path) && path.status == NavMeshPathStatus.PathComplete
-                && nav.SetPath(path)) MovementStatus = "Pursuing";
-            else { nav.ResetPath(); MovementStatus = "Prey unreachable"; }
+                && nav.SetPath(path)) { sieging = false; MovementStatus = "Pursuing"; }
+            else
+            {
+                if (!sieging) { nav.ResetPath(); nextDefenseRouteAt = 0; }
+                sieging = perimeter != null; MovementStatus = "Prey unreachable; seeking breach";
+                if (!sieging || !perimeter.TrySiege(this, simulationSpeed)) nav.ResetPath();
+            }
+        }
+
+        public bool CanReachPoint(Vector3 point)
+        {
+            return CanNavigate && NavMesh.SamplePosition(point, out NavMeshHit hit, 0.65f, nav.areaMask) &&
+                nav.CalculatePath(hit.position, path) && path.status == NavMeshPathStatus.PathComplete;
+        }
+
+        public bool WorkAtDefense(Vector3 point, float speed)
+        {
+            if (!CanNavigate || simulationPaused || VisibleSymptoms || isolated) return false;
+            routine.enabled = false; defenseWorking = true; fleeing = false; wantsBurst = false;
+            Vector3 delta = FeetPosition - point; delta.y = 0;
+            if (delta.magnitude <= 0.5f)
+            {
+                nav.ResetPath(); MovementStatus = "Working on perimeter"; return true;
+            }
+            SetMovementSpeed(2.5f, speed); nav.stoppingDistance = 0.25f;
+            if (Time.time >= nextDefenseRouteAt)
+            {
+                nextDefenseRouteAt = Time.time + 0.4f / Mathf.Max(1, speed);
+                if (CanReachPoint(point)) nav.SetPath(path);
+                else nav.ResetPath();
+            }
+            MovementStatus = "Walking to perimeter work"; return false;
+        }
+
+        public void EndDefenseWork()
+        {
+            defenseWorking = false; nextDefenseRouteAt = 0;
+            if (CanNavigate) nav.ResetPath();
+            ResumeRoutineIfSafe();
+        }
+
+        public bool AttackDefense(DefenseSection section, Vector3 point, float speed)
+        {
+            if (State != InfectionState.Turned || isolated || simulationPaused || !CanNavigate || !section.Blocking) return false;
+            wantsBurst = false;
+            Vector3 delta = FeetPosition - point; delta.y = 0;
+            if (delta.magnitude <= 0.5f)
+            {
+                nav.ResetPath();
+                section.TakeDamage(zombieClass, Time.deltaTime * speed);
+                MovementStatus = $"Attacking {section.name}";
+                return true;
+            }
+            SetMovementSpeed(3.6f, speed); nav.stoppingDistance = 0.25f;
+            if (Time.time >= nextDefenseRouteAt)
+            {
+                nextDefenseRouteAt = Time.time + 0.4f / Mathf.Max(1, speed);
+                if (CanReachPoint(point)) nav.SetPath(path);
+                else nav.ResetPath();
+            }
+            MovementStatus = $"Approaching {section.name}";
+            return true;
         }
 
         public void AssignSafeZone(SafeZone zone)
@@ -142,6 +214,7 @@ namespace Reclamation.Outbreak
         public void ContinueEvacuation(float simulationSpeed)
         {
             if (safeZone == null || refugeAssignment != RefugeAssignment.Evacuating || !CanNavigate || simulationPaused) return;
+            fleeing = false;
             if (!safeZone.TryGetDestination(this, out Vector3 destination))
             {
                 nav.ResetPath();
@@ -252,6 +325,13 @@ namespace Reclamation.Outbreak
         {
             if (!CanFlee) return;
             if (IsProtected) return;
+            if (refugeAssignment == RefugeAssignment.Sheltered)
+            {
+                if (!defenseWorking && CanNavigate) nav.ResetPath();
+                fleeing = false; wantsBurst = false; routine.enabled = false;
+                MovementStatus = "Sheltered; perimeter protection only";
+                return;
+            }
             if (refugeAssignment == RefugeAssignment.Evacuating)
             {
                 fleeing = false;
@@ -276,6 +356,11 @@ namespace Reclamation.Outbreak
             {
                 MovementStatus = "Neutralized";
                 gameObject.SetActive(false);
+            }
+            if (State == InfectionState.Turned && zombieClass == ZombieClass.Brute)
+            {
+                var human = GetComponentInChildren<HumanVisual>();
+                if (human != null) human.transform.localScale = new Vector3(1.5f, 1.35f, 1.5f);
             }
             if (body == null) return;
             body.material.color = State == InfectionState.Exposed ? healthyColor :
