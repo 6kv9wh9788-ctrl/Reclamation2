@@ -22,6 +22,16 @@ namespace Reclamation.Outbreak
         private bool simulationPaused;
         private float nextRouteAt;
         private EscapeRoutePlanner escapePlanner;
+        private readonly BurstStamina humanStamina = new(4, 12);
+        private readonly BurstStamina zombieStamina = new(2, 10);
+        private bool wantsBurst;
+        private BurstStamina Stamina => State == InfectionState.Turned ? zombieStamina : humanStamina;
+        public float StaminaFraction => Stamina.Fraction;
+        public bool IsSprinting => Stamina.Bursting;
+        public string ExertionStatus => State == InfectionState.Neutralized ? "" :
+            $"{(IsSprinting ? State == InfectionState.Turned ? "Burst" : "Sprint" : StaminaFraction < 1 ? "Recovering" : "Ready")} {StaminaFraction * 100:0}%";
+        private float PursuitSpeed => State == InfectionState.Turned
+            ? (IsSprinting ? 5.2f : 3.3f) : (IsSprinting ? 5f : 2.8f);
         public bool IsFleeing => fleeing;
         public bool CanFlee => !isolated && (State == InfectionState.Healthy || State == InfectionState.Exposed);
         public string MovementStatus { get; private set; } = "Routine";
@@ -87,11 +97,12 @@ namespace Reclamation.Outbreak
             if (nextTarget == null || !nextTarget.gameObject.activeInHierarchy || nextTarget.Isolated ||
                 nextTarget.State == InfectionState.Turned || nextTarget.State == InfectionState.Neutralized)
             {
-                target = null; nav.ResetPath(); MovementStatus = "No eligible prey"; return;
+                target = null; wantsBurst = false; nav.ResetPath(); MovementStatus = "No eligible prey"; return;
             }
             bool changed = target != nextTarget;
             target = nextTarget;
-            SetMovementSpeed(3.3f, simulationSpeed);
+            wantsBurst = Vector3.Distance(transform.position, target.transform.position) <= 5;
+            SetMovementSpeed(PursuitSpeed, simulationSpeed);
             // Stop inside transmission range without steering into the target's center.
             nav.stoppingDistance = 0.95f;
             if (!changed && Time.time < nextRouteAt) return;
@@ -117,7 +128,9 @@ namespace Reclamation.Outbreak
                 // OnDisable resets the routine's path; disable before issuing the escape route.
                 routine.enabled = false; fleeing = true; nextRouteAt = 0;
             }
-            SetMovementSpeed(3.8f, simulationSpeed);
+            Vector3 separation = transform.position - threat; separation.y = 0;
+            wantsBurst = separation.magnitude <= 5;
+            SetMovementSpeed(PursuitSpeed, simulationSpeed);
             nav.stoppingDistance = 0.25f;
             if (Time.time < nextRouteAt) return;
             nextRouteAt = Time.time + 0.45f / Mathf.Max(1, simulationSpeed);
@@ -129,6 +142,17 @@ namespace Reclamation.Outbreak
                 nav.ResetPath();
                 MovementStatus = "Cornered; seeking escape";
             }
+        }
+
+        public void AdvanceMovement(float simulationSeconds, float simulationSpeed)
+        {
+            if (simulationPaused || State == InfectionState.Neutralized || !isActiveAndEnabled) return;
+            bool travelling = CanNavigate && !nav.isStopped && !nav.pathPending && nav.hasPath &&
+                nav.remainingDistance > nav.stoppingDistance + 0.1f && nav.velocity.sqrMagnitude > 0.01f;
+            Stamina.Advance(simulationSeconds, wantsBurst && travelling && !isolated &&
+                (fleeing || State == InfectionState.Turned));
+            if (travelling && (fleeing || State == InfectionState.Turned))
+                SetMovementSpeed(PursuitSpeed, simulationSpeed);
         }
 
         private void SetMovementSpeed(float speed, float multiplier)
@@ -144,7 +168,7 @@ namespace Reclamation.Outbreak
         {
             if (!CanFlee) return;
             if (fleeing && CanNavigate) nav.ResetPath();
-            fleeing = false; nextRouteAt = 0;
+            fleeing = false; wantsBurst = false; nextRouteAt = 0;
             if (CanNavigate) nav.stoppingDistance = 0.25f;
             routine.enabled = true;
             MovementStatus = "Routine";
@@ -153,7 +177,7 @@ namespace Reclamation.Outbreak
         private void ApplyState()
         {
             bool canRoutine = !isolated && (State == InfectionState.Healthy || State == InfectionState.Exposed);
-            if (!canRoutine) { fleeing = false; nextRouteAt = 0; }
+            if (!canRoutine) { fleeing = false; wantsBurst = false; nextRouteAt = 0; }
             routine.enabled = canRoutine && !fleeing;
             MovementStatus = isolated ? "Isolated" : State == InfectionState.Symptomatic ? "Symptomatic; stopped" : MovementStatus;
             if (!canRoutine && nav.isActiveAndEnabled && nav.isOnNavMesh) nav.ResetPath();

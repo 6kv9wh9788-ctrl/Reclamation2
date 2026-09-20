@@ -48,6 +48,55 @@ namespace Reclamation.Tests
         }
 
         [UnityTest]
+        public IEnumerator HumanSprintChangesSpeedAndPauseFreezesStamina()
+        {
+            var person = Person("Sprinter", Vector3.zero);
+            var nav = person.GetComponent<NavMeshAgent>();
+            yield return null;
+            person.FleeFrom(new Vector3(-2, 0, 0), 1);
+            float deadline = Time.realtimeSinceStartup + 2;
+            while (nav.velocity.sqrMagnitude <= 0.01f && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(nav.velocity.sqrMagnitude, Is.GreaterThan(0.01f));
+            person.AdvanceMovement(1, 1);
+            Assert.That(person.IsSprinting, Is.True);
+            Assert.That(nav.speed, Is.EqualTo(5));
+            Assert.That(person.StaminaFraction, Is.EqualTo(0.75f).Within(0.001f));
+            person.SetSimulationPaused(true);
+            person.AdvanceMovement(10, 12);
+            Assert.That(person.StaminaFraction, Is.EqualTo(0.75f).Within(0.001f));
+            person.SetSimulationPaused(false);
+            deadline = Time.realtimeSinceStartup + 2;
+            while (nav.velocity.sqrMagnitude <= 0.01f && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(nav.velocity.sqrMagnitude, Is.GreaterThan(0.01f));
+            person.AdvanceMovement(3, 1);
+            Assert.That(person.IsSprinting, Is.False);
+            Assert.That(nav.speed, Is.EqualTo(2.8f).Within(0.001f));
+        }
+
+        [UnityTest]
+        public IEnumerator ZombieBurstRunsOutAndCannotRestartImmediately()
+        {
+            var hunter = Person("Bursting hunter", new Vector3(-2, 0, 0));
+            var prey = Person("Prey", new Vector3(2, 0, 0));
+            hunter.Expose(0, 1, 1); hunter.Simulate(2);
+            var nav = hunter.GetComponent<NavMeshAgent>();
+            yield return null;
+            hunter.SetThreatTarget(prey, 1);
+            float deadline = Time.realtimeSinceStartup + 2;
+            while (nav.velocity.sqrMagnitude <= 0.01f && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(nav.velocity.sqrMagnitude, Is.GreaterThan(0.01f));
+            hunter.AdvanceMovement(1, 1);
+            Assert.That(hunter.IsSprinting, Is.True);
+            Assert.That(nav.speed, Is.EqualTo(5.2f).Within(0.001f));
+            hunter.AdvanceMovement(1, 1);
+            Assert.That(hunter.IsSprinting, Is.False);
+            Assert.That(nav.speed, Is.EqualTo(3.3f).Within(0.001f));
+            hunter.AdvanceMovement(1, 1);
+            Assert.That(hunter.IsSprinting, Is.False);
+            Assert.That(hunter.StaminaFraction, Is.EqualTo(0.1f).Within(0.001f));
+        }
+
+        [UnityTest]
         public IEnumerator ElevatedLabCivilianFindsEscapeAtFootLevel()
         {
             var person = Person("Elevated civilian", Vector3.zero);

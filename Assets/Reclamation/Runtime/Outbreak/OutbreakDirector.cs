@@ -56,6 +56,8 @@ namespace Reclamation.Outbreak
             {
                 SimulateContacts();
                 UpdateBehavior();
+                foreach (OutbreakAgent person in population)
+                    if (person != null) person.AdvanceMovement(Time.deltaTime * clock.Speed, clock.Speed);
             }
             CountAndResolve();
         }
@@ -180,7 +182,7 @@ namespace Reclamation.Outbreak
                 {
                     if (person == null) continue;
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label($"{person.DisplayName}: {person.PublicStatus}\n{person.MovementStatus}", label, GUILayout.Width(230));
+                    GUILayout.Label($"{person.DisplayName}: {person.PublicStatus}\n{person.MovementStatus} · {person.ExertionStatus}", label, GUILayout.Width(230));
                     var cameraControls = Camera.main == null ? null : Camera.main.GetComponent<LabCameraController>();
                     if (cameraControls != null && person.gameObject.activeInHierarchy &&
                         GUILayout.Button("Follow", button, GUILayout.Width(75))) cameraControls.Follow(person.transform);
