@@ -15,6 +15,10 @@ namespace Reclamation.Outbreak
         private readonly Dictionary<long, float> exposure = new();
         private GUIStyle label, button;
         private bool seeded;
+        private bool collapsed;
+        private Vector2 panelScroll;
+        private Rect PanelRect => new Rect(16, 16, 560, collapsed ? 130 : 700);
+        public bool ContainsGuiPoint(Vector2 point) => isActiveAndEnabled && PanelRect.Contains(point);
         private string eventLog = "A visitor has entered the neighborhood.";
 
         public string Outcome { get; private set; } = "Normal life";
@@ -151,41 +155,52 @@ namespace Reclamation.Outbreak
                 label = new GUIStyle(GUI.skin.label) { fontSize = 18, wordWrap = true };
                 button = new GUIStyle(GUI.skin.button) { fontSize = 17 };
             }
-            float scale = Mathf.Max(0.6f, Screen.height / 900f);
+            float scale = LabCameraController.UiScale;
             Matrix4x4 prior = GUI.matrix;
             GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1));
-            GUILayout.BeginArea(new Rect(16, 16, 560, 700), GUI.skin.box);
+            GUILayout.BeginArea(PanelRect, GUI.skin.box);
+            GUILayout.BeginHorizontal();
             GUILayout.Label("RECLAMATION — PATIENT ZERO", label);
+            if (GUILayout.Button(collapsed ? "Expand" : "Collapse", button, GUILayout.Width(100))) collapsed = !collapsed;
+            GUILayout.EndHorizontal();
             GUILayout.Label(clock.DisplayTime + (clock.Paused ? " (paused)" : $" ({clock.Speed:0}×)"), label);
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(clock.Paused ? "Resume" : "Pause", button)) clock.SetPaused(!clock.Paused);
             foreach (float speed in new[] { 1f, 4f, 12f })
                 if (GUILayout.Button($"{speed:0}×", button)) clock.SetSpeed(speed);
             GUILayout.EndHorizontal();
-            GUILayout.Label($"OUTCOME: {Outcome}", label);
-            GUILayout.Label($"Healthy {HealthyCount} | Developing {InfectedCount} | Turned {TurnedCount} | Neutralized {NeutralizedCount}", label);
-            GUILayout.Label(eventLog, label);
-            GUILayout.Space(5);
-            foreach (OutbreakAgent person in population)
+            if (!collapsed)
             {
-                if (person == null) continue;
-                GUILayout.BeginHorizontal();
-                GUILayout.Label($"{person.DisplayName}: {person.PublicStatus}", label, GUILayout.Width(265));
-                if (person.State == InfectionState.Turned)
+                panelScroll = GUILayout.BeginScrollView(panelScroll);
+                GUILayout.Label($"OUTCOME: {Outcome}", label);
+                GUILayout.Label($"Healthy {HealthyCount} | Developing {InfectedCount} | Turned {TurnedCount} | Neutralized {NeutralizedCount}", label);
+                GUILayout.Label(eventLog, label);
+                GUILayout.Space(5);
+                foreach (OutbreakAgent person in population)
                 {
-                    if (GUILayout.Button("Neutralize", button)) { person.Neutralize(); eventLog = $"{person.DisplayName} neutralized."; }
-                }
-                else if (person.State != InfectionState.Neutralized)
-                {
-                    if (GUILayout.Button(person.Isolated ? "Release" : "Isolate", button))
+                    if (person == null) continue;
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label($"{person.DisplayName}: {person.PublicStatus}", label, GUILayout.Width(230));
+                    var cameraControls = Camera.main == null ? null : Camera.main.GetComponent<LabCameraController>();
+                    if (cameraControls != null && person.gameObject.activeInHierarchy &&
+                        GUILayout.Button("Follow", button, GUILayout.Width(75))) cameraControls.Follow(person.transform);
+                    if (person.State == InfectionState.Turned)
                     {
-                        person.SetIsolated(!person.Isolated);
-                        eventLog = $"{person.DisplayName} {(person.Isolated ? "isolated" : "released")}.";
+                        if (GUILayout.Button("Neutralize", button)) { person.Neutralize(); eventLog = $"{person.DisplayName} neutralized."; }
                     }
+                    else if (person.State != InfectionState.Neutralized)
+                    {
+                        if (GUILayout.Button(person.Isolated ? "Release" : "Isolate", button))
+                        {
+                            person.SetIsolated(!person.Isolated);
+                            eventLog = $"{person.DisplayName} {(person.Isolated ? "isolated" : "released")}.";
+                        }
+                    }
+                    GUILayout.EndHorizontal();
                 }
-                GUILayout.EndHorizontal();
+                GUILayout.Label("Stop and restart Play Mode to reset. Isolation is an abstract prototype action. Isolation is listed above. Yellow head = symptomatic; green head = turned.", label);
+                GUILayout.EndScrollView();
             }
-            GUILayout.Label("Stop and restart Play Mode to reset. Isolation is an abstract prototype action. Blue = isolated, yellow = symptomatic, green = turned.", label);
             GUILayout.EndArea();
             GUI.matrix = prior;
         }

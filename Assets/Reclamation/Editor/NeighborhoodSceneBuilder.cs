@@ -40,6 +40,7 @@ namespace Reclamation.Editor
             var cameraObject = new GameObject("Main Camera");
             var camera = cameraObject.AddComponent<Camera>();
             cameraObject.tag = "MainCamera";
+            cameraObject.AddComponent<Reclamation.Neighborhood.LabCameraController>();
             camera.transform.position = new Vector3(0, 48, -48);
             camera.transform.LookAt(new Vector3(0, 0, 3));
             camera.orthographic = true;
