@@ -25,6 +25,8 @@ namespace Reclamation.Outbreak
         private readonly BurstStamina humanStamina = new(4, 12);
         private readonly BurstStamina zombieStamina = new(3, 8);
         private bool wantsBurst;
+        private SafeZone safeZone;
+        private RefugeAssignment refugeAssignment;
         private BurstStamina Stamina => State == InfectionState.Turned ? zombieStamina : humanStamina;
         public float StaminaFraction => Stamina.Fraction;
         public bool IsSprinting => Stamina.Bursting;
@@ -33,6 +35,9 @@ namespace Reclamation.Outbreak
         private float PursuitSpeed => State == InfectionState.Turned
             ? (IsSprinting ? 6.2f : 3.6f) : (IsSprinting ? 5f : 2.8f);
         public bool IsFleeing => fleeing;
+        public RefugeAssignment ZoneAssignment => refugeAssignment;
+        public bool IsProtected => refugeAssignment == RefugeAssignment.Sheltered ||
+            refugeAssignment == RefugeAssignment.Quarantined;
         public bool CanFlee => !isolated && (State == InfectionState.Healthy || State == InfectionState.Exposed);
         public string MovementStatus { get; private set; } = "Routine";
         private bool CanNavigate => nav != null && nav.isActiveAndEnabled && nav.isOnNavMesh;
@@ -116,6 +121,83 @@ namespace Reclamation.Outbreak
             else { nav.ResetPath(); MovementStatus = "Prey unreachable"; }
         }
 
+        public void AssignSafeZone(SafeZone zone)
+        {
+            if (zone == null || State == InfectionState.Turned || State == InfectionState.Neutralized) return;
+            safeZone = zone;
+            refugeAssignment = RefugeAssignment.Evacuating;
+            if (routine.enabled) routine.enabled = false;
+            nextRouteAt = 0;
+            MovementStatus = "Evacuating to refuge";
+        }
+
+        public void ClearSafeZone(SafeZone zone)
+        {
+            if (safeZone != zone || refugeAssignment != RefugeAssignment.Evacuating) return;
+            safeZone = null;
+            refugeAssignment = RefugeAssignment.None;
+            ResumeRoutineIfSafe();
+        }
+
+        public void ContinueEvacuation(float simulationSpeed)
+        {
+            if (safeZone == null || refugeAssignment != RefugeAssignment.Evacuating || !CanNavigate || simulationPaused) return;
+            if (!safeZone.TryGetDestination(this, out Vector3 destination))
+            {
+                nav.ResetPath();
+                MovementStatus = VisibleSymptoms ? "Quarantine full" : "Refuge full";
+                return;
+            }
+            Vector3 flat = transform.position - destination; flat.y = 0;
+            if (flat.magnitude <= 0.65f)
+            {
+                safeZone.TryAdmit(this);
+                return;
+            }
+            wantsBurst = false;
+            SetMovementSpeed(3.1f, simulationSpeed);
+            nav.stoppingDistance = 0.3f;
+            if (Time.time < nextRouteAt) return;
+            nextRouteAt = Time.time + 0.5f / Mathf.Max(1, simulationSpeed);
+            Vector3 feet = destination;
+            if (NavMesh.SamplePosition(feet, out NavMeshHit hit, 0.65f, nav.areaMask) &&
+                nav.CalculatePath(hit.position, path) && path.status == NavMeshPathStatus.PathComplete && nav.SetPath(path))
+                MovementStatus = "Evacuating to refuge";
+            else MovementStatus = "Refuge route blocked";
+        }
+
+        public void CompleteAdmission(SafeZone zone, RefugeAssignment assignment, Vector3 position)
+        {
+            if (safeZone != zone) return;
+            refugeAssignment = assignment;
+            fleeing = false;
+            wantsBurst = false;
+            routine.enabled = false;
+            if (CanNavigate)
+            {
+                nav.ResetPath();
+                if (NavMesh.SamplePosition(position, out NavMeshHit hit, 1, nav.areaMask)) nav.Warp(hit.position);
+            }
+            isolated = assignment == RefugeAssignment.Quarantined;
+            MovementStatus = assignment == RefugeAssignment.Quarantined ? "Held in quarantine" : "Safe in refuge";
+        }
+
+        public void HoldInQuarantine()
+        {
+            isolated = true;
+            if (CanNavigate) nav.ResetPath();
+            MovementStatus = "Turned; contained in quarantine";
+        }
+
+        public void ReleaseFromZone(SafeZone zone, string reason)
+        {
+            if (safeZone != zone) return;
+            safeZone = null;
+            refugeAssignment = RefugeAssignment.None;
+            isolated = false;
+            MovementStatus = reason;
+        }
+
         public void SetSimulationPaused(bool paused)
         {
             simulationPaused = paused;
@@ -124,7 +206,7 @@ namespace Reclamation.Outbreak
 
         public void FleeFrom(Vector3 threat, float simulationSpeed, IReadOnlyList<OutbreakAgent> population = null)
         {
-            if (!CanFlee || !CanNavigate || simulationPaused) return;
+            if (!CanFlee || IsProtected || !CanNavigate || simulationPaused) return;
             if (!fleeing)
             {
                 // OnDisable resets the routine's path; disable before issuing the escape route.
@@ -169,6 +251,13 @@ namespace Reclamation.Outbreak
         public void ResumeRoutineIfSafe()
         {
             if (!CanFlee) return;
+            if (IsProtected) return;
+            if (refugeAssignment == RefugeAssignment.Evacuating)
+            {
+                fleeing = false;
+                ContinueEvacuation(1);
+                return;
+            }
             if (fleeing && CanNavigate) nav.ResetPath();
             fleeing = false; wantsBurst = false; nextRouteAt = 0;
             if (CanNavigate) nav.stoppingDistance = 0.25f;
@@ -180,7 +269,7 @@ namespace Reclamation.Outbreak
         {
             bool canRoutine = !isolated && (State == InfectionState.Healthy || State == InfectionState.Exposed);
             if (!canRoutine) { fleeing = false; wantsBurst = false; nextRouteAt = 0; }
-            routine.enabled = canRoutine && !fleeing;
+            routine.enabled = canRoutine && !fleeing && refugeAssignment == RefugeAssignment.None;
             MovementStatus = isolated ? "Isolated" : State == InfectionState.Symptomatic ? "Symptomatic; stopped" : MovementStatus;
             if (!canRoutine && nav.isActiveAndEnabled && nav.isOnNavMesh) nav.ResetPath();
             if (State == InfectionState.Neutralized)

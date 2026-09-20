@@ -135,7 +135,8 @@ namespace Reclamation.Editor
                 HumanVisualBuilder.Add(visitorObject);
                 outbreakPopulation.Add(visitor);
                 var director = new GameObject("Outbreak Director").AddComponent<Reclamation.Outbreak.OutbreakDirector>();
-                director.Configure(clock, outbreakPopulation.ToArray(), visitor, 614);
+                var safeZone = SafeZoneInstaller.Create(new Vector3(20, 0, -24));
+                director.Configure(clock, outbreakPopulation.ToArray(), visitor, 614, safeZone);
             }
             else
                 new GameObject("Neighborhood Status").AddComponent<NeighborhoodPanel>().Configure(clock, residents.ToArray());

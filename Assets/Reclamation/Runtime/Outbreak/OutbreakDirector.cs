@@ -9,6 +9,7 @@ namespace Reclamation.Outbreak
         [SerializeField] private NeighborhoodClock clock;
         [SerializeField] private OutbreakAgent[] population;
         [SerializeField] private OutbreakAgent visitor;
+        [SerializeField] private SafeZone safeZone;
         [SerializeField] private int scenarioSeed = 614;
         [SerializeField] private float contactSeconds = 1.5f;
         [SerializeField] private float contactRadius = 1.4f;
@@ -27,11 +28,15 @@ namespace Reclamation.Outbreak
         public int TurnedCount { get; private set; }
         public int NeutralizedCount { get; private set; }
         public IReadOnlyList<OutbreakAgent> Population => population;
+        public SafeZone SafeZone => safeZone;
 
-        public void Configure(NeighborhoodClock timer, OutbreakAgent[] agents, OutbreakAgent arrivingVisitor, int seed)
+        public void Configure(NeighborhoodClock timer, OutbreakAgent[] agents, OutbreakAgent arrivingVisitor, int seed,
+            SafeZone refuge = null)
         {
-            clock = timer; population = agents; visitor = arrivingVisitor; scenarioSeed = seed;
+            clock = timer; population = agents; visitor = arrivingVisitor; scenarioSeed = seed; safeZone = refuge;
         }
+
+        public void AttachSafeZone(SafeZone refuge) => safeZone = refuge;
 
         private void Update()
         {
@@ -114,6 +119,8 @@ namespace Reclamation.Outbreak
                 }
                 else if (nearestThreat != null && dangerDistance < (person.IsFleeing ? 9 : 7))
                     person.FleeFrom(nearestThreat.transform.position, clock.Speed, population);
+                else if (person.ZoneAssignment == RefugeAssignment.Evacuating)
+                    person.ContinueEvacuation(clock.Speed);
                 else person.ResumeRoutineIfSafe();
             }
         }
@@ -123,7 +130,7 @@ namespace Reclamation.Outbreak
             OutbreakAgent result = null; float best = float.MaxValue;
             foreach (OutbreakAgent person in population)
             {
-                if (person == null || !person.gameObject.activeInHierarchy || person == hunter || person.Isolated ||
+                if (person == null || !person.gameObject.activeInHierarchy || person == hunter || person.Isolated || person.IsProtected ||
                     person.State == InfectionState.Turned || person.State == InfectionState.Neutralized) continue;
                 float distance = Vector3.Distance(hunter.transform.position, person.transform.position);
                 if (distance < best) { best = distance; result = person; }
@@ -177,12 +184,16 @@ namespace Reclamation.Outbreak
                 GUILayout.Label($"OUTCOME: {Outcome}", label);
                 GUILayout.Label($"Healthy {HealthyCount} | Developing {InfectedCount} | Turned {TurnedCount} | Neutralized {NeutralizedCount}", label);
                 GUILayout.Label(eventLog, label);
+                if (safeZone != null)
+                    GUILayout.Label($"REFUGE {safeZone.ShelteredCount}/{safeZone.ShelterCapacity} | " +
+                        $"QUARANTINE {safeZone.QuarantinedCount}/{safeZone.QuarantineCapacity} | " +
+                        $"EN ROUTE {safeZone.EvacuatingCount}" + (safeZone.Breached ? " | BREACH" : ""), label);
                 GUILayout.Space(5);
                 foreach (OutbreakAgent person in population)
                 {
                     if (person == null) continue;
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label($"{person.DisplayName}: {person.PublicStatus}\n{person.MovementStatus} · {person.ExertionStatus}", label, GUILayout.Width(230));
+                    GUILayout.Label($"{person.DisplayName}: {person.PublicStatus}\n{person.MovementStatus} · {person.ExertionStatus}", label, GUILayout.Width(190));
                     var cameraControls = Camera.main == null ? null : Camera.main.GetComponent<LabCameraController>();
                     if (cameraControls != null && person.gameObject.activeInHierarchy &&
                         GUILayout.Button("Follow", button, GUILayout.Width(75))) cameraControls.Follow(person.transform);
@@ -190,9 +201,30 @@ namespace Reclamation.Outbreak
                     {
                         if (GUILayout.Button("Neutralize", button)) { person.Neutralize(); eventLog = $"{person.DisplayName} neutralized."; }
                     }
-                    else if (person.State != InfectionState.Neutralized)
+                    else if (person.ZoneAssignment == RefugeAssignment.Sheltered && person.VisibleSymptoms)
                     {
-                        if (GUILayout.Button(person.Isolated ? "Release" : "Isolate", button))
+                        if (GUILayout.Button("Quarantine", button))
+                            eventLog = safeZone != null && safeZone.TryTransferToQuarantine(person)
+                                ? $"{person.DisplayName} transferred to quarantine."
+                                : $"Quarantine is full; {person.DisplayName} remains in the refuge.";
+                    }
+                    else if (person.State != InfectionState.Neutralized && !person.IsProtected)
+                    {
+                        if (safeZone != null && person.ZoneAssignment == RefugeAssignment.None &&
+                            GUILayout.Button("Evacuate", button, GUILayout.Width(85)))
+                        {
+                            eventLog = safeZone.RequestEvacuation(person)
+                                ? $"Evacuation ordered for {person.DisplayName}."
+                                : $"Unable to evacuate {person.DisplayName}; check isolation and capacity.";
+                        }
+                        else if (safeZone != null && person.ZoneAssignment == RefugeAssignment.Evacuating &&
+                            GUILayout.Button("Cancel", button, GUILayout.Width(85)))
+                        {
+                            safeZone.CancelEvacuation(person);
+                            eventLog = $"Evacuation cancelled for {person.DisplayName}.";
+                        }
+                        if (person.ZoneAssignment == RefugeAssignment.None &&
+                            GUILayout.Button(person.Isolated ? "Release" : "Isolate", button, GUILayout.Width(80)))
                         {
                             person.SetIsolated(!person.Isolated);
                             eventLog = $"{person.DisplayName} {(person.Isolated ? "isolated" : "released")}.";
