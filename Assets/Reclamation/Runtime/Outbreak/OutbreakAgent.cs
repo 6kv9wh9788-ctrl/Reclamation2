@@ -14,6 +14,9 @@ namespace Reclamation.Outbreak
         private bool sieging;
         private bool defenseWorking;
         private float nextDefenseRouteAt;
+        private double withdrawalMinute = double.PositiveInfinity;
+        private float withdrawalReplan;
+        public bool IsWithdrawing { get; private set; }
         public ZombieClass Class => zombieClass;
         public Vector3 FeetPosition => transform.position - Vector3.up * (nav != null ? nav.baseOffset : 0);
         public void SetZombieClass(ZombieClass value) => zombieClass = value;
@@ -81,7 +84,7 @@ namespace Reclamation.Outbreak
         public bool Expose(double now, double incubation, double symptomatic)
         {
             bool changed = timeline.Expose(now, incubation, symptomatic);
-            if (changed) ApplyState();
+            if (changed) { withdrawalMinute = now + incubation * 0.55; ApplyState(); }
             return changed;
         }
 
@@ -142,6 +145,48 @@ namespace Reclamation.Outbreak
         {
             return CanNavigate && NavMesh.SamplePosition(point, out NavMeshHit hit, 0.65f, nav.areaMask) &&
                 nav.CalculatePath(hit.position, path) && path.status == NavMeshPathStatus.PathComplete;
+        }
+
+        public bool ShouldWithdraw(double minute) => !isolated && refugeAssignment == RefugeAssignment.None &&
+            ((State == InfectionState.Exposed && minute >= withdrawalMinute) || State == InfectionState.Symptomatic);
+
+        public bool TryWithdraw(double minute, float seconds, float speed, IReadOnlyList<OutbreakAgent> population)
+        {
+            if (!ShouldWithdraw(minute) || simulationPaused || !CanNavigate || !(seconds > 0)) return false;
+            if (!IsWithdrawing) { withdrawalReplan = 0; IsWithdrawing = true; }
+            routine.enabled = false; fleeing = false; wantsBurst = false;
+            SetMovementSpeed(State == InfectionState.Symptomatic ? 1.5f : 2.1f, speed);
+            nav.stoppingDistance = 0.35f;
+            withdrawalReplan -= seconds;
+            MovementStatus = nav.hasPath ? "Seeking somewhere quiet" : "Keeping to themselves";
+            if (withdrawalReplan > 0) return true;
+            withdrawalReplan = 3;
+            Vector3 origin = FeetPosition;
+            Vector3 best = origin; float bestScore = QuietScore(origin, population);
+            // Prefer low crowd density over travel distance, using reachable ground only.
+            for (int ring = 1; ring <= 3; ring++)
+                for (int i = 0; i < 12; i++)
+                {
+                    float angle = i * Mathf.PI / 6;
+                    Vector3 candidate = origin + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * (ring * 4);
+                    if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 0.65f, nav.areaMask)) continue;
+                    float score = QuietScore(hit.position, population) - Vector3.Distance(origin, hit.position) * 0.08f;
+                    if (score <= bestScore + 0.1f || !CanReachPoint(hit.position)) continue;
+                    best = hit.position; bestScore = score;
+                }
+            if (Vector3.Distance(origin, best) > 0.5f && CanReachPoint(best))
+            { nav.SetPath(path); MovementStatus = "Seeking somewhere quiet"; }
+            else { nav.ResetPath(); MovementStatus = "Keeping to themselves"; }
+            return true;
+        }
+
+        private float QuietScore(Vector3 point, IReadOnlyList<OutbreakAgent> population)
+        {
+            float score = 0;
+            foreach (var other in population)
+                if (other != null && other != this && other.isActiveAndEnabled && other.State != InfectionState.Neutralized)
+                    score -= Mathf.Max(0, 8 - Vector3.Distance(point, other.FeetPosition));
+            return score;
         }
 
         public bool ClearCombatLine(Vector3 point)
@@ -223,6 +268,7 @@ namespace Reclamation.Outbreak
         {
             if (zone == null || State == InfectionState.Turned || State == InfectionState.Neutralized) return;
             safeZone = zone;
+            IsWithdrawing = false;
             refugeAssignment = RefugeAssignment.Evacuating;
             if (routine.enabled) routine.enabled = false;
             nextRouteAt = 0;
@@ -373,6 +419,7 @@ namespace Reclamation.Outbreak
 
         private void ApplyState()
         {
+            if (isolated || State == InfectionState.Turned || State == InfectionState.Neutralized) IsWithdrawing = false;
             bool canRoutine = !isolated && (State == InfectionState.Healthy || State == InfectionState.Exposed);
             if (!canRoutine) { fleeing = false; wantsBurst = false; nextRouteAt = 0; }
             routine.enabled = canRoutine && !fleeing && refugeAssignment == RefugeAssignment.None;

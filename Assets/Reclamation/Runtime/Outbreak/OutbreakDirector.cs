@@ -119,12 +119,15 @@ namespace Reclamation.Outbreak
                 var fighter = person.GetComponent<Combatant>();
                 if (combat != null && combat.isActiveAndEnabled && fighter != null && fighter.Handled) continue;
                 if (perimeter != null && perimeter.IsWorker(person)) continue;
+                if (combat != null && combat.isActiveAndEnabled && combat.RequiresWitness &&
+                    person.TryWithdraw(clock.MinuteOfDay, Time.deltaTime * clock.Speed, clock.Speed, population)) continue;
                 OutbreakAgent nearestThreat = null;
                 float dangerDistance = float.MaxValue;
                 foreach (OutbreakAgent other in population)
                 {
                     if (other == null || other == person || other.State != InfectionState.Turned
                         || !other.gameObject.activeInHierarchy || !other.Contagious) continue;
+                    if (combat != null && combat.isActiveAndEnabled && !combat.RecognizesThreat(person, other)) continue;
                     if (perimeter != null && !person.CanReachPoint(other.FeetPosition)) continue;
                     float distance = Vector3.Distance(person.transform.position, other.transform.position);
                     if (distance < dangerDistance) { dangerDistance = distance; nearestThreat = other; }
@@ -192,11 +195,11 @@ namespace Reclamation.Outbreak
             GUILayout.Label("RECLAMATION — PATIENT ZERO", label);
             if (GUILayout.Button(collapsed ? "Expand" : "Collapse", button, GUILayout.Width(100))) collapsed = !collapsed;
             GUILayout.EndHorizontal();
-            GUILayout.Label(clock.DisplayTime + (clock.Paused ? " (paused)" : $" ({clock.Speed:0}×)"), label);
+            GUILayout.Label(clock.DisplayTime + (clock.Paused ? " (paused)" : $" ({clock.Speed:0.##}×)"), label);
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(clock.Paused ? "Resume" : "Pause", button)) clock.SetPaused(!clock.Paused);
-            foreach (float speed in new[] { 1f, 4f, 12f })
-                if (GUILayout.Button($"{speed:0}×", button)) clock.SetSpeed(speed);
+            foreach (float speed in new[] { 0.25f, 0.5f, 1f, 4f, 12f })
+                if (GUILayout.Button($"{speed:0.##}×", button)) clock.SetSpeed(speed);
             GUILayout.EndHorizontal();
             if (!collapsed)
             {
@@ -274,7 +277,7 @@ namespace Reclamation.Outbreak
                         if (person == null || !person.gameObject.activeInHierarchy) continue;
                         var fighter = person.GetComponent<Combatant>();
                         if (fighter == null) continue;
-                        GUILayout.Label($"{person.DisplayName}: {fighter.Status} | HP {fighter.Health:0} | Combat stamina {fighter.Energy:0}/{fighter.Attributes.MaximumStamina:0}", label);
+                        GUILayout.Label($"{person.DisplayName}: {fighter.Awareness} · {fighter.Status} | HP {fighter.Health:0} | Combat stamina {fighter.Energy:0}/{fighter.Attributes.MaximumStamina:0}", label);
                         if (!fighter.Zombie && !person.Isolated)
                         {
                             GUILayout.BeginHorizontal();

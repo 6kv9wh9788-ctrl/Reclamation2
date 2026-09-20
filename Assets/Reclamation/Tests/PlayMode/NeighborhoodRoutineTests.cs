@@ -35,6 +35,7 @@ namespace Reclamation.Tests
                 new Bounds(Vector3.zero, new Vector3(40, 10, 40)), Vector3.zero, Quaternion.identity);
             instance = NavMesh.AddNavMeshData(data);
             clock = ObjectAt("clock", Vector3.zero).AddComponent<NeighborhoodClock>();
+            clock.SetSpeed(1); // These existing real-time deadlines exercise the original 1x scenario.
             var home = ObjectAt("home", new Vector3(-4, 0, 0)).transform;
             cafe = ObjectAt("cafe", new Vector3(4, 0, 0)).transform;
             var park = ObjectAt("park", new Vector3(0, 0, 4)).transform;

@@ -4,6 +4,7 @@ using UnityEngine;
 namespace Reclamation.Outbreak
 {
     public enum CombatOrder { SelfDefense, Hold, Disengage }
+    public enum ThreatAwareness { Unaware, Suspicious, Alerted }
     public enum CombatAction { Ready, Strike, Shove, Dodge, Lunge, Bite, Grabbed, Stagger, Recover }
 
     [Serializable]
@@ -45,6 +46,7 @@ namespace Reclamation.Outbreak
             !Person.IsProtected && Person.State != InfectionState.Neutralized;
         public float Progress => Duration > 0 ? Mathf.Clamp01(1 - Remaining / Duration) : 0;
         public string Status { get; internal set; } = "Ready";
+        public ThreatAwareness Awareness { get; internal set; }
         private bool wasZombie;
         private bool anchored;
 

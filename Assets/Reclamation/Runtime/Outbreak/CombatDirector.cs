@@ -6,6 +6,12 @@ namespace Reclamation.Outbreak
     // Opt-in component on the Outbreak Director. No independent Update or simulation clock.
     public sealed class CombatDirector : MonoBehaviour
     {
+        [SerializeField] private bool requiresWitness = true;
+        public bool RequiresWitness => requiresWitness;
+        public void ConfigureAwareness(bool value) => requiresWitness = value;
+        public bool RecognizesThreat(OutbreakAgent observer, OutbreakAgent other) => !requiresWitness ||
+            observer.State == InfectionState.Turned ||
+            (observer.GetComponent<Combatant>() != null && observer.GetComponent<Combatant>().Awareness == ThreatAwareness.Alerted);
         private readonly List<Combatant> fighters = new();
         private readonly List<int> revisions = new();
         public string LastEvent { get; private set; } = "Combat enabled: zombies must land a bite to infect.";
@@ -29,6 +35,7 @@ namespace Reclamation.Outbreak
             }
             // Advance committed actions before making new decisions. Newly created actions
             // never resolve on their starting frame, regardless of population ordering.
+            foreach (var fighter in fighters) Observe(fighter);
             for (int i = 0; i < fighters.Count; i++)
                 if (fighters[i].Revision == revisions[i]) Advance(fighters[i], seconds);
             foreach (var fighter in fighters)
@@ -42,6 +49,29 @@ namespace Reclamation.Outbreak
                 a.Person.ClearCombatLine(b.Person.FeetPosition) &&
                 (perimeter == null || !perimeter.BlocksContact(a.Person.FeetPosition + Vector3.up,
                     b.Person.FeetPosition + Vector3.up));
+        }
+
+        private void Observe(Combatant observer)
+        {
+            if (!observer.Available || observer.Zombie) return;
+            if (!requiresWitness) { observer.Awareness = ThreatAwareness.Alerted; return; }
+            if (observer.Awareness == ThreatAwareness.Alerted) return;
+            foreach (var other in fighters)
+            {
+                if (other == observer || !Clear(observer, other, 8)) continue;
+                if (other.Zombie && (other.Action == CombatAction.Lunge || other.Action == CombatAction.Bite))
+                { observer.Awareness = ThreatAwareness.Alerted; return; }
+                if (other.Person.VisibleSymptoms || other.Person.IsWithdrawing)
+                    observer.Awareness = ThreatAwareness.Suspicious;
+            }
+        }
+
+        private void WitnessAttack(Combatant attacker, Combatant victim)
+        {
+            victim.Awareness = ThreatAwareness.Alerted;
+            foreach (var observer in fighters)
+                if (!observer.Zombie && Clear(observer, attacker, 8)) observer.Awareness = ThreatAwareness.Alerted;
+            LastEvent = $"{attacker.Person.DisplayName} lunged! Nearby witnesses recognize the threat.";
         }
 
         private void Advance(Combatant f, float dt)
@@ -127,6 +157,7 @@ namespace Reclamation.Outbreak
             foreach (var other in fighters)
             {
                 if (!other.Available || other.Zombie == f.Zombie || other == f) continue;
+                if (!f.Zombie && !RecognizesThreat(f.Person, other.Person)) continue;
                 float distance = Vector3.Distance(f.Person.FeetPosition, other.Person.FeetPosition);
                 if (distance > radius || !f.Person.CanReachPoint(other.Person.FeetPosition)) continue;
                 // Rescue an ally before chasing a slightly closer unoccupied zombie.
@@ -147,6 +178,16 @@ namespace Reclamation.Outbreak
             if (f.Health <= 0)
             { f.Handled = true; f.Person.CombatStop("Downed; awaiting infection progression", null); return; }
             if (!f.Person.CanFlee) return;
+            if (requiresWitness && f.Awareness != ThreatAwareness.Alerted)
+            {
+                foreach (var stranger in fighters)
+                    if (stranger != f && (stranger.Person.VisibleSymptoms || stranger.Person.IsWithdrawing) && Clear(f, stranger, 2.5f))
+                    {
+                        f.Handled = true; f.Status = "Keeping distance; uncertain";
+                        f.Person.FleeFrom(stranger.transform.position, speed); return;
+                    }
+            }
+            if (requiresWitness && enemy == null && f.Order == CombatOrder.SelfDefense && f.Person.ShouldWithdraw(minute)) return;
             // Evacuation remains a movement order; defend only when enemies are close.
             if (f.Person.ZoneAssignment == RefugeAssignment.Evacuating && enemy == null) return;
             if (f.Order == CombatOrder.Disengage)
@@ -196,6 +237,7 @@ namespace Reclamation.Outbreak
         private void Start(Combatant f, CombatAction action, float duration, Combatant target)
         {
             f.Begin(action, duration, target); f.Handled = true;
+            if (action == CombatAction.Lunge) WitnessAttack(f, target);
             f.Person.CombatStop(action.ToString(), target.transform);
         }
 

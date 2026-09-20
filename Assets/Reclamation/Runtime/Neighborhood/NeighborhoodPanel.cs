@@ -28,11 +28,11 @@ namespace Reclamation.Neighborhood
             GUILayout.BeginArea(PanelRect, GUI.skin.box);
             if (GUILayout.Button(collapsed ? "Expand neighborhood panel" : "Collapse neighborhood panel", button)) collapsed = !collapsed;
             if (!collapsed) GUILayout.Label("RECLAMATION — BEFORE THE OUTBREAK", label);
-            GUILayout.Label(clock.DisplayTime + (clock.Paused ? " (paused)" : $" ({clock.Speed:0}×)"), label);
+            GUILayout.Label(clock.DisplayTime + (clock.Paused ? " (paused)" : $" ({clock.Speed:0.##}×)"), label);
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(clock.Paused ? "Resume" : "Pause", button)) clock.SetPaused(!clock.Paused);
-            foreach (float speed in new[] { 1f, 4f, 12f })
-                if (GUILayout.Button($"{speed:0}×", button)) clock.SetSpeed(speed);
+            foreach (float speed in new[] { 0.25f, 0.5f, 1f, 4f, 12f })
+                if (GUILayout.Button($"{speed:0.##}×", button)) clock.SetSpeed(speed);
             GUILayout.EndHorizontal();
             if (!collapsed)
             {
