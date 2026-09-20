@@ -80,6 +80,26 @@ namespace Reclamation.Neighborhood
                         transform.localPosition += Vector3.down * pulse * 0.22f; break;
                     case CombatAction.Stagger:
                         transform.localRotation = Quaternion.Euler(-25 * (1 - p), 0, 10 * (1 - p)); break;
+                    case CombatAction.Sweep:
+                        // The actor's facing stays locked; only the visible torso winds up.
+                        float wind = Mathf.Clamp01(p / 0.75f);
+                        float release = Mathf.Clamp01((p - 0.75f) / 0.25f);
+                        leftArm.localRotation = Quaternion.Euler(-65, -35, -65);
+                        rightArm.localRotation = Quaternion.Euler(-65, 35, 65);
+                        transform.localRotation = Quaternion.Euler(-10 * wind, -50 * wind + 110 * release, 0);
+                        break;
+                    case CombatAction.KnockedBack:
+                        leftArm.localRotation = Quaternion.Euler(-110, 0, -40);
+                        rightArm.localRotation = Quaternion.Euler(-110, 0, 40);
+                        transform.localRotation = Quaternion.Euler(-35 * (1 - p), 0, 12 * (1 - p)); break;
+                    case CombatAction.Recover:
+                        if (combat.SweepRecovery)
+                        {
+                            transform.localRotation = Quaternion.Euler(25 * (1 - p), 35 * (1 - p), 0);
+                            leftArm.localRotation = Quaternion.Euler(-30, 0, -30 * (1 - p));
+                            rightArm.localRotation = Quaternion.Euler(-30, 0, 30 * (1 - p));
+                        }
+                        break;
                 }
             }
             // Exposed people deliberately look identical to healthy people.

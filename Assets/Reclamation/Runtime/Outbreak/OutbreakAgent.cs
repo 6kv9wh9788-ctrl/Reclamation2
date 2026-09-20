@@ -215,6 +215,23 @@ namespace Reclamation.Outbreak
             MovementStatus = status; return nav.SetPath(path);
         }
 
+        public void CombatPush(Vector3 displacement)
+        {
+            if (simulationPaused || !CanNavigate || isolated || State == InfectionState.Neutralized) return;
+            routine.enabled = false; fleeing = false; wantsBurst = false; IsWithdrawing = false;
+            nav.ResetPath(); displacement.y = 0;
+            Vector3 origin = FeetPosition;
+            // Move along the actual navigation segment, never warp through a wall or
+            // take a complete detour as permission to push through an obstacle.
+            if (nav.Raycast(origin + displacement, out NavMeshHit hit))
+            {
+                Vector3 allowed = hit.position - origin; allowed.y = 0;
+                displacement = allowed.normalized * Mathf.Max(0, allowed.magnitude - 0.05f);
+            }
+            nav.Move(displacement);
+            MovementStatus = "Knocked back";
+        }
+
         public bool WorkAtDefense(Vector3 point, float speed)
         {
             if (!CanNavigate || simulationPaused || VisibleSymptoms || isolated) return false;

@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Reclamation.Outbreak;
+using UnityEngine;
 
 namespace Reclamation.Tests
 {
@@ -23,6 +24,20 @@ namespace Reclamation.Tests
             Assert.That(CombatAttributes.Veteran().Damage * 2, Is.GreaterThanOrEqualTo(80));
             Assert.That(CombatAttributes.Civilian().Damage * 3, Is.LessThan(80));
             Assert.That(CombatAttributes.Civilian().Damage * 4, Is.GreaterThanOrEqualTo(80));
+        }
+
+        [Test] public void SweepCoversFrontAndSidesButHasARearOpening()
+        {
+            Assert.That(CombatDirector.InSweepArc(Vector3.zero, Vector3.forward, Vector3.forward * 2), Is.True);
+            Assert.That(CombatDirector.InSweepArc(Vector3.zero, Vector3.forward, Vector3.right * 2), Is.True);
+            Assert.That(CombatDirector.InSweepArc(Vector3.zero, Vector3.forward, Vector3.back * 2), Is.False);
+            Assert.That(CombatDirector.InSweepArc(Vector3.zero, Vector3.forward, Vector3.forward * 3), Is.False);
+        }
+
+        [Test] public void SweepArcUsesItsLockedFacingAndIgnoresActorHeight()
+        {
+            Assert.That(CombatDirector.InSweepArc(Vector3.zero, Vector3.right, new Vector3(2, 1, 0)), Is.True);
+            Assert.That(CombatDirector.InSweepArc(Vector3.zero, Vector3.right, Vector3.left * 2), Is.False);
         }
     }
 }

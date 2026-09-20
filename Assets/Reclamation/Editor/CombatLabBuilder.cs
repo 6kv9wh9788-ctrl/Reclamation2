@@ -18,6 +18,8 @@ namespace Reclamation.Editor
         public static void Veteran() => Create(1);
         [MenuItem("Reclamation/Combat/Create Protect Civilian Lab")]
         public static void Squad() => Create(2);
+        [MenuItem("Reclamation/Combat/Create Three Civilians vs Brute Lab")]
+        public static void Brute() => Create(3);
 
         [MenuItem("Reclamation/Combat/Enable Combat in Open Outbreak Scene")]
         public static void Enable()
@@ -36,7 +38,8 @@ namespace Reclamation.Editor
         private static void Create(int scenario)
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode || !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            string title = scenario == 0 ? "CivilianVsOne" : scenario == 1 ? "VeteranVsThree" : "ProtectCivilian";
+            string title = scenario == 0 ? "CivilianVsOne" : scenario == 1 ? "VeteranVsThree" :
+                scenario == 2 ? "ProtectCivilian" : "ThreeCiviliansVsBrute";
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var camera = new GameObject("Main Camera").AddComponent<Camera>();
             camera.tag = "MainCamera"; camera.orthographic = true; camera.orthographicSize = 10;
@@ -52,16 +55,23 @@ namespace Reclamation.Editor
             var surface = ground.AddComponent<NavMeshSurface>(); surface.collectObjects = CollectObjects.All; surface.layerMask = 1;
             var clock = new GameObject("Clock").AddComponent<NeighborhoodClock>();
             var people = new List<OutbreakAgent>(); var zombies = new List<OutbreakAgent>();
-            people.Add(Person(scenario == 0 ? "Civilian" : "Veteran Alpha", new Vector3(-1, 0, -1), scenario != 0, false, clock));
+            bool veteranLead = scenario == 1 || scenario == 2;
+            people.Add(Person(veteranLead ? "Veteran Alpha" : "Civilian Alpha", new Vector3(-1, 0, -1), veteranLead, false, clock));
             if (scenario == 2)
             {
                 people.Add(Person("Veteran Bravo", new Vector3(1, 0, -1), true, false, clock));
                 people.Add(Person("Protected civilian", new Vector3(0, 0, -4), false, false, clock));
             }
-            int count = scenario == 0 ? 1 : scenario == 1 ? 3 : 5;
+            if (scenario == 3)
+            {
+                people.Add(Person("Civilian Bravo", new Vector3(1, 0, -1), false, false, clock));
+                people.Add(Person("Civilian Charlie", new Vector3(0, 0, -2.5f), false, false, clock));
+            }
+            int count = scenario == 0 || scenario == 3 ? 1 : scenario == 1 ? 3 : 5;
             for (int i = 0; i < count; i++)
             {
                 var zombie = Person($"Zombie {i + 1}", new Vector3((i - (count - 1) * 0.5f) * 1.7f, 0, 4 + i % 2), false, true, clock);
+                if (scenario == 3) { zombie.Configure("Brute"); zombie.name = "Brute"; zombie.SetZombieClass(ZombieClass.Brute); }
                 people.Add(zombie); zombies.Add(zombie);
             }
             var root = new GameObject("Combat and Outbreak Director"); root.AddComponent<CombatDirector>();
@@ -73,7 +83,7 @@ namespace Reclamation.Editor
             AssetDatabase.SaveAssets();
             string path = AssetDatabase.GenerateUniqueAssetPath($"Assets/Scenes/{title}.unity");
             EditorSceneManager.SaveScene(scene, path); Selection.activeGameObject = root;
-            Debug.Log($"Combat lab saved to {path}. Play at 1x first. Hold/disengage controls are in the scrolling outbreak panel.");
+            Debug.Log($"Combat lab saved to {path}. Play at the default 0.5x first. Hold/disengage controls are in the scrolling outbreak panel.");
         }
 
         private static OutbreakAgent Person(string name, Vector3 feet, bool veteran, bool zombie, NeighborhoodClock clock)

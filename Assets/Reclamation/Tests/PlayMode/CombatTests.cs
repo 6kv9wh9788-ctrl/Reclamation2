@@ -282,5 +282,130 @@ namespace Reclamation.Tests
             Assert.That(zombie.Person.State, Is.EqualTo(InfectionState.Turned));
             Assert.That(human.Awareness, Is.EqualTo(ThreatAwareness.Alerted));
         }
+
+        private Combatant BruteAt(Vector3 position)
+        {
+            var brute = Actor("Brute", position, true);
+            brute.Person.SetZombieClass(ZombieClass.Brute);
+            return brute;
+        }
+
+        private void FinishSweep(Combatant brute, params Combatant[] people)
+        {
+            for (int i = 0; i < 20 && brute.Action == CombatAction.Sweep; i++) Tick(0.1f, people);
+            Assert.That(brute.SweepRecovery, Is.True, brute.Status);
+        }
+
+        [UnityTest] public IEnumerator SweepHasWindupHitsMultipleSurvivorsAndDoesNotInfect()
+        {
+            director.ConfigureAwareness(true);
+            var brute = BruteAt(Vector3.zero);
+            var a = Actor("Alpha", new Vector3(-1, 0, 1.8f));
+            var b = Actor("Bravo", new Vector3(1, 0, 1.8f));
+            a.TrySpend(a.Energy); b.TrySpend(b.Energy);
+            yield return null; Tick(0.1f, brute, a, b);
+            Assert.That(brute.Action, Is.EqualTo(CombatAction.Sweep));
+            Assert.That(brute.Remaining, Is.EqualTo(CombatDirector.SweepWindup));
+            Assert.That(a.Health, Is.EqualTo(100)); Assert.That(b.Health, Is.EqualTo(100));
+            Assert.That(a.Awareness, Is.EqualTo(ThreatAwareness.Alerted));
+            float remaining = brute.Remaining;
+            Tick(0, brute, a, b); Assert.That(brute.Remaining, Is.EqualTo(remaining));
+            FinishSweep(brute, brute, a, b);
+            Assert.That(a.Health, Is.EqualTo(90)); Assert.That(b.Health, Is.EqualTo(90));
+            Assert.That(a.Person.Infectable, Is.True); Assert.That(b.Person.Infectable, Is.True);
+            Assert.That(a.Action, Is.EqualTo(CombatAction.KnockedBack));
+            Assert.That(brute.SweepCooldown, Is.GreaterThan(0));
+        }
+
+        [UnityTest] public IEnumerator SweepDoesNotTrackVictimWhoMovesBehindBrute()
+        {
+            var brute = BruteAt(Vector3.zero);
+            var a = Actor("Alpha", new Vector3(-1, 0, 1.8f));
+            var b = Actor("Bravo", new Vector3(1, 0, 1.8f));
+            a.TrySpend(a.Energy); b.TrySpend(b.Energy);
+            yield return null; Tick(0.1f, brute, a, b);
+            Vector3 facing = brute.SweepForward;
+            a.GetComponent<NavMeshAgent>().Warp(-facing * 2);
+            FinishSweep(brute, brute, a, b);
+            Assert.That(Vector3.Dot(brute.transform.forward, facing), Is.GreaterThan(0.99f));
+            Assert.That(a.Health, Is.EqualTo(100)); Assert.That(b.Health, Is.EqualTo(90));
+        }
+
+        [UnityTest] public IEnumerator RestedSurvivorsReserveSeparateSweepEscapePoints()
+        {
+            var brute = BruteAt(Vector3.zero);
+            var a = Actor("Alpha", new Vector3(-1, 0, 1.8f));
+            var b = Actor("Bravo", new Vector3(1, 0, 1.8f));
+            yield return null; Tick(0.1f, brute, a, b);
+            Assert.That(a.Action, Is.EqualTo(CombatAction.Dodge)); Assert.That(b.Action, Is.EqualTo(CombatAction.Dodge));
+            Assert.That(a.MovementGoal.magnitude, Is.GreaterThan(CombatDirector.SweepRadius));
+            Assert.That(b.MovementGoal.magnitude, Is.GreaterThan(CombatDirector.SweepRadius));
+            Assert.That(Vector3.Distance(a.MovementGoal, b.MovementGoal), Is.GreaterThanOrEqualTo(0.95f));
+            Assert.That(a.Energy, Is.LessThan(a.Attributes.MaximumStamina));
+        }
+
+        [UnityTest] public IEnumerator RepeatedHitsDamageBruteWithoutResettingLungeAndBiteStillCanBeRescued()
+        {
+            var human = Actor("Civilian", Vector3.zero);
+            var brute = BruteAt(Vector3.forward * 1.2f);
+            yield return null;
+            for (int i = 0; i < 20 && brute.Action != CombatAction.Stagger; i++) Tick(0.1f, human, brute);
+            Assert.That(brute.StaggerResistanceRemaining, Is.GreaterThan(0));
+            Assert.That(brute.Health, Is.EqualTo(158));
+            for (int i = 0; i < 20 && brute.Health == 158; i++) Tick(0.1f, human, brute);
+            Assert.That(brute.Health, Is.EqualTo(136));
+            Assert.That(brute.Action, Is.EqualTo(CombatAction.Lunge), "Second hit must not restart stagger.");
+            for (int i = 0; i < 10 && human.Grabber == null; i++) Tick(0.1f, human, brute);
+            Assert.That(human.Grabber, Is.EqualTo(brute));
+            Assert.That(brute.StaggerResistanceRemaining, Is.GreaterThan(0));
+            var ally = Actor("Rescuer", new Vector3(1.1f, 0, 1.2f), false, true);
+            for (int i = 0; i < 6 && human.Grabber != null; i++) Tick(0.1f, human, brute, ally);
+            Assert.That(human.Grabber, Is.Null); Assert.That(human.Person.Infectable, Is.True);
+            Assert.That(brute.Action, Is.EqualTo(CombatAction.Stagger));
+        }
+
+        [UnityTest] public IEnumerator RecoveryGivesBonusDamageWithoutShorteningCounterattackWindow()
+        {
+            var brute = BruteAt(Vector3.zero);
+            var a = Actor("Alpha", new Vector3(-1, 0, 1.8f));
+            var b = Actor("Bravo", new Vector3(1, 0, 1.8f));
+            a.TrySpend(a.Energy); b.TrySpend(b.Energy);
+            yield return null; Tick(0.1f, brute, a, b); FinishSweep(brute, brute, a, b);
+            var attacker = Actor("Counterattacker", Vector3.forward * 1.3f);
+            for (int i = 0; i < 9 && brute.Health == 180; i++) Tick(0.1f, brute, a, b, attacker);
+            Assert.That(brute.Health, Is.EqualTo(180 - attacker.Attributes.Damage * 1.25f));
+            Assert.That(brute.SweepRecovery, Is.True); Assert.That(brute.Action, Is.EqualTo(CombatAction.Recover));
+            Assert.That(brute.Duration, Is.EqualTo(CombatDirector.SweepRecoverySeconds));
+        }
+
+        [UnityTest] public IEnumerator KnockbackStopsAtNavigationWallAndHonorsPause()
+        {
+            var wall = Make("Wall"); wall.SetActive(false); wall.transform.position = Vector3.right * 2;
+            var section = wall.AddComponent<DefenseSection>();
+            section.Configure(new Vector3(0.5f, 2.4f, 30), Vector3.right, false, null);
+            wall.SetActive(true); section.FinishBuild();
+            var human = Actor("Human", Vector3.zero);
+            yield return null; yield return null; yield return null;
+            human.Person.CombatPush(Vector3.right * 8);
+            yield return null;
+            Assert.That(human.Person.FeetPosition.x, Is.GreaterThan(0));
+            Assert.That(human.Person.FeetPosition.x, Is.LessThan(2));
+            human.Person.SetSimulationPaused(true); Vector3 before = human.Person.FeetPosition;
+            human.Person.CombatPush(Vector3.back * 2); yield return null;
+            Assert.That(Vector3.Distance(human.Person.FeetPosition, before), Is.LessThan(0.05f));
+        }
+
+        [UnityTest] public IEnumerator CrowdedSurvivorsChooseSeparateMeleePositions()
+        {
+            var a = Actor("Alpha", Vector3.zero);
+            var b = Actor("Bravo", Vector3.right * 0.95f);
+            var zombie = Actor("Zombie", new Vector3(0.5f, 0, 2.5f), true);
+            yield return null; Tick(0.1f, a, b, zombie);
+            Assert.That(a.Action, Is.EqualTo(CombatAction.Reposition));
+            Assert.That(b.Action, Is.EqualTo(CombatAction.Reposition));
+            Assert.That(Vector3.Distance(a.MovementGoal, b.MovementGoal), Is.GreaterThanOrEqualTo(1.15f));
+            Assert.That(Vector3.Distance(a.MovementGoal, a.Anchor), Is.LessThanOrEqualTo(4));
+            Assert.That(Vector3.Distance(b.MovementGoal, b.Anchor), Is.LessThanOrEqualTo(4));
+        }
     }
 }

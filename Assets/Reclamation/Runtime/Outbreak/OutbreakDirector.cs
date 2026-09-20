@@ -278,6 +278,8 @@ namespace Reclamation.Outbreak
                         var fighter = person.GetComponent<Combatant>();
                         if (fighter == null) continue;
                         GUILayout.Label($"{person.DisplayName}: {fighter.Awareness} · {fighter.Status} | HP {fighter.Health:0} | Combat stamina {fighter.Energy:0}/{fighter.Attributes.MaximumStamina:0}", label);
+                        if (fighter.IsBrute && fighter.StaggerResistanceRemaining > 0)
+                            GUILayout.Label($"Resisting repeated staggers: {fighter.StaggerResistanceRemaining:0.0}s (bites remain interruptible)", label);
                         if (!fighter.Zombie && !person.Isolated)
                         {
                             GUILayout.BeginHorizontal();

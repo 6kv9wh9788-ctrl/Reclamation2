@@ -5,7 +5,7 @@ namespace Reclamation.Outbreak
 {
     public enum CombatOrder { SelfDefense, Hold, Disengage }
     public enum ThreatAwareness { Unaware, Suspicious, Alerted }
-    public enum CombatAction { Ready, Strike, Shove, Dodge, Lunge, Bite, Grabbed, Stagger, Recover }
+    public enum CombatAction { Ready, Strike, Shove, Dodge, Lunge, Bite, Grabbed, Stagger, Recover, Sweep, KnockedBack, Reposition }
 
     [Serializable]
     public sealed class CombatAttributes
@@ -38,6 +38,13 @@ namespace Reclamation.Outbreak
         public float Health { get; internal set; } = 100;
         public float Energy { get; internal set; }
         public float ShoveCooldown { get; internal set; }
+        public float SweepCooldown { get; internal set; }
+        public float StaggerResistanceRemaining { get; internal set; }
+        public bool SweepRecovery { get; internal set; }
+        public Vector3 SweepForward { get; internal set; }
+        public Vector3 PushDirection { get; internal set; }
+        public Vector3 MovementGoal { get; internal set; }
+        public bool IsBrute => Zombie && Person.Class == ZombieClass.Brute;
         public Vector3 Anchor { get; private set; }
         public bool Handled { get; internal set; }
         internal int Revision { get; private set; }
@@ -78,6 +85,7 @@ namespace Reclamation.Outbreak
             ReleaseGrab();
             if (Grabber != null) Grabber.ReleaseGrab();
             wasZombie = Zombie;
+            SweepCooldown = StaggerResistanceRemaining = 0;
             Health = Zombie ? Person.Class == ZombieClass.Brute ? 180 : 80 : 100;
             Begin(CombatAction.Ready, 0); Target = null;
         }
@@ -91,6 +99,7 @@ namespace Reclamation.Outbreak
         internal void Begin(CombatAction action, float seconds, Combatant target = null)
         {
             Revision++;
+            SweepRecovery = false;
             Action = action; Remaining = Duration = seconds; Target = target;
             Status = action.ToString();
         }
@@ -109,6 +118,17 @@ namespace Reclamation.Outbreak
             ReleaseGrab();
             if (Grabber != null) { var source = Grabber; Grabber = null; source.ReleaseGrab(); source.Begin(CombatAction.Recover, 0.8f); }
             Begin(CombatAction.Stagger, seconds);
+        }
+
+        internal bool TryStaggerFromHit(float seconds)
+        {
+            // Damage always lands. Only repeated control is resisted. A teammate must
+            // still be able to rescue a bite victim, including during this guard window.
+            if (IsBrute && Action != CombatAction.Bite && (StaggerResistanceRemaining > 0 || SweepRecovery)) return false;
+            if (Action == CombatAction.Sweep) SweepCooldown = 0; // An interrupted windup can be retried after stagger.
+            Interrupt(seconds);
+            if (IsBrute) StaggerResistanceRemaining = 2.5f;
+            return true;
         }
 
         private void OnDisable()
