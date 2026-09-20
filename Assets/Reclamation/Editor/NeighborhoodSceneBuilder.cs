@@ -11,15 +11,28 @@ namespace Reclamation.Editor
     public static class NeighborhoodSceneBuilder
     {
         private const string ScenePath = "Assets/Scenes/LivingNeighborhoodLab.unity";
+        private const string OutbreakPath = "Assets/Scenes/PatientZeroLab.unity";
         private static readonly Color Concrete = new Color(0.72f, 0.71f, 0.65f);
         private static readonly Color Grass = new Color(0.29f, 0.43f, 0.31f);
 
         [MenuItem("Reclamation/Create Living Neighborhood Lab")]
         public static void Create()
         {
+            CreateInternal(false);
+        }
+
+        [MenuItem("Reclamation/Create Patient Zero Outbreak Lab")]
+        public static void CreateOutbreak()
+        {
+            CreateInternal(true);
+        }
+
+        private static void CreateInternal(bool outbreak)
+        {
+            string scenePath = outbreak ? OutbreakPath : ScenePath;
             if (EditorApplication.isPlayingOrWillChangePlaymode) return;
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) != null &&
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(scenePath) != null &&
                 !EditorUtility.DisplayDialog("Replace neighborhood lab?",
                     "The existing generated neighborhood scene will be replaced.", "Replace", "Cancel")) return;
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -75,6 +88,7 @@ namespace Reclamation.Editor
 
             var clock = new GameObject("Neighborhood Clock").AddComponent<NeighborhoodClock>();
             var residents = new List<CivilianRoutine>();
+            var outbreakPopulation = new List<Reclamation.Outbreak.OutbreakAgent>();
             string[] names = { "Avery", "Morgan", "Riley", "Casey", "Jordan", "Sam" };
             Color[] colors = { Color.cyan, new Color(1, 0.6f, 0.1f), new Color(0.7f, 0.3f, 0.85f),
                 new Color(0.3f, 0.6f, 1), new Color(1, 0.35f, 0.4f), new Color(0.65f, 0.85f, 0.2f) };
@@ -93,16 +107,45 @@ namespace Reclamation.Editor
                 var routine = person.AddComponent<CivilianRoutine>();
                 routine.Configure(names[i], clock, home, cafe, park, i * 12);
                 residents.Add(routine);
+                if (outbreak)
+                {
+                    var outbreakAgent = person.AddComponent<Reclamation.Outbreak.OutbreakAgent>();
+                    outbreakAgent.Configure(names[i]);
+                    outbreakPopulation.Add(outbreakAgent);
+                }
             }
-            new GameObject("Neighborhood Status").AddComponent<NeighborhoodPanel>().Configure(clock, residents.ToArray());
+            if (outbreak)
+            {
+                Transform arrival = Point("Visitor arrival", new Vector3(-27, 0, -2));
+                Transform visitorCafe = Point("Visitor cafe place", new Vector3(-9, 0, 5.5f));
+                Transform visitorPark = Point("Visitor park place", new Vector3(15, 0, 14));
+                var visitorObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                visitorObject.name = "Visitor"; visitorObject.layer = 2;
+                visitorObject.transform.position = arrival.position;
+                visitorObject.GetComponent<Collider>().enabled = false;
+                visitorObject.GetComponent<Renderer>().sharedMaterial = MaterialFor(new Color(0.9f, 0.9f, 0.92f));
+                var visitorNav = visitorObject.AddComponent<NavMeshAgent>();
+                visitorNav.baseOffset = 1; visitorNav.radius = 0.3f; visitorNav.stoppingDistance = 0.25f;
+                var visitorRoutine = visitorObject.AddComponent<CivilianRoutine>();
+                visitorRoutine.Configure("Visitor", clock, arrival, visitorCafe, visitorPark, 0);
+                var visitor = visitorObject.AddComponent<Reclamation.Outbreak.OutbreakAgent>();
+                visitor.Configure("Visitor");
+                outbreakPopulation.Add(visitor);
+                var director = new GameObject("Outbreak Director").AddComponent<Reclamation.Outbreak.OutbreakDirector>();
+                director.Configure(clock, outbreakPopulation.ToArray(), visitor, 614);
+            }
+            else
+                new GameObject("Neighborhood Status").AddComponent<NeighborhoodPanel>().Configure(clock, residents.ToArray());
             surface.BuildNavMesh();
             if (surface.navMeshData != null)
                 AssetDatabase.CreateAsset(surface.navMeshData,
                     AssetDatabase.GenerateUniqueAssetPath("Assets/Scenes/NeighborhoodNavigation.asset"));
             AssetDatabase.SaveAssets();
-            EditorSceneManager.SaveScene(scene, ScenePath);
+            EditorSceneManager.SaveScene(scene, scenePath);
             Selection.activeObject = clock.gameObject;
-            Debug.Log("Living neighborhood ready. Press Play; morning café departures begin after 08:00.");
+            Debug.Log(outbreak
+                ? "Patient Zero scenario ready. Press Play; the visitor heads to the café after 08:00."
+                : "Living neighborhood ready. Press Play; morning café departures begin after 08:00.");
         }
 
         private static Transform Point(string name, Vector3 position)

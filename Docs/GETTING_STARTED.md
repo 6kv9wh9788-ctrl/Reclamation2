@@ -34,7 +34,7 @@ materials; confirm replacement only if you do not need your existing lab edits.
 
 ### Local acceptance checks (not executed in the development workspace)
 
-1. Run all 24 EditMode tests, then all 11 PlayMode tests in Test Runner.
+1. Run all 30 EditMode tests, then all 15 PlayMode tests in Test Runner.
    PlayMode tests build a temporary NavMesh and check conservation every frame,
    interrupted delivery, and recovery when an unreachable source moves back.
    They intentionally create no camera or visible meshes: the Game view can be
@@ -139,7 +139,7 @@ Acceptance:
 2. Pause while civilians are walking. Both clock and movement should stop.
 3. Resume and choose 4×. Watch café, home, and park visits across the day.
 4. Choose 12× and watch midnight advance to day 2; routines should repeat.
-5. Run all 24 EditMode and 11 PlayMode tests. The new tests cover clock rollover,
+5. Run all 30 EditMode and 15 PlayMode tests. The new tests cover clock rollover,
    pause arithmetic, schedule boundaries/staggering, actual café travel, pause
    during travel, and recovery from an unreachable destination.
 
@@ -151,3 +151,72 @@ crowd behavior and final animation remain future work.
 
 Do not regenerate the hauling or shelter lab to access the neighborhood.
 The three scenes coexist and their tests remain regression checks.
+
+## Patient Zero outbreak milestone
+
+Choose **Reclamation > Create Patient Zero Outbreak Lab**, then press Play.
+This produces a fourth independent scene at Assets/Scenes/PatientZeroLab.unity.
+It reuses the neighborhood geography but replaces the normal-life panel with an
+outbreak command panel.
+
+Scenario:
+
+1. A visitor enters from the western road and heads toward the café at 08:00.
+2. The visitor is already infected, but latent infection deliberately appears
+   healthy in the player panel.
+3. A fixed scenario seed varies the initial incubation by several game minutes
+   while keeping play reports reproducible.
+4. Symptoms appear after roughly half an in-game hour (yellow). After another
+   18 game minutes the visitor turns (green) and pursues non-isolated people.
+5. Sustained close contact with symptomatic or turned people exposes healthy
+   civilians. Secondary cases have their own incubation and symptomatic stages.
+6. Healthy civilians flee nearby turned threats and resume routines when safe.
+
+Controls:
+
+- Pause/Resume and 1×, 4×, 12× affect clock, movement, pursuit, exposure and
+  progression together.
+- **Isolate** is an abstract containment order: the person stops in place,
+  cannot transmit or be exposed, and appears blue.
+- **Release** ends isolation.
+- **Neutralize** appears only for turned people. It represents future squad
+  combat and removes that threat from the current simulation.
+- Stop and restart Play Mode to reset the scenario.
+
+Outcome rules:
+
+- **Normal life** before the seeded infection begins.
+- **Infection developing** while cases exist but nobody is turned.
+- **Active outbreak** while at least one turned person remains.
+- **Outbreak eradicated** when at least one human remains and no exposed,
+  symptomatic, or turned person remains.
+- **Humanity lost** when nobody healthy, exposed, or symptomatic remains.
+
+Suggested playthroughs:
+
+1. Do nothing at 12× and observe the outbreak spread.
+2. Restart, isolate the visitor immediately, and observe containment. Isolation
+   does not cure infection; eventually neutralize the visitor after turning.
+3. Restart and wait for visible symptoms before isolating. Compare secondary
+   infections with the earlier response.
+4. Allow several turned agents, then pause and neutralize them. Latent cases can
+   still emerge, so eradication should not appear prematurely.
+5. Run all 30 EditMode and 15 PlayMode tests. Added tests verify the infection
+   timeline, time jumps, invalid input, duplicate exposure, hidden latency,
+   isolation semantics, and one-time neutralization.
+
+Prototype boundaries:
+
+- Isolation is instantaneous and stops a person in place. There is not yet a
+  quarantine building, compliance, travel time, screening test, or capacity.
+- Neutralization is a button, not combat. There are no weapons, injuries,
+  squads, line of sight, cover, or ammunition.
+- Transmission uses sustained distance contact; it does not yet distinguish
+  bites, indoor airflow, protective equipment, or environmental contamination.
+- The population is seven people and the city simulation is fully local.
+- The panel hides exposed status, but the event log announces exposures for
+  development diagnostics. A later player-facing mode will remove that knowledge.
+- This is the infected-arrival vector. Fungal emergence will later share the
+  same infection state model.
+- Saving, procedural scenario selection, audio, animation, interiors and final
+  victory presentation remain future work.
