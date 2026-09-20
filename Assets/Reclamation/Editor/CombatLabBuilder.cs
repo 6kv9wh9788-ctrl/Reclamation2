@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Reclamation.Neighborhood;
 using Reclamation.Outbreak;
+using Reclamation.Prototype;
 using Unity.AI.Navigation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -36,7 +37,7 @@ namespace Reclamation.Editor
             var surface = ground.AddComponent<NavMeshSurface>(); surface.collectObjects = CollectObjects.All; surface.layerMask = 1;
             var clock = new GameObject("Clock").AddComponent<NeighborhoodClock>();
             var allPeople = new List<OutbreakAgent>(); var allZombies = new List<OutbreakAgent>();
-            string[] names = { "Civilian vs ordinary", "Veteran vs three", "Bite-rescue squad", "Three civilians vs brute", "Rank comparison" };
+            string[] names = { "Civilian vs ordinary", "Veteran vs three", "Bite-rescue squad", "Three civilians vs brute", "Rank comparison", "Hunger and meals" };
             var roots = new GameObject[names.Length];
             for (int i = 0; i < roots.Length; i++) { roots[i] = new GameObject($"Scenario {i + 1} — {names[i]}"); roots[i].SetActive(false); }
             AddScenario(roots[0], clock, allPeople, allZombies, new[] { 0 }, 1, false);
@@ -44,6 +45,7 @@ namespace Reclamation.Editor
             AddScenario(roots[2], clock, allPeople, allZombies, new[] { 300, 300, 0 }, 5, false);
             AddScenario(roots[3], clock, allPeople, allZombies, new[] { 0, 0, 0 }, 1, true);
             AddScenario(roots[4], clock, allPeople, allZombies, new[] { 0, 100, 300 }, 3, false);
+            AddSettlementScenario(roots[5]);
             var root = new GameObject("Combat and Outbreak Director"); var combat = root.AddComponent<CombatDirector>();
             combat.ConfigureAwareness(false);
             var outbreak = root.AddComponent<OutbreakDirector>(); outbreak.Configure(clock, allPeople.ToArray(), null, 614);
@@ -56,6 +58,43 @@ namespace Reclamation.Editor
             if (surface.navMeshData != null) AssetDatabase.CreateAsset(surface.navMeshData, navigationPath);
             AssetDatabase.SaveAssets(); EditorSceneManager.SaveScene(scene, ScenePath); Selection.activeGameObject = root;
             Debug.Log("Systems Validation Lab created. Press Play and choose scenarios from the upper-right panel.");
+        }
+
+        private static void AddSettlementScenario(GameObject root)
+        {
+            var stockObject = GameObject.CreatePrimitive(PrimitiveType.Cube); stockObject.name = "Wood stockpile";
+            stockObject.layer = 2; stockObject.transform.SetParent(root.transform, false);
+            stockObject.transform.position = new Vector3(-4, 0.25f, 3); stockObject.transform.localScale = new Vector3(2, 0.5f, 2);
+            stockObject.GetComponent<Renderer>().sharedMaterial = MaterialFor("WoodStock", new Color(0.45f, 0.28f, 0.12f));
+            var stock = stockObject.AddComponent<Stockpile>();
+
+            var foodObject = GameObject.CreatePrimitive(PrimitiveType.Cube); foodObject.name = "Food store — 6 meals";
+            foodObject.layer = 2; foodObject.transform.SetParent(root.transform, false);
+            foodObject.transform.position = new Vector3(4, 0.25f, 3); foodObject.transform.localScale = new Vector3(2, 0.5f, 2);
+            foodObject.GetComponent<Renderer>().sharedMaterial = MaterialFor("FoodStore", new Color(0.25f, 0.55f, 0.2f));
+            var food = foodObject.AddComponent<FoodStore>(); food.Configure(6);
+
+            var pileObject = GameObject.CreatePrimitive(PrimitiveType.Cube); pileObject.name = "Loose wood";
+            pileObject.layer = 2; pileObject.transform.SetParent(root.transform, false);
+            pileObject.transform.position = new Vector3(0, 0.5f, 6); pileObject.transform.localScale = new Vector3(1.5f, 1, 1.5f);
+            pileObject.GetComponent<Renderer>().sharedMaterial = MaterialFor("LooseWood", new Color(0.35f, 0.17f, 0.06f));
+            var pile = pileObject.AddComponent<ResourcePile>(); pile.Configure(12);
+
+            var boardObject = new GameObject("Settlement job board"); boardObject.transform.SetParent(root.transform, false);
+            var board = boardObject.AddComponent<HaulJobBoard>(); board.Configure(stock, new[] { pile });
+            float[] hunger = { 72, 55, 20 };
+            for (int i = 0; i < hunger.Length; i++)
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Capsule); go.name = $"Settlement survivor {i + 1}";
+                go.layer = 2; go.transform.SetParent(root.transform, false); go.transform.position = new Vector3((i - 1) * 2, 0, -3);
+                go.GetComponent<Collider>().enabled = false;
+                go.GetComponent<Renderer>().sharedMaterial = MaterialFor("Settlement" + i, new Color(0.2f + i * 0.25f, 0.5f, 0.8f - i * 0.2f));
+                var nav = go.AddComponent<NavMeshAgent>(); nav.baseOffset = 1; nav.speed = 4; nav.acceleration = 14; nav.angularSpeed = 720;
+                var worker = go.AddComponent<HaulWorker>(); worker.Configure(go.name, board); worker.ConfigureNeeds(food, hunger[i]);
+                HumanVisualBuilder.Add(go);
+            }
+            var overlay = new GameObject("Settlement decision overlay"); overlay.transform.SetParent(root.transform, false);
+            overlay.AddComponent<SettlementDebugOverlay>().Configure(board, stock, food);
         }
 
         [MenuItem("Reclamation/Validation/Remove Legacy Generated Combat Labs")]

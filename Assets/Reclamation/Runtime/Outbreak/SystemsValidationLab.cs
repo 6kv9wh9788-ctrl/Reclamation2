@@ -11,7 +11,7 @@ namespace Reclamation.Outbreak
         private GUIStyle label, button;
         public int SelectedPhase => selected;
         public int PhaseCount => phases == null ? 0 : phases.Length;
-        private Rect PanelRect => new Rect(Screen.width / Reclamation.Neighborhood.LabCameraController.UiScale - 356, 16, 340, 285);
+        private Rect PanelRect => new Rect(Screen.width / Reclamation.Neighborhood.LabCameraController.UiScale - 356, 16, 340, 325);
         public bool ContainsGuiPoint(Vector2 point) => isActiveAndEnabled && PanelRect.Contains(point);
 
         public void Configure(GameObject[] roots, string[] names, OutbreakDirector outbreak)

@@ -4,17 +4,19 @@ using UnityEngine.AI;
 
 namespace Reclamation.Prototype
 {
-    [RequireComponent(typeof(NavMeshAgent))]
+    [RequireComponent(typeof(NavMeshAgent), typeof(SurvivorNeeds))]
     public sealed class HaulWorker : MonoBehaviour
     {
         public enum WorkerState
         {
             Idle, MovingToResource, MovingToStockpile, WaitingForWork,
-            MovingToSupplies, MovingToShelter, MovingToBuild, Building
+            MovingToSupplies, MovingToShelter, MovingToBuild, Building,
+            MovingToMeal, Eating
         }
 
         [SerializeField] private string workerName = "Survivor";
         [SerializeField] private HaulJobBoard jobBoard;
+        [SerializeField] private FoodStore foodStore;
         [SerializeField, Min(0.05f)] private float arrivalDistance = 0.35f;
         [SerializeField, Min(0.05f)] private float decisionInterval = 0.5f;
         // Cargo belongs to the survivor, not the currently executing job.
@@ -25,6 +27,8 @@ namespace Reclamation.Prototype
         private NavMeshAgent _agent;
         private ResourcePile _claimedSource;
         private ShelterBlueprint _shelter;
+        private SurvivorNeeds _needs;
+        private float _mealProgress;
         private float _nextDecisionTime;
         private Vector3 _interactionPoint;
         private Vector3 _lastProgressPosition;
@@ -36,6 +40,7 @@ namespace Reclamation.Prototype
         public WorkerState State { get; private set; }
         public string DecisionExplanation { get; private set; } = "Waiting for simulation";
         public float LastWinningScore { get; private set; }
+        public SurvivorNeeds Needs => _needs;
 
         public void Configure(string displayName, HaulJobBoard board)
         {
@@ -44,9 +49,17 @@ namespace Reclamation.Prototype
             jobBoard = board;
         }
 
+        public void ConfigureNeeds(FoodStore store, float startingHunger = 20f, float hungerPerMinute = 12f)
+        {
+            foodStore = store;
+            if (_needs == null) _needs = GetComponent<SurvivorNeeds>();
+            _needs.Configure(startingHunger, hungerPerMinute);
+        }
+
         private void Awake()
         {
             _agent = GetComponent<NavMeshAgent>();
+            _needs = GetComponent<SurvivorNeeds>();
             _path = new NavMeshPath();
         }
 
@@ -58,6 +71,7 @@ namespace Reclamation.Prototype
 
         private void Update()
         {
+            _needs.Advance(Time.deltaTime);
             if (jobBoard == null || jobBoard.Destination == null
                 || !jobBoard.Destination.isActiveAndEnabled
                 || !_agent.isActiveAndEnabled || !_agent.isOnNavMesh)
@@ -66,10 +80,21 @@ namespace Reclamation.Prototype
                 return;
             }
 
+            bool alreadyHandlingMeal = State == WorkerState.MovingToMeal || State == WorkerState.Eating;
+            bool ordinaryWorkInProgress = State != WorkerState.Idle && State != WorkerState.WaitingForWork;
+            if (_needs.NeedsMeal && ordinaryWorkInProgress && !alreadyHandlingMeal && foodStore != null &&
+                foodStore.AvailableServings > 0 && CanReach(foodStore.transform.position, out _))
+            {
+                CancelCurrentJob("Urgent hunger interrupted ordinary settlement work");
+                if (TryStartMeal()) return;
+            }
+
             if (State == WorkerState.Idle || State == WorkerState.WaitingForWork)
             {
                 if (Time.time < _nextDecisionTime) return;
                 _nextDecisionTime = Time.time + decisionInterval;
+
+                if (TryStartMeal()) return;
 
                 if (TryStartShelterJob()) return;
 
@@ -112,6 +137,13 @@ namespace Reclamation.Prototype
                 return;
             }
 
+            bool mealJob = State == WorkerState.MovingToMeal || State == WorkerState.Eating;
+            if (mealJob && (foodStore == null || !foodStore.isActiveAndEnabled))
+            {
+                CancelCurrentJob("Food store unavailable; meal reservation released");
+                return;
+            }
+
             bool shelterJob = State == WorkerState.MovingToShelter
                 || State == WorkerState.MovingToBuild || State == WorkerState.Building
                 || State == WorkerState.MovingToSupplies;
@@ -123,6 +155,7 @@ namespace Reclamation.Prototype
 
             Vector3 target = State == WorkerState.MovingToResource
                 ? _claimedSource.transform.position
+                : mealJob ? foodStore.transform.position
                 : shelterJob && State != WorkerState.MovingToSupplies
                     ? _shelter.WorkPoint : jobBoard.Destination.transform.position;
             // A moving/replaced target requires a fresh path.
@@ -149,6 +182,24 @@ namespace Reclamation.Prototype
                     ReleaseReservations();
                     State = WorkerState.Idle;
                     DecisionExplanation = "Shelter completed";
+                }
+                return;
+            }
+
+            if (State == WorkerState.Eating)
+            {
+                _mealProgress += Time.deltaTime;
+                DecisionExplanation = $"Eating meal: {Mathf.Clamp01(_mealProgress / 2f):P0}";
+                if (_mealProgress >= 2f)
+                {
+                    if (foodStore.ConsumeReserved(WorkerId))
+                    {
+                        _needs.Eat();
+                        DecisionExplanation = "Meal complete; returning to settlement work";
+                    }
+                    else DecisionExplanation = "Reserved meal unavailable; replanning";
+                    State = WorkerState.Idle;
+                    _nextDecisionTime = Time.time + 0.1f;
                 }
                 return;
             }
@@ -222,6 +273,13 @@ namespace Reclamation.Prototype
                 DecisionExplanation = "Constructing shelter";
                 return;
             }
+            else if (State == WorkerState.MovingToMeal)
+            {
+                State = WorkerState.Eating;
+                _mealProgress = 0;
+                DecisionExplanation = "Eating a reserved meal";
+                return;
+            }
             else
             {
                 jobBoard.Destination.DepositOne();
@@ -230,6 +288,25 @@ namespace Reclamation.Prototype
             }
             State = WorkerState.Idle;
             _nextDecisionTime = Time.time + 0.1f;
+        }
+
+        private bool TryStartMeal()
+        {
+            if (!_needs.NeedsMeal || foodStore == null || !foodStore.isActiveAndEnabled) return false;
+            if (!foodStore.TryReserve(WorkerId))
+            {
+                DecisionExplanation = "Hungry — no unreserved meals available";
+                return false;
+            }
+            if (!BeginTravel(foodStore.transform.position))
+            {
+                foodStore.Release(WorkerId);
+                DecisionExplanation = "Hungry — food store unreachable";
+                return false;
+            }
+            State = WorkerState.MovingToMeal;
+            DecisionExplanation = "Urgent hunger outranks ordinary settlement work";
+            return true;
         }
 
         private bool CanUseSource(ResourcePile source)
@@ -295,6 +372,7 @@ namespace Reclamation.Prototype
             // Release by owner even if Unity has already destroyed the source object.
             if (jobBoard != null) jobBoard.ReleaseAll(WorkerId);
             if (_shelter != null) _shelter.Release(WorkerId);
+            if (foodStore != null && State != WorkerState.Eating) foodStore.Release(WorkerId);
             _shelter = null;
             _claimedSource = null;
         }
@@ -304,6 +382,7 @@ namespace Reclamation.Prototype
         {
             if (_claimedSource != null) _failedUntil[_claimedSource.GetInstanceID()] = Time.time + 5f;
             ReleaseReservations();
+            if (foodStore != null) foodStore.Release(WorkerId);
             if (_agent != null && _agent.isActiveAndEnabled && _agent.isOnNavMesh) _agent.ResetPath();
             State = WorkerState.WaitingForWork;
             DecisionExplanation = reason;

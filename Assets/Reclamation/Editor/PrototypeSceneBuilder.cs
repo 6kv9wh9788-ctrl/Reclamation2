@@ -48,18 +48,19 @@ namespace Reclamation.Editor
             surface.layerMask = 1 << 0;
 
             Stockpile stockpile = CreateStockpile(new Vector3(0f, 0.5f, 0f));
+            FoodStore food = CreateFoodStore(new Vector3(4f, 0.5f, 0f));
             List<ResourcePile> resources = CreateResourcePiles();
 
             var boardObject = new GameObject("Settlement Job Board");
             HaulJobBoard board = boardObject.AddComponent<HaulJobBoard>();
             board.Configure(stockpile, resources);
 
-            CreateWorker("Avery", new Vector3(-2f, 0.5f, -4f), new Color(0.25f, 0.65f, 0.95f), board);
-            CreateWorker("Dylan", new Vector3(0f, 0.5f, -4f), new Color(0.95f, 0.65f, 0.2f), board);
-            CreateWorker("Morgan", new Vector3(2f, 0.5f, -4f), new Color(0.65f, 0.35f, 0.85f), board);
+            CreateWorker("Avery", new Vector3(-2f, 0.5f, -4f), new Color(0.25f, 0.65f, 0.95f), board, food, 72f);
+            CreateWorker("Dylan", new Vector3(0f, 0.5f, -4f), new Color(0.95f, 0.65f, 0.2f), board, food, 55f);
+            CreateWorker("Morgan", new Vector3(2f, 0.5f, -4f), new Color(0.65f, 0.35f, 0.85f), board, food, 20f);
 
             var debugObject = new GameObject("Decision Debug Overlay");
-            debugObject.AddComponent<SettlementDebugOverlay>().Configure(board, stockpile);
+            debugObject.AddComponent<SettlementDebugOverlay>().Configure(board, stockpile, food);
             if (shelterMode)
                 debugObject.AddComponent<ShelterPlanner>().Configure(board);
 
@@ -106,6 +107,15 @@ namespace Reclamation.Editor
             return stockpileObject.AddComponent<Stockpile>();
         }
 
+        private static FoodStore CreateFoodStore(Vector3 position)
+        {
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = "Food Store"; go.layer = 2; go.transform.position = position;
+            go.transform.localScale = new Vector3(2f, 0.5f, 2f);
+            SetColor(go, new Color(0.25f, 0.55f, 0.2f));
+            FoodStore store = go.AddComponent<FoodStore>(); store.Configure(9); return store;
+        }
+
         private static List<ResourcePile> CreateResourcePiles()
         {
             Vector3[] positions =
@@ -133,7 +143,8 @@ namespace Reclamation.Editor
             return resources;
         }
 
-        private static void CreateWorker(string name, Vector3 position, Color color, HaulJobBoard board)
+        private static void CreateWorker(string name, Vector3 position, Color color, HaulJobBoard board,
+            FoodStore food, float startingHunger)
         {
             GameObject workerObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             workerObject.name = name;
@@ -147,7 +158,8 @@ namespace Reclamation.Editor
             agent.acceleration = 14f;
             agent.stoppingDistance = 0.25f;
 
-            workerObject.AddComponent<HaulWorker>().Configure(name, board);
+            HaulWorker worker = workerObject.AddComponent<HaulWorker>();
+            worker.Configure(name, board); worker.ConfigureNeeds(food, startingHunger);
             HumanVisualBuilder.Add(workerObject);
         }
 

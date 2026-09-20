@@ -8,11 +8,11 @@ Outside Play Mode:
 
 1. Choose **Reclamation > Validation > Create or Replace Systems Validation Lab**.
 2. Open/Play `Assets/Scenes/SystemsValidationLab.unity` if it is not already open.
-3. Use the upper-right panel to select one of five scenarios: civilian vs ordinary, veteran vs three, bite-rescue squad, three civilians vs brute, or rank comparison.
+3. Use the upper-right panel to select one of six scenarios: civilian vs ordinary, veteran vs three, bite-rescue squad, three civilians vs brute, rank comparison, or hunger and meals.
 4. Each scenario is fresh the first time it is selected in a Play session. Stop/restart Play to reset all five.
 5. After confirming the consolidated lab works, choose **Reclamation > Validation > Remove Legacy Generated Combat Labs**. The confirmation-scoped cleanup removes only scene/navigation assets whose filenames begin `CivilianVsOne`, `VeteranVsThree`, `ProtectCivilian`, or `ThreeCiviliansVsBrute`. Patient Zero, neighborhood, hauling, and shelter scenes are not touched.
 
-The validation lab uses session-only progression and cannot erase or modify the persistent Patient Zero records. Orange, purple, and blue shirts represent Civilian, Trained, and Veteran starting ranks.
+The validation lab uses session-only progression and cannot erase or modify the persistent Patient Zero records. Orange, purple, and blue shirts represent Civilian, Trained, and Veteran starting ranks. The hunger-and-meals scenario validates that urgent personal needs can interrupt hauling, reserve exactly one meal, consume it on arrival, and then return the survivor to ordinary work.
 
 ## XP and ranks
 

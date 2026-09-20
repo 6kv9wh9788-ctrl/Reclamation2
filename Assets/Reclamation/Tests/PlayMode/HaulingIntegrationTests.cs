@@ -232,5 +232,25 @@ namespace Reclamation.Tests
             pile.transform.position = new Vector3(-4, 0, 0);
             yield return FinishDelivery();
         }
+
+        [UnityTest]
+        public IEnumerator UrgentHungerConsumesOneReservedMealThenWorkResumes()
+        {
+            var food = Make<FoodStore>("food", new Vector3(0, 0, 3));
+            food.Configure(1);
+            worker.ConfigureNeeds(food, 75, 0);
+            float deadline = Time.realtimeSinceStartup + 10f;
+            while (food.Servings > 0 && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(food.Servings, Is.Zero, worker.DecisionExplanation);
+            Assert.That(worker.Needs.Hunger, Is.EqualTo(10).Within(0.1f));
+            Assert.That(worker.Needs.NeedsMeal, Is.False);
+            Assert.That(food.ReservedServings, Is.Zero);
+
+            deadline = Time.realtimeSinceStartup + 15f;
+            while (!worker.Carrying && stock.StoredUnits == 0 && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(worker.Carrying || stock.StoredUnits > 0, Is.True,
+                "The survivor should resume hauling after eating.");
+            AssertConserved();
+        }
     }
 }

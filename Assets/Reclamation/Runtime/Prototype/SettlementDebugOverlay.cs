@@ -6,6 +6,7 @@ namespace Reclamation.Prototype
     {
         [SerializeField] private HaulJobBoard jobBoard;
         [SerializeField] private Stockpile stockpile;
+        [SerializeField] private FoodStore foodStore;
         private HaulWorker[] workers;
         private GUIStyle textStyle;
 
@@ -14,10 +15,11 @@ namespace Reclamation.Prototype
             workers = FindObjectsByType<HaulWorker>(FindObjectsSortMode.None);
         }
 
-        public void Configure(HaulJobBoard board, Stockpile destination)
+        public void Configure(HaulJobBoard board, Stockpile destination, FoodStore meals = null)
         {
             jobBoard = board;
             stockpile = destination;
+            foodStore = meals;
         }
 
         private void OnGUI()
@@ -30,6 +32,8 @@ namespace Reclamation.Prototype
             GUILayout.BeginArea(new Rect(16, 16, 620, 340), GUI.skin.box);
             GUILayout.Label("RECLAMATION — AUTONOMOUS HAULING LAB", textStyle);
             GUILayout.Label($"Stockpile: {(stockpile == null ? 0 : stockpile.StoredUnits)} wood", textStyle);
+            GUILayout.Label($"Food: {(foodStore == null ? 0 : foodStore.Servings)} servings " +
+                $"({(foodStore == null ? 0 : foodStore.ReservedServings)} reserved)", textStyle);
             GUILayout.Label($"Active reservations: {(jobBoard == null ? 0 : jobBoard.OpenReservationCount)}", textStyle);
             GUILayout.Space(8);
 
@@ -37,6 +41,7 @@ namespace Reclamation.Prototype
             {
                 if (worker == null) continue;
                 GUILayout.Label($"{worker.WorkerName} — {worker.State} — cargo: {(worker.Carrying ? 1 : 0)}", textStyle);
+                GUILayout.Label($"    hunger: {(worker.Needs == null ? 0 : worker.Needs.Hunger):0}/100", textStyle);
                 GUILayout.Label($"    {worker.DecisionExplanation}", textStyle);
             }
 
