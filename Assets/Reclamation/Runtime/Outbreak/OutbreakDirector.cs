@@ -101,7 +101,7 @@ namespace Reclamation.Outbreak
                 foreach (OutbreakAgent other in population)
                 {
                     if (other == null || other == person || other.State != InfectionState.Turned
-                        || !other.gameObject.activeInHierarchy) continue;
+                        || !other.gameObject.activeInHierarchy || !other.Contagious) continue;
                     float distance = Vector3.Distance(person.transform.position, other.transform.position);
                     if (distance < dangerDistance) { dangerDistance = distance; nearestThreat = other; }
                 }
@@ -110,8 +110,8 @@ namespace Reclamation.Outbreak
                     OutbreakAgent prey = FindNearestPrey(person);
                     person.SetThreatTarget(prey, clock.Speed);
                 }
-                else if (nearestThreat != null && dangerDistance < 7)
-                    person.FleeFrom(nearestThreat.transform.position, clock.Speed);
+                else if (nearestThreat != null && dangerDistance < (person.IsFleeing ? 9 : 7))
+                    person.FleeFrom(nearestThreat.transform.position, clock.Speed, population);
                 else person.ResumeRoutineIfSafe();
             }
         }
@@ -121,7 +121,7 @@ namespace Reclamation.Outbreak
             OutbreakAgent result = null; float best = float.MaxValue;
             foreach (OutbreakAgent person in population)
             {
-                if (person == null || person == hunter || person.Isolated ||
+                if (person == null || !person.gameObject.activeInHierarchy || person == hunter || person.Isolated ||
                     person.State == InfectionState.Turned || person.State == InfectionState.Neutralized) continue;
                 float distance = Vector3.Distance(hunter.transform.position, person.transform.position);
                 if (distance < best) { best = distance; result = person; }
@@ -180,7 +180,7 @@ namespace Reclamation.Outbreak
                 {
                     if (person == null) continue;
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label($"{person.DisplayName}: {person.PublicStatus}", label, GUILayout.Width(230));
+                    GUILayout.Label($"{person.DisplayName}: {person.PublicStatus}\n{person.MovementStatus}", label, GUILayout.Width(230));
                     var cameraControls = Camera.main == null ? null : Camera.main.GetComponent<LabCameraController>();
                     if (cameraControls != null && person.gameObject.activeInHierarchy &&
                         GUILayout.Button("Follow", button, GUILayout.Width(75))) cameraControls.Follow(person.transform);
