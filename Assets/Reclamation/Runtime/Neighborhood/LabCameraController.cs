@@ -8,6 +8,9 @@ namespace Reclamation.Neighborhood
     [RequireComponent(typeof(Camera))]
     public sealed class LabCameraController : MonoBehaviour
     {
+        [SerializeField, Range(0.05f, 0.5f)]
+        [Tooltip("Zoom strength per wheel step. Default 0.18 changes the view size by about 16% per step.")]
+        private float scrollSensitivity = 0.18f;
         private Camera view;
         private Vector3 pivot, initialPivot;
         private float yaw, pitch, distance, initialYaw, initialPitch, initialDistance, initialSize;
@@ -100,7 +103,15 @@ namespace Reclamation.Neighborhood
                 bool insideView = pixel.x >= 0 && pixel.y >= 0 && pixel.x < Screen.width && pixel.y < Screen.height;
                 if (!overUI && insideView)
                 {
-                    float zoom = Mathf.Exp(-mouse.scroll.ReadValue().y * 0.0015f);
+                    float scrollSteps = mouse.scroll.ReadValue().y;
+                    // Input System 1.20 defaults to normalized steps. Only legacy Windows
+                    // platform-specific input uses 120 units per step; do not scale twice.
+                    bool nativeWindowsScroll = InputSystem.settings.scrollDeltaBehavior ==
+                        InputSettings.ScrollDeltaBehavior.KeepPlatformSpecificInputRange &&
+                        (Application.platform == RuntimePlatform.WindowsEditor ||
+                         Application.platform == RuntimePlatform.WindowsPlayer);
+                    if (nativeWindowsScroll) scrollSteps /= 120f;
+                    float zoom = Mathf.Exp(-scrollSteps * scrollSensitivity);
                     if (view.orthographic) view.orthographicSize = Mathf.Clamp(view.orthographicSize * zoom, 3, 45);
                     else distance = Mathf.Clamp(distance * zoom, 6, 100);
                     if (mouse.rightButton.isPressed)

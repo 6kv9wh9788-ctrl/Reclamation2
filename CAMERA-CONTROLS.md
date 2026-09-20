@@ -39,3 +39,20 @@ be executed in the patch-building environment.
 Manually check zoom, pan, rotation, follow, pause, collapse/expand, and neutralizing a
 followed person. Scroll the expanded outbreak panel and confirm that the world does
 not zoom. Confirm the saved upgrade persists after reopening the scene.
+
+## Scroll sensitivity correction
+
+Wheel input now respects the Input System's normalized versus native Windows
+scroll setting. The default zoom strength is 0.18 per normalized step, about
+16% closer per step. An orthographic size of 32 reaches about 6.35 after nine
+steps and the minimum size of 3 after fourteen. Small trackpad deltas remain
+proportional. No global Input System settings are changed.
+
+Tune **Main Camera > Lab Camera Controller > Scroll Sensitivity** outside Play
+Mode and save the scene to retain your preference. This patch requires no scene
+regeneration or camera reinstallation. Keep the pointer over the world to zoom;
+scroll over a panel intentionally does not zoom the camera.
+
+If a scene shows capsules, exit Play Mode and use **Reclamation > Upgrade Open
+Scene to Human Characters**, then save before pressing Play. Changes made while
+playing are temporary.
