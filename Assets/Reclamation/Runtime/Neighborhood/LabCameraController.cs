@@ -18,6 +18,7 @@ namespace Reclamation.Neighborhood
         private NavMeshAgent[] people;
         private OutbreakDirector outbreakPanel;
         private NeighborhoodPanel neighborhoodPanel;
+        private SystemsValidationLab validationPanel;
         private bool showHelp;
         private GUIStyle textStyle, buttonStyle;
         public Transform FollowTarget => followed;
@@ -39,6 +40,7 @@ namespace Reclamation.Neighborhood
             people = FindObjectsByType<NavMeshAgent>(FindObjectsSortMode.InstanceID);
             outbreakPanel = FindFirstObjectByType<OutbreakDirector>();
             neighborhoodPanel = FindFirstObjectByType<NeighborhoodPanel>();
+            validationPanel = FindFirstObjectByType<SystemsValidationLab>();
         }
 
         public void Follow(Transform person)
@@ -99,7 +101,8 @@ namespace Reclamation.Neighborhood
                 Vector2 gui = new Vector2(pixel.x, Screen.height - pixel.y) / UiScale;
                 bool overUI = PanelRect.Contains(gui) ||
                     (outbreakPanel != null && outbreakPanel.ContainsGuiPoint(gui)) ||
-                    (neighborhoodPanel != null && neighborhoodPanel.ContainsGuiPoint(gui));
+                    (neighborhoodPanel != null && neighborhoodPanel.ContainsGuiPoint(gui)) ||
+                    (validationPanel != null && validationPanel.ContainsGuiPoint(gui));
                 bool insideView = pixel.x >= 0 && pixel.y >= 0 && pixel.x < Screen.width && pixel.y < Screen.height;
                 if (!overUI && insideView)
                 {

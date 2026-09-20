@@ -19,6 +19,7 @@ namespace Reclamation.Outbreak
         private bool collapsed;
         private Vector2 panelScroll;
         private CombatDirector combat;
+        private bool resetProgressionArmed;
         private Rect PanelRect => new Rect(16, 16, 560, collapsed ? 130 : 700);
         public bool ContainsGuiPoint(Vector2 point) => isActiveAndEnabled && PanelRect.Contains(point);
         private string eventLog = "A visitor has entered the neighborhood.";
@@ -38,6 +39,7 @@ namespace Reclamation.Outbreak
         }
 
         public void AttachSafeZone(SafeZone refuge) => safeZone = refuge;
+        public void SetPopulation(OutbreakAgent[] agents) => population = agents;
 
         private void Awake() => combat = GetComponent<CombatDirector>();
 
@@ -277,7 +279,8 @@ namespace Reclamation.Outbreak
                         if (person == null || !person.gameObject.activeInHierarchy) continue;
                         var fighter = person.GetComponent<Combatant>();
                         if (fighter == null) continue;
-                        GUILayout.Label($"{person.DisplayName}: {fighter.Awareness} · {fighter.Status} | HP {fighter.Health:0} | Combat stamina {fighter.Energy:0}/{fighter.Attributes.MaximumStamina:0}", label);
+                        GUILayout.Label($"{person.DisplayName}: {fighter.ExperienceStatus} · {fighter.Awareness} · {fighter.Status} | HP {fighter.Health:0} | Combat stamina {fighter.Energy:0}/{fighter.Attributes.MaximumStamina:0}", label);
+                        GUILayout.Label("Encounter XP: " + fighter.SessionExperienceSummary, label);
                         if (fighter.IsBrute && fighter.StaggerResistanceRemaining > 0)
                             GUILayout.Label($"Resisting repeated staggers: {fighter.StaggerResistanceRemaining:0.0}s (bites remain interruptible)", label);
                         if (!fighter.Zombie && !person.Isolated)
@@ -289,6 +292,32 @@ namespace Reclamation.Outbreak
                             GUILayout.EndHorizontal();
                         }
                     }
+                bool hasPersistentProgression = false;
+                if (combat != null && combat.isActiveAndEnabled)
+                    foreach (var person in population)
+                    {
+                        var fighter = person == null ? null : person.GetComponent<Combatant>();
+                        if (fighter != null && fighter.PersistentProgression) { hasPersistentProgression = true; break; }
+                    }
+                if (hasPersistentProgression)
+                {
+                    if (GUILayout.Button(resetProgressionArmed ? "Confirm reset all survivor XP" : "Reset survivor progression", button))
+                    {
+                        if (!resetProgressionArmed) resetProgressionArmed = true;
+                        else
+                        {
+                            SurvivorProgressionStore.ResetAll();
+                            foreach (var person in population)
+                            {
+                                var fighter = person == null ? null : person.GetComponent<Combatant>();
+                                if (fighter != null) fighter.ResetProgression();
+                            }
+                            resetProgressionArmed = false;
+                            eventLog = "Persistent survivor progression reset.";
+                        }
+                    }
+                    if (resetProgressionArmed && GUILayout.Button("Cancel progression reset", button)) resetProgressionArmed = false;
+                }
                 GUILayout.Label("Stop and restart Play Mode to reset. Isolation is an abstract prototype action. Yellow head = symptomatic; green head = turned.", label);
                 GUILayout.EndScrollView();
             }

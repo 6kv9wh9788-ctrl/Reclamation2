@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Reclamation.Outbreak
@@ -27,6 +28,8 @@ namespace Reclamation.Outbreak
     {
         [SerializeField] private CombatAttributes attributes = new CombatAttributes();
         [SerializeField] private CombatOrder initialOrder;
+        [SerializeField] private bool persistentProgression = true;
+        [SerializeField, Min(0)] private int startingExperience;
         public CombatAttributes Attributes => attributes;
         public OutbreakAgent Person { get; private set; }
         public CombatOrder Order { get; private set; }
@@ -59,20 +62,75 @@ namespace Reclamation.Outbreak
         public float Progress => Duration > 0 ? Mathf.Clamp01(1 - Remaining / Duration) : 0;
         public string Status { get; internal set; } = "Ready";
         public ThreatAwareness Awareness { get; internal set; }
+        public int Experience { get; private set; }
+        public SurvivorRank Rank => ProgressionRules.Rank(Experience);
+        public string ExperienceStatus => Rank == SurvivorRank.Veteran ? $"Veteran · {Experience} XP" :
+            $"{Rank} · {Experience}/{ProgressionRules.NextRankAt(Experience)} XP";
+        public bool PersistentProgression => persistentProgression;
+        public string SessionExperienceSummary { get; private set; } = "No XP earned this encounter.";
+        private readonly Dictionary<string, int> sessionAwards = new();
         private bool wasZombie;
         private bool anchored;
+        internal bool EngagedThisEncounter { get; set; }
 
         private void Awake()
         {
             Person = GetComponent<OutbreakAgent>(); Order = initialOrder;
-            Anchor = Person.FeetPosition; Energy = attributes.MaximumStamina;
+            Anchor = Person.FeetPosition;
+            Experience = persistentProgression ? SurvivorProgressionStore.Load(Person.DisplayName) : startingExperience;
+            ApplyProgression();
         }
 
         public void Configure(bool veteran, CombatOrder order)
         {
-            attributes = veteran ? CombatAttributes.Veteran() : CombatAttributes.Civilian();
+            startingExperience = veteran ? ProgressionRules.VeteranExperience : 0;
+            Experience = startingExperience; ApplyProgression();
             initialOrder = order; Order = order; Energy = attributes.MaximumStamina;
             anchored = false;
+        }
+
+        public void ConfigureProgression(bool persistent, int initialExperience = 0)
+        {
+            persistentProgression = persistent; startingExperience = Mathf.Max(0, initialExperience);
+            Experience = persistent ? SurvivorProgressionStore.Load(Person == null ? GetComponent<OutbreakAgent>().DisplayName : Person.DisplayName) : startingExperience;
+            ApplyProgression();
+        }
+
+        public int AwardExperience(string reason, int amount)
+        {
+            if (Zombie || amount <= 0 || string.IsNullOrWhiteSpace(reason)) return 0;
+            Experience += amount;
+            sessionAwards.TryGetValue(reason, out int current); sessionAwards[reason] = current + amount;
+            ApplyProgression();
+            if (persistentProgression) SurvivorProgressionStore.Save(Person.DisplayName, Experience);
+            SessionExperienceSummary = BuildSummary();
+            return amount;
+        }
+
+        public int AwardObjective(string objectiveId, string reason, int amount)
+        {
+            if (!persistentProgression || Zombie || amount <= 0 ||
+                !SurvivorProgressionStore.CompleteObjective(Person.DisplayName, objectiveId)) return 0;
+            return AwardExperience(reason, amount);
+        }
+
+        public void ResetProgression()
+        {
+            Experience = startingExperience; sessionAwards.Clear(); SessionExperienceSummary = "No XP earned this encounter.";
+            ApplyProgression();
+        }
+
+        private void ApplyProgression()
+        {
+            attributes = ProgressionRules.Attributes(Experience);
+            Energy = Mathf.Min(attributes.MaximumStamina, Energy <= 0 ? attributes.MaximumStamina : Energy);
+        }
+
+        private string BuildSummary()
+        {
+            var parts = new List<string>();
+            foreach (var award in sessionAwards) parts.Add($"{award.Key} +{award.Value}");
+            return string.Join(" · ", parts);
         }
 
         public void GiveOrder(CombatOrder order)

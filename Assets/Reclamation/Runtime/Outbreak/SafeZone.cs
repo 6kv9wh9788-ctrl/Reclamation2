@@ -81,6 +81,10 @@ namespace Reclamation.Outbreak
             int slot = Count(destination);
             assignments[person] = destination;
             person.CompleteAdmission(this, destination, SlotPosition(destination, slot));
+            var progression = person.GetComponent<Combatant>();
+            if (progression != null) progression.AwardObjective(
+                destination == RefugeAssignment.Quarantined ? "rescue:quarantine" : "rescue:shelter",
+                destination == RefugeAssignment.Quarantined ? "Reached quarantine" : "Reached refuge", 10);
             return true;
         }
 

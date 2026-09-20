@@ -51,6 +51,7 @@ namespace Reclamation.Outbreak
                 if (fighters[i].Revision == revisions[i]) Advance(fighters[i], seconds);
             foreach (var fighter in fighters)
                 if (fighter.Available && fighter.Action == CombatAction.Ready) Decide(fighter);
+            ResolveEncounterExperience();
         }
 
         private bool Clear(Combatant a, Combatant b, float range)
@@ -117,6 +118,7 @@ namespace Reclamation.Outbreak
                 {
                     var source = f.Grabber; source.Interrupt(1);
                     f.Begin(CombatAction.Recover, 0.3f);
+                    f.AwardExperience("Broke grab", 10);
                     LastEvent = $"{f.Person.DisplayName} broke free!";
                 }
                 f.Status = "Breaking grab"; return;
@@ -168,15 +170,21 @@ namespace Reclamation.Outbreak
         {
             if (!target.Zombie) return;
             bool rescue = target.Action == CombatAction.Bite;
+            float before = target.Health;
             target.Health = Mathf.Max(0, target.Health - damage * (target.SweepRecovery && target.LastSweepHits > 0 ? 1.25f : 1));
+            if (target.Health < before) source.AwardExperience("Effective strikes", 3);
             if (target.TryStaggerFromHit(stagger))
             {
                 target.Handled = true;
                 target.Person.CombatStop("Staggered", source.transform);
             }
             if (target.Health <= 0)
-            { target.Person.Neutralize(); LastEvent = $"{source.Person.DisplayName} defeated {target.Person.DisplayName}."; }
-            else if (rescue) LastEvent = $"{source.Person.DisplayName} interrupted a bite!";
+            {
+                source.AwardExperience("Threat defeated", target.IsBrute ? 35 : 20);
+                target.Person.Neutralize(); LastEvent = $"{source.Person.DisplayName} defeated {target.Person.DisplayName}.";
+            }
+            else if (rescue)
+            { source.AwardExperience("Bite rescue", 15); LastEvent = $"{source.Person.DisplayName} interrupted a bite!"; }
         }
 
         public static bool InSweepArc(Vector3 origin, Vector3 forward, Vector3 point, float radius = SweepRadius)
@@ -244,6 +252,7 @@ namespace Reclamation.Outbreak
                 if (Clear(f, enemy, 1.65f)) BeginAction(f, CombatAction.Lunge, 0.7f, enemy);
                 return; // Long-range pursuit and perimeter siege stay with the outbreak AI.
             }
+            f.EngagedThisEncounter = enemy != null || f.EngagedThisEncounter;
             if (f.Health <= 0)
             { f.Handled = true; f.Person.CombatStop("Downed; needs rescue", null); return; }
             if (!f.Person.CanFlee) return;
@@ -396,6 +405,20 @@ namespace Reclamation.Outbreak
         {
             foreach (var fighter in fighters)
                 if (fighter != null) { fighter.ReleaseGrab(); fighter.Begin(CombatAction.Ready, 0); fighter.Handled = false; }
+        }
+
+        private void ResolveEncounterExperience()
+        {
+            bool activeThreat = false;
+            foreach (var fighter in fighters)
+                if (fighter.Available && fighter.Zombie) { activeThreat = true; break; }
+            if (activeThreat) return;
+            foreach (var fighter in fighters)
+                if (!fighter.Zombie && fighter.EngagedThisEncounter)
+                {
+                    if (fighter.Health > 0) fighter.AwardExperience("Survived encounter", 8);
+                    fighter.EngagedThisEncounter = false;
+                }
         }
     }
 }

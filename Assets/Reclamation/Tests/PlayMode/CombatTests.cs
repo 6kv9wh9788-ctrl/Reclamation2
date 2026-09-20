@@ -21,6 +21,7 @@ namespace Reclamation.Tests
             var go = Make(name); go.transform.position = feet;
             var person = go.AddComponent<OutbreakAgent>(); person.Configure(name);
             var f = go.AddComponent<Combatant>(); f.Configure(veteran, CombatOrder.Hold);
+            f.ConfigureProgression(false, veteran ? ProgressionRules.VeteranExperience : 0);
             if (zombie) { person.Expose(0, 1, 1); person.Simulate(2); }
             return f;
         }
@@ -441,6 +442,64 @@ namespace Reclamation.Tests
             var counter = Actor("Veteran", Vector3.forward * 1.3f, false, true);
             for (int i = 0; i < 6 && brute.Health == 180; i++) Tick(0.1f, brute, counter);
             Assert.That(brute.Health, Is.EqualTo(180 - counter.Attributes.Damage));
+        }
+
+        [UnityTest] public IEnumerator EffectiveCombatAwardsXpButFailedActionsDoNot()
+        {
+            var human = Actor("Learner", Vector3.zero);
+            var zombie = Actor("Zombie", Vector3.forward * 1.3f, true);
+            yield return null;
+            int before = human.Experience;
+            for (int i = 0; i < 8 && zombie.Health == 80; i++) Tick(0.1f, human, zombie);
+            Assert.That(human.Experience, Is.EqualTo(before + 3));
+            int afterHit = human.Experience;
+            zombie.GetComponent<NavMeshAgent>().Warp(Vector3.forward * 8);
+            for (int i = 0; i < 10; i++) Tick(0.1f, human, zombie);
+            Assert.That(human.Experience, Is.EqualTo(afterHit), "Movement and missed actions do not award XP.");
+        }
+
+        [UnityTest] public IEnumerator BiteRescueAndVictoryProduceAttributedSummary()
+        {
+            var victim = Actor("Victim", Vector3.zero); victim.TrySpend(victim.Energy);
+            var zombie = Actor("Zombie", Vector3.forward * 1.1f, true);
+            yield return null; UntilGrab(victim, zombie);
+            var rescuer = Actor("Rescuer", new Vector3(1.1f, 0, 1.1f), false, true);
+            int before = rescuer.Experience;
+            for (int i = 0; i < 30 && zombie.Person.State != InfectionState.Neutralized; i++) Tick(0.1f, victim, zombie, rescuer);
+            Assert.That(victim.Person.Infectable, Is.True);
+            Assert.That(rescuer.Experience, Is.GreaterThan(before + 15));
+            Assert.That(rescuer.SessionExperienceSummary, Does.Contain("Bite rescue"));
+            Assert.That(rescuer.SessionExperienceSummary, Does.Contain("Threat defeated"));
+            Assert.That(rescuer.SessionExperienceSummary, Does.Contain("Survived encounter"));
+        }
+
+        [UnityTest] public IEnumerator RankGrowthChangesAttributesButNotHumanHealth()
+        {
+            var human = Actor("Learner", Vector3.zero);
+            human.AwardExperience("Test training", ProgressionRules.VeteranExperience);
+            Assert.That(human.Rank, Is.EqualTo(SurvivorRank.Veteran));
+            Assert.That(human.Attributes.strength, Is.EqualTo(12));
+            Assert.That(human.Health, Is.EqualTo(100));
+            Assert.That(human.ExperienceStatus, Does.StartWith("Veteran"));
+            yield return null;
+        }
+
+        [UnityTest] public IEnumerator ValidationLabSwitchesPopulationWithoutActivatingOtherScenarios()
+        {
+            var firstRoot = Make("First scenario"); var secondRoot = Make("Second scenario");
+            var first = Actor("First", Vector3.zero); var second = Actor("Second", Vector3.right * 3);
+            first.transform.SetParent(firstRoot.transform); second.transform.SetParent(secondRoot.transform);
+            var outbreak = Make("Outbreak").AddComponent<OutbreakDirector>();
+            var lab = outbreak.gameObject.AddComponent<SystemsValidationLab>();
+            lab.Configure(new[] { firstRoot, secondRoot }, new[] { "First", "Second" }, outbreak);
+            lab.Select(0);
+            yield return null;
+            Assert.That(firstRoot.activeSelf, Is.True); Assert.That(secondRoot.activeSelf, Is.False);
+            Assert.That(outbreak.Population.Count, Is.EqualTo(1));
+            Assert.That(lab.Select(1), Is.True);
+            Assert.That(firstRoot.activeSelf, Is.False); Assert.That(secondRoot.activeSelf, Is.True);
+            Assert.That(outbreak.Population[0], Is.EqualTo(second.Person));
+            Assert.That(lab.Select(99), Is.False);
         }
     }
 }

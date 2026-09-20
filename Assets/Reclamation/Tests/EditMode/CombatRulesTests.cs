@@ -45,5 +45,28 @@ namespace Reclamation.Tests
             Assert.That(typeof(CombatDirector).GetMethod("Start",
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic), Is.Null);
         }
+
+        [Test] public void ProgressionRanksAndCapsAreStableAtBoundaries()
+        {
+            Assert.That(ProgressionRules.Rank(99), Is.EqualTo(SurvivorRank.Civilian));
+            Assert.That(ProgressionRules.Rank(100), Is.EqualTo(SurvivorRank.Trained));
+            Assert.That(ProgressionRules.Rank(300), Is.EqualTo(SurvivorRank.Veteran));
+            CombatAttributes veteran = ProgressionRules.Attributes(300);
+            Assert.That(veteran.strength, Is.EqualTo(12));
+            Assert.That(veteran.dexterity, Is.EqualTo(9));
+            CombatAttributes extreme = ProgressionRules.Attributes(int.MaxValue);
+            Assert.That(extreme.strength, Is.LessThanOrEqualTo(12));
+            Assert.That(extreme.agility, Is.LessThanOrEqualTo(9));
+        }
+
+        [Test] public void ProgressionImprovesTechniqueWithoutAddingHumanHealth()
+        {
+            CombatAttributes civilian = ProgressionRules.Attributes(0);
+            CombatAttributes trained = ProgressionRules.Attributes(100);
+            CombatAttributes veteran = ProgressionRules.Attributes(300);
+            Assert.That(trained.Windup, Is.LessThan(civilian.Windup));
+            Assert.That(veteran.Damage, Is.GreaterThan(trained.Damage));
+            Assert.That(veteran.MaximumStamina, Is.GreaterThan(civilian.MaximumStamina));
+        }
     }
 }

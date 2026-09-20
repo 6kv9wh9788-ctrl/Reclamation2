@@ -78,7 +78,11 @@ namespace Reclamation.Outbreak
             if (work < 5) return;
             // Avoid materializing a barrier through a passing person (or zombie).
             if (!repair && !job.CanCloseSafely(population)) { Status = "Waiting for section footprint to clear."; return; }
+            string completedName = job.name;
             if (repair) job.Repair(); else job.FinishBuild();
+            var progression = worker.GetComponent<Combatant>();
+            if (progression != null) progression.AwardObjective($"perimeter:{completedName}:{(repair ? "repair" : "build")}",
+                repair ? "Defense repaired" : "Defense built", repair ? 4 : 8);
             SpentWood += reserved; reserved = 0; job = null;
             worker.EndDefenseWork(); worker = null; Status = "Work complete.";
         }
