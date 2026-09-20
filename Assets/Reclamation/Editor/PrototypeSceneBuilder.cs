@@ -148,6 +148,7 @@ namespace Reclamation.Editor
             agent.stoppingDistance = 0.25f;
 
             workerObject.AddComponent<HaulWorker>().Configure(name, board);
+            HumanVisualBuilder.Add(workerObject);
         }
 
         private static void SetColor(GameObject target, Color color)

@@ -107,6 +107,7 @@ namespace Reclamation.Editor
                 var routine = person.AddComponent<CivilianRoutine>();
                 routine.Configure(names[i], clock, home, cafe, park, i * 12);
                 residents.Add(routine);
+                HumanVisualBuilder.Add(person);
                 if (outbreak)
                 {
                     var outbreakAgent = person.AddComponent<Reclamation.Outbreak.OutbreakAgent>();
@@ -130,6 +131,7 @@ namespace Reclamation.Editor
                 visitorRoutine.Configure("Visitor", clock, arrival, visitorCafe, visitorPark, 0);
                 var visitor = visitorObject.AddComponent<Reclamation.Outbreak.OutbreakAgent>();
                 visitor.Configure("Visitor");
+                HumanVisualBuilder.Add(visitorObject);
                 outbreakPopulation.Add(visitor);
                 var director = new GameObject("Outbreak Director").AddComponent<Reclamation.Outbreak.OutbreakDirector>();
                 director.Configure(clock, outbreakPopulation.ToArray(), visitor, 614);
