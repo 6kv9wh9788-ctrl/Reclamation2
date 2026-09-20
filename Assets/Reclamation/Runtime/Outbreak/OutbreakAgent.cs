@@ -96,7 +96,8 @@ namespace Reclamation.Outbreak
             nav.stoppingDistance = 0.95f;
             if (!changed && Time.time < nextRouteAt) return;
             nextRouteAt = Time.time + 0.35f / Mathf.Max(1, simulationSpeed);
-            if (NavMesh.SamplePosition(target.transform.position, out NavMeshHit hit, 0.65f, nav.areaMask)
+            Vector3 targetFeet = target.transform.position - Vector3.up * target.nav.baseOffset;
+            if (NavMesh.SamplePosition(targetFeet, out NavMeshHit hit, 0.65f, nav.areaMask)
                 && nav.CalculatePath(hit.position, path) && path.status == NavMeshPathStatus.PathComplete
                 && nav.SetPath(path)) MovementStatus = "Pursuing";
             else { nav.ResetPath(); MovementStatus = "Prey unreachable"; }

@@ -30,7 +30,7 @@ transmission, infection timing, isolation, and campaign outcomes are unchanged.
 
 ## Verify in Unity
 
-Run 30 EditMode and 24 PlayMode tests. Six new PlayMode tests cover movement along
+Run 30 EditMode and 26 PlayMode tests. Six new PlayMode tests cover movement along
 an edge, corner routing, escaping while latently infected, pause/isolation, pursuit
 standoff and target removal, and choosing a route around two pursuers.
 
@@ -41,3 +41,15 @@ check that healthy civilians resume their routines when the area is safe.
 
 The patch is statically checked; Unity compilation and runtime results must be
 verified in the installed editor. It changes no saved scene geometry.
+
+## Foot-level navigation correction
+
+The generated neighborhood uses NavMeshAgent.baseOffset = 1. The initial escape
+update sampled within 0.65 m of the elevated actor root, so open ground could be
+reported as unreachable. Escape origins and pursuit destinations now subtract
+each actor's own base offset before sampling. The sampling radius stays narrow
+to avoid accepting distant destinations around obstacles.
+
+Two additional PlayMode tests reproduce the real lab's 1 m root offset and check
+actual fleeing and pursuit movement. Earlier crowd tests used zero-offset roots,
+which missed this mismatch. No scene regeneration is required.

@@ -48,6 +48,51 @@ namespace Reclamation.Tests
         }
 
         [UnityTest]
+        public IEnumerator ElevatedLabCivilianFindsEscapeAtFootLevel()
+        {
+            var person = Person("Elevated civilian", Vector3.zero);
+            var nav = person.GetComponent<NavMeshAgent>();
+            nav.baseOffset = 1;
+            yield return null;
+            yield return null;
+            Vector3 feet = person.transform.position - Vector3.up * nav.baseOffset;
+            // Reproduce the lab, unlike the earlier tests whose roots sat on the mesh.
+            Assert.That(person.transform.position.y, Is.GreaterThan(0.8f));
+            Assert.That(NavMesh.SamplePosition(person.transform.position, out _, 0.65f, nav.areaMask), Is.False);
+            Assert.That(NavMesh.SamplePosition(feet, out _, 0.65f, nav.areaMask), Is.True);
+            Vector3 start = person.transform.position;
+            float until = Time.realtimeSinceStartup + 1;
+            while (Time.realtimeSinceStartup < until)
+            {
+                person.FleeFrom(new Vector3(-2, 1, 0), 1);
+                yield return null;
+            }
+            Assert.That(person.MovementStatus, Is.EqualTo("Escaping"));
+            Assert.That(Vector3.Distance(start, person.transform.position), Is.GreaterThan(1));
+        }
+
+        [UnityTest]
+        public IEnumerator ElevatedLabPursuerReachesElevatedPrey()
+        {
+            var hunter = Person("Elevated hunter", new Vector3(-4, 0, 0));
+            var prey = Person("Elevated prey", new Vector3(2, 0, 0));
+            hunter.GetComponent<NavMeshAgent>().baseOffset = 1;
+            prey.GetComponent<NavMeshAgent>().baseOffset = 1;
+            hunter.Expose(0, 1, 1); hunter.Simulate(2);
+            yield return null;
+            yield return null;
+            Assert.That(prey.transform.position.y, Is.GreaterThan(0.8f));
+            float until = Time.realtimeSinceStartup + 4;
+            while (Time.realtimeSinceStartup < until)
+            {
+                hunter.SetThreatTarget(prey, 1);
+                yield return null;
+            }
+            Assert.That(hunter.MovementStatus, Is.EqualTo("Pursuing"));
+            Assert.That(Vector3.Distance(hunter.transform.position, prey.transform.position), Is.InRange(0.75f, 1.4f));
+        }
+
+        [UnityTest]
         public IEnumerator CivilianEscapesAlongBoundaryInsteadOfPushingOutside()
         {
             var person = Person("Edge civilian", new Vector3(8.5f, 0, 0));

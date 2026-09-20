@@ -14,7 +14,9 @@ namespace Reclamation.Outbreak
         public bool TryFind(NavMeshAgent nav, Vector3 threat, IReadOnlyList<OutbreakAgent> population,
             out Vector3 destination)
         {
-            Vector3 origin = nav.transform.position;
+            // Actor roots include baseOffset (1 m in the generated neighborhood).
+            // Search at foot level so a narrow horizontal probe can still find the mesh.
+            Vector3 origin = nav.transform.position - Vector3.up * nav.baseOffset;
             destination = origin;
             Vector3 away = origin - threat; away.y = 0;
             if (away.sqrMagnitude < 0.01f) away = nav.transform.forward;
