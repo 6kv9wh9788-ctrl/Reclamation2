@@ -300,8 +300,8 @@ namespace Reclamation.Tests
         {
             director.ConfigureAwareness(true);
             var brute = BruteAt(Vector3.zero);
-            var a = Actor("Alpha", new Vector3(-1, 0, 1.8f));
-            var b = Actor("Bravo", new Vector3(1, 0, 1.8f));
+            var a = Actor("Alpha", new Vector3(-0.65f, 0, 1.4f));
+            var b = Actor("Bravo", new Vector3(0.65f, 0, 1.4f));
             a.TrySpend(a.Energy); b.TrySpend(b.Energy);
             yield return null; Tick(0.1f, brute, a, b);
             Assert.That(brute.Action, Is.EqualTo(CombatAction.Sweep));
@@ -320,8 +320,8 @@ namespace Reclamation.Tests
         [UnityTest] public IEnumerator SweepDoesNotTrackVictimWhoMovesBehindBrute()
         {
             var brute = BruteAt(Vector3.zero);
-            var a = Actor("Alpha", new Vector3(-1, 0, 1.8f));
-            var b = Actor("Bravo", new Vector3(1, 0, 1.8f));
+            var a = Actor("Alpha", new Vector3(-0.65f, 0, 1.4f));
+            var b = Actor("Bravo", new Vector3(0.65f, 0, 1.4f));
             a.TrySpend(a.Energy); b.TrySpend(b.Energy);
             yield return null; Tick(0.1f, brute, a, b);
             Vector3 facing = brute.SweepForward;
@@ -334,9 +334,14 @@ namespace Reclamation.Tests
         [UnityTest] public IEnumerator RestedSurvivorsReserveSeparateSweepEscapePoints()
         {
             var brute = BruteAt(Vector3.zero);
-            var a = Actor("Alpha", new Vector3(-1, 0, 1.8f));
-            var b = Actor("Bravo", new Vector3(1, 0, 1.8f));
+            var a = Actor("Alpha", new Vector3(-0.65f, 0, 1.4f));
+            var b = Actor("Bravo", new Vector3(0.65f, 0, 1.4f));
             yield return null; Tick(0.1f, brute, a, b);
+            Assert.That(a.Action, Is.EqualTo(CombatAction.Ready), "Civilian must first read the windup.");
+            float reaction = a.SweepReactionRemaining;
+            Assert.That(reaction, Is.GreaterThan(0));
+            Tick(0, brute, a, b); Assert.That(a.SweepReactionRemaining, Is.EqualTo(reaction));
+            Tick(reaction + 0.01f, brute, a, b);
             Assert.That(a.Action, Is.EqualTo(CombatAction.Dodge)); Assert.That(b.Action, Is.EqualTo(CombatAction.Dodge));
             Assert.That(a.MovementGoal.magnitude, Is.GreaterThan(CombatDirector.SweepRadius));
             Assert.That(b.MovementGoal.magnitude, Is.GreaterThan(CombatDirector.SweepRadius));
@@ -367,12 +372,12 @@ namespace Reclamation.Tests
         [UnityTest] public IEnumerator RecoveryGivesBonusDamageWithoutShorteningCounterattackWindow()
         {
             var brute = BruteAt(Vector3.zero);
-            var a = Actor("Alpha", new Vector3(-1, 0, 1.8f));
-            var b = Actor("Bravo", new Vector3(1, 0, 1.8f));
+            var a = Actor("Alpha", new Vector3(-0.65f, 0, 1.4f));
+            var b = Actor("Bravo", new Vector3(0.65f, 0, 1.4f));
             a.TrySpend(a.Energy); b.TrySpend(b.Energy);
             yield return null; Tick(0.1f, brute, a, b); FinishSweep(brute, brute, a, b);
             var attacker = Actor("Counterattacker", Vector3.forward * 1.3f);
-            for (int i = 0; i < 9 && brute.Health == 180; i++) Tick(0.1f, brute, a, b, attacker);
+            for (int i = 0; i < 9 && brute.Health == 180; i++) Tick(0.1f, brute, attacker);
             Assert.That(brute.Health, Is.EqualTo(180 - attacker.Attributes.Damage * 1.25f));
             Assert.That(brute.SweepRecovery, Is.True); Assert.That(brute.Action, Is.EqualTo(CombatAction.Recover));
             Assert.That(brute.Duration, Is.EqualTo(CombatDirector.SweepRecoverySeconds));
@@ -406,6 +411,36 @@ namespace Reclamation.Tests
             Assert.That(Vector3.Distance(a.MovementGoal, b.MovementGoal), Is.GreaterThanOrEqualTo(1.15f));
             Assert.That(Vector3.Distance(a.MovementGoal, a.Anchor), Is.LessThanOrEqualTo(4));
             Assert.That(Vector3.Distance(b.MovementGoal, b.Anchor), Is.LessThanOrEqualTo(4));
+        }
+
+        [UnityTest] public IEnumerator BruteWaitsForCloseCrowdBeforeCommittingSweep()
+        {
+            var brute = BruteAt(Vector3.zero);
+            var a = Actor("Alpha", new Vector3(-1, 0, 1.8f));
+            var b = Actor("Bravo", new Vector3(1, 0, 1.8f));
+            yield return null; Tick(0.1f, brute, a, b);
+            Assert.That(brute.Action, Is.Not.EqualTo(CombatAction.Sweep));
+            Assert.That(brute.SweepCooldown, Is.Zero);
+        }
+
+        [UnityTest] public IEnumerator MissedSweepHasShortRecoveryWithoutBonusDamage()
+        {
+            var brute = BruteAt(Vector3.zero);
+            var a = Actor("Alpha", new Vector3(-0.65f, 0, 1.4f));
+            var b = Actor("Bravo", new Vector3(0.65f, 0, 1.4f));
+            a.TrySpend(a.Energy); b.TrySpend(b.Energy);
+            yield return null; Tick(0.1f, brute, a, b);
+            Vector3 facing = brute.SweepForward;
+            Vector3 side = Vector3.Cross(Vector3.up, facing);
+            a.GetComponent<NavMeshAgent>().Warp(-facing * 2 + side * 0.6f);
+            b.GetComponent<NavMeshAgent>().Warp(-facing * 2 - side * 0.6f);
+            FinishSweep(brute, brute, a, b);
+            Assert.That(brute.LastSweepHits, Is.Zero);
+            Assert.That(brute.Duration, Is.EqualTo(CombatDirector.MissedSweepRecoverySeconds));
+            Assert.That(brute.SweepCooldown, Is.LessThanOrEqualTo(2));
+            var counter = Actor("Veteran", Vector3.forward * 1.3f, false, true);
+            for (int i = 0; i < 6 && brute.Health == 180; i++) Tick(0.1f, brute, counter);
+            Assert.That(brute.Health, Is.EqualTo(180 - counter.Attributes.Damage));
         }
     }
 }

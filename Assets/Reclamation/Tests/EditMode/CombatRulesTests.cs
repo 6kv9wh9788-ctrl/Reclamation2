@@ -39,5 +39,11 @@ namespace Reclamation.Tests
             Assert.That(CombatDirector.InSweepArc(Vector3.zero, Vector3.right, new Vector3(2, 1, 0)), Is.True);
             Assert.That(CombatDirector.InSweepArc(Vector3.zero, Vector3.right, Vector3.left * 2), Is.False);
         }
+
+        [Test] public void CombatHelpersDoNotCollideWithUnityStartMessage()
+        {
+            Assert.That(typeof(CombatDirector).GetMethod("Start",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic), Is.Null);
+        }
     }
 }

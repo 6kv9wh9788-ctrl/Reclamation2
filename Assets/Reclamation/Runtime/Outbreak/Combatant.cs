@@ -41,6 +41,11 @@ namespace Reclamation.Outbreak
         public float SweepCooldown { get; internal set; }
         public float StaggerResistanceRemaining { get; internal set; }
         public bool SweepRecovery { get; internal set; }
+        public int LastSweepHits { get; internal set; }
+        internal Combatant NoticedSweep { get; set; }
+        internal int NoticedSweepRevision { get; set; }
+        public float SweepReactionRemaining { get; internal set; }
+        public float SweepReactionTime => Mathf.Clamp(0.55f - attributes.dexterity * 0.05f, 0.12f, 0.4f);
         public Vector3 SweepForward { get; internal set; }
         public Vector3 PushDirection { get; internal set; }
         public Vector3 MovementGoal { get; internal set; }

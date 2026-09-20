@@ -19,8 +19,10 @@ namespace Reclamation.Outbreak
         private float speed;
         private double minute;
         public const float SweepRadius = 2.4f;
-        public const float SweepWindup = 1.2f;
+        public const float SweepTriggerRadius = 1.7f;
+        public const float SweepWindup = 1f;
         public const float SweepRecoverySeconds = 1.7f;
+        public const float MissedSweepRecoverySeconds = 0.65f;
 
         public void Tick(IReadOnlyList<OutbreakAgent> people, float seconds, float multiplier, double now,
             PerimeterDefense walls = null)
@@ -43,6 +45,7 @@ namespace Reclamation.Outbreak
                 Observe(fighter);
                 fighter.SweepCooldown = Mathf.Max(0, fighter.SweepCooldown - seconds);
                 fighter.StaggerResistanceRemaining = Mathf.Max(0, fighter.StaggerResistanceRemaining - seconds);
+                fighter.SweepReactionRemaining = Mathf.Max(0, fighter.SweepReactionRemaining - seconds);
             }
             for (int i = 0; i < fighters.Count; i++)
                 if (fighters[i].Revision == revisions[i]) Advance(fighters[i], seconds);
@@ -151,9 +154,11 @@ namespace Reclamation.Outbreak
                     }
                     f.ReleaseGrab(); f.Begin(CombatAction.Recover, 1); break;
                 case CombatAction.Sweep:
-                    ResolveSweep(f);
-                    f.Begin(CombatAction.Recover, SweepRecoverySeconds);
-                    f.SweepRecovery = true; f.Status = "Recovering from sweep — vulnerable";
+                    f.LastSweepHits = ResolveSweep(f);
+                    f.Begin(CombatAction.Recover, f.LastSweepHits > 0 ? SweepRecoverySeconds : MissedSweepRecoverySeconds);
+                    if (f.LastSweepHits == 0) f.SweepCooldown = Mathf.Min(f.SweepCooldown, 2);
+                    f.SweepRecovery = true;
+                    f.Status = f.LastSweepHits > 0 ? "Recovering from sweep — vulnerable" : "Missed sweep — recovering";
                     break;
                 default: f.Begin(CombatAction.Ready, 0); break;
             }
@@ -163,7 +168,7 @@ namespace Reclamation.Outbreak
         {
             if (!target.Zombie) return;
             bool rescue = target.Action == CombatAction.Bite;
-            target.Health = Mathf.Max(0, target.Health - damage * (target.SweepRecovery ? 1.25f : 1));
+            target.Health = Mathf.Max(0, target.Health - damage * (target.SweepRecovery && target.LastSweepHits > 0 ? 1.25f : 1));
             if (target.TryStaggerFromHit(stagger))
             {
                 target.Handled = true;
@@ -181,7 +186,7 @@ namespace Reclamation.Outbreak
                 Vector3.Dot(forward.normalized, delta.normalized) >= -0.3420202f); // 220-degree forward arc.
         }
 
-        private void ResolveSweep(Combatant brute)
+        private int ResolveSweep(Combatant brute)
         {
             int hits = 0;
             foreach (var human in fighters)
@@ -197,7 +202,9 @@ namespace Reclamation.Outbreak
                 human.Handled = true; human.Status = "Knocked back by sweep";
                 human.Person.CombatStop(human.Status, brute.transform); hits++;
             }
-            LastEvent = $"{brute.Person.DisplayName} swept {hits} survivor(s) — counterattack opening!";
+            LastEvent = hits > 0 ? $"{brute.Person.DisplayName} swept {hits} survivor(s) — counterattack opening!"
+                : $"{brute.Person.DisplayName} missed the sweep and is resetting its stance.";
+            return hits;
         }
 
         private Combatant Nearest(Combatant f, float radius)
@@ -224,16 +231,17 @@ namespace Reclamation.Outbreak
                 if (f.IsBrute && enemy != null && f.SweepCooldown <= 0)
                 {
                     int nearby = 0;
-                    foreach (var human in fighters) if (!human.Zombie && Clear(f, human, SweepRadius)) nearby++;
+                    foreach (var human in fighters)
+                        if (!human.Zombie && human.Health > 0 && Clear(f, human, SweepTriggerRadius)) nearby++;
                     if (nearby >= 2)
                     {
                         f.SweepCooldown = 6;
-                        Start(f, CombatAction.Sweep, SweepWindup, enemy);
+                        BeginAction(f, CombatAction.Sweep, SweepWindup, enemy);
                         f.SweepForward = f.transform.forward;
                         f.Status = "Sweep windup — move!"; return;
                     }
                 }
-                if (Clear(f, enemy, 1.65f)) Start(f, CombatAction.Lunge, 0.7f, enemy);
+                if (Clear(f, enemy, 1.65f)) BeginAction(f, CombatAction.Lunge, 0.7f, enemy);
                 return; // Long-range pursuit and perimeter siege stay with the outbreak AI.
             }
             if (f.Health <= 0)
@@ -289,16 +297,16 @@ namespace Reclamation.Outbreak
             int close = 0;
             foreach (var other in fighters) if (other.Zombie && Clear(f, other, 1.9f)) close++;
             if (close >= 2 && f.ShoveCooldown <= 0 && f.TrySpend(22))
-            { f.ShoveCooldown = 4; Start(f, CombatAction.Shove, 0.25f, enemy); return; }
+            { f.ShoveCooldown = 4; BeginAction(f, CombatAction.Shove, 0.25f, enemy); return; }
             // Do not delay an immediately reachable rescue in order to tidy formation.
             if (enemy.Action != CombatAction.Bite && SpreadOut(f, enemy)) return;
             if (Clear(f, enemy, 1.6f) && f.TrySpend(14))
-            { Start(f, CombatAction.Strike, f.Attributes.Windup, enemy); return; }
+            { BeginAction(f, CombatAction.Strike, f.Attributes.Windup, enemy); return; }
             f.Status = enemy.Action == CombatAction.Bite ? "Moving to rescue ally" : "Closing to melee";
             f.Person.CombatMove(enemy.Person.FeetPosition, speed, 2.4f + f.Attributes.speed * 0.1f, 1.2f, f.Status);
         }
 
-        private void Start(Combatant f, CombatAction action, float duration, Combatant target)
+        private void BeginAction(Combatant f, CombatAction action, float duration, Combatant target)
         {
             f.Begin(action, duration, target); f.Handled = true;
             if (action == CombatAction.Lunge || action == CombatAction.Sweep) WitnessAttack(f, target);
@@ -326,6 +334,16 @@ namespace Reclamation.Outbreak
                 if (Vector3.Distance(human.Person.FeetPosition, brute.Person.FeetPosition) > SweepRadius + 0.15f)
                 {
                     human.Status = "Waiting for sweep opening";
+                    human.Person.CombatStop(human.Status, brute.transform); return true;
+                }
+                if (human.NoticedSweep != brute || human.NoticedSweepRevision != brute.Revision)
+                {
+                    human.NoticedSweep = brute; human.NoticedSweepRevision = brute.Revision;
+                    human.SweepReactionRemaining = human.SweepReactionTime;
+                }
+                if (human.SweepReactionRemaining > 0)
+                {
+                    human.Status = "Reading sweep windup";
                     human.Person.CombatStop(human.Status, brute.transform); return true;
                 }
                 Vector3 away = human.Person.FeetPosition - brute.Person.FeetPosition; away.y = 0;
