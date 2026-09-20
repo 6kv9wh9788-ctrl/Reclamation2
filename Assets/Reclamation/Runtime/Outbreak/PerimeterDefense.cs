@@ -85,7 +85,8 @@ namespace Reclamation.Outbreak
 
         private bool Eligible(OutbreakAgent person) => person != null && person.isActiveAndEnabled &&
             !person.Isolated && !person.VisibleSymptoms && person.State != InfectionState.Neutralized &&
-            zone != null && zone.GetAssignment(person) == RefugeAssignment.Sheltered;
+            zone != null && zone.GetAssignment(person) == RefugeAssignment.Sheltered &&
+            (person.GetComponent<Combatant>() == null || !person.GetComponent<Combatant>().Handled);
 
         public bool TrySiege(OutbreakAgent attacker, float speed)
         {

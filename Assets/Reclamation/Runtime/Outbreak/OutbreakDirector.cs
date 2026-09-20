@@ -18,6 +18,7 @@ namespace Reclamation.Outbreak
         private bool seeded;
         private bool collapsed;
         private Vector2 panelScroll;
+        private CombatDirector combat;
         private Rect PanelRect => new Rect(16, 16, 560, collapsed ? 130 : 700);
         public bool ContainsGuiPoint(Vector2 point) => isActiveAndEnabled && PanelRect.Contains(point);
         private string eventLog = "A visitor has entered the neighborhood.";
@@ -38,9 +39,12 @@ namespace Reclamation.Outbreak
 
         public void AttachSafeZone(SafeZone refuge) => safeZone = refuge;
 
+        private void Awake() => combat = GetComponent<CombatDirector>();
+
         private void Update()
         {
             if (clock == null || population == null) return;
+            if (visitor == null) seeded = true;
             if (!seeded && clock.MinuteOfDay >= 8 * 60)
             {
                 var random = new System.Random(scenarioSeed);
@@ -59,6 +63,9 @@ namespace Reclamation.Outbreak
                 }
             if (!clock.Paused)
             {
+                if (combat != null && combat.isActiveAndEnabled)
+                    combat.Tick(population, Time.deltaTime * clock.Speed, clock.Speed, clock.MinuteOfDay,
+                        safeZone == null ? null : safeZone.Perimeter);
                 SimulateContacts();
                 UpdateBehavior();
                 foreach (OutbreakAgent person in population)
@@ -74,6 +81,9 @@ namespace Reclamation.Outbreak
             {
                 OutbreakAgent source = population[i];
                 if (source == null || !source.Contagious || !source.gameObject.activeInHierarchy) continue;
+                // Opt-in combat replaces zombie proximity infection. Symptomatic human
+                // transmission is still the existing disease mechanic, not a zombie attack.
+                if (source.State == InfectionState.Turned && combat != null && combat.isActiveAndEnabled) continue;
                 for (int j = 0; j < population.Length; j++)
                 {
                     OutbreakAgent target = population[j];
@@ -106,6 +116,8 @@ namespace Reclamation.Outbreak
             foreach (OutbreakAgent person in population)
             {
                 if (person == null || !person.gameObject.activeInHierarchy) continue;
+                var fighter = person.GetComponent<Combatant>();
+                if (combat != null && combat.isActiveAndEnabled && fighter != null && fighter.Handled) continue;
                 if (perimeter != null && perimeter.IsWorker(person)) continue;
                 OutbreakAgent nearestThreat = null;
                 float dangerDistance = float.MaxValue;
@@ -192,6 +204,7 @@ namespace Reclamation.Outbreak
                 GUILayout.Label($"OUTCOME: {Outcome}", label);
                 GUILayout.Label($"Healthy {HealthyCount} | Developing {InfectedCount} | Turned {TurnedCount} | Neutralized {NeutralizedCount}", label);
                 GUILayout.Label(eventLog, label);
+                if (combat != null && combat.isActiveAndEnabled) GUILayout.Label(combat.LastEvent, label);
                 if (safeZone != null)
                     GUILayout.Label($"REFUGE {safeZone.ShelteredCount}/{safeZone.ShelterCapacity} | " +
                         $"QUARANTINE {safeZone.QuarantinedCount}/{safeZone.QuarantineCapacity} | " +
@@ -255,7 +268,23 @@ namespace Reclamation.Outbreak
                     }
                     GUILayout.EndHorizontal();
                 }
-                GUILayout.Label("Stop and restart Play Mode to reset. Isolation is an abstract prototype action. Isolation is listed above. Yellow head = symptomatic; green head = turned.", label);
+                if (combat != null && combat.isActiveAndEnabled)
+                    foreach (var person in population)
+                    {
+                        if (person == null || !person.gameObject.activeInHierarchy) continue;
+                        var fighter = person.GetComponent<Combatant>();
+                        if (fighter == null) continue;
+                        GUILayout.Label($"{person.DisplayName}: {fighter.Status} | HP {fighter.Health:0} | Combat stamina {fighter.Energy:0}/{fighter.Attributes.MaximumStamina:0}", label);
+                        if (!fighter.Zombie && !person.Isolated)
+                        {
+                            GUILayout.BeginHorizontal();
+                            if (GUILayout.Button("Hold here", button)) fighter.GiveOrder(CombatOrder.Hold);
+                            if (GUILayout.Button("Disengage", button)) fighter.GiveOrder(CombatOrder.Disengage);
+                            if (GUILayout.Button("Self defense", button)) fighter.GiveOrder(CombatOrder.SelfDefense);
+                            GUILayout.EndHorizontal();
+                        }
+                    }
+                GUILayout.Label("Stop and restart Play Mode to reset. Isolation is an abstract prototype action. Yellow head = symptomatic; green head = turned.", label);
                 GUILayout.EndScrollView();
             }
             GUILayout.EndArea();

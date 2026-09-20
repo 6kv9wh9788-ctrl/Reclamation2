@@ -10,6 +10,8 @@ namespace Reclamation.Neighborhood
         [SerializeField] private Renderer skin;
         private CivilianRoutine routine;
         private OutbreakAgent infection;
+        private Combatant combat;
+        private Vector3 restingPosition;
         private Vector3 previousPosition;
         private float phase;
         private Color naturalSkin;
@@ -25,6 +27,8 @@ namespace Reclamation.Neighborhood
         {
             routine = GetComponentInParent<CivilianRoutine>();
             infection = GetComponentInParent<OutbreakAgent>();
+            combat = GetComponentInParent<Combatant>();
+            restingPosition = transform.localPosition;
             naturalSkin = skin.sharedMaterial.color;
             tint = new MaterialPropertyBlock();
         }
@@ -45,6 +49,39 @@ namespace Reclamation.Neighborhood
             rightLeg.localRotation = Quaternion.Euler(-swing, 0, 0);
             leftArm.localRotation = Quaternion.Euler(turned ? -65 : -swing, 0, -5);
             rightArm.localRotation = Quaternion.Euler(turned ? -65 : swing, 0, 5);
+            transform.localPosition = restingPosition;
+            transform.localRotation = Quaternion.identity;
+            if (combat != null && combat.Handled)
+            {
+                float p = combat.Progress;
+                float pulse = Mathf.Sin(p * Mathf.PI);
+                switch (combat.Action)
+                {
+                    case CombatAction.Strike:
+                        rightArm.localRotation = Quaternion.Euler(-150 + p * 95, -35 + p * 70, 10);
+                        transform.localRotation = Quaternion.Euler(0, -20 + p * 40, 0); break;
+                    case CombatAction.Shove:
+                    case CombatAction.Lunge:
+                        leftArm.localRotation = Quaternion.Euler(-55 - p * 45, 0, -12);
+                        rightArm.localRotation = Quaternion.Euler(-55 - p * 45, 0, 12);
+                        transform.localRotation = Quaternion.Euler(p * 18, 0, 0); break;
+                    case CombatAction.Bite:
+                        leftArm.localRotation = Quaternion.Euler(-85, -25, -25);
+                        rightArm.localRotation = Quaternion.Euler(-85, 25, 25);
+                        // Pull back, then snap forward near the actual contact time.
+                        transform.localRotation = Quaternion.Euler(p < 0.7f ? -12 * pulse : Mathf.Lerp(-10, 35, (p - 0.7f) / 0.3f), 0, 0);
+                        transform.localPosition += Vector3.forward * p * 0.25f; break;
+                    case CombatAction.Grabbed:
+                        leftArm.localRotation = Quaternion.Euler(-100, 0, -35);
+                        rightArm.localRotation = Quaternion.Euler(-100, 0, 35);
+                        transform.localRotation = Quaternion.Euler(-15, 0, Mathf.Sin(p * 20) * 8); break;
+                    case CombatAction.Dodge:
+                        transform.localRotation = Quaternion.Euler(-12 * pulse, 0, -20 * pulse);
+                        transform.localPosition += Vector3.down * pulse * 0.22f; break;
+                    case CombatAction.Stagger:
+                        transform.localRotation = Quaternion.Euler(-25 * (1 - p), 0, 10 * (1 - p)); break;
+                }
+            }
             // Exposed people deliberately look identical to healthy people.
             Color color = turned ? new Color(0.36f, 0.61f, 0.29f) :
                 infection != null && infection.State == InfectionState.Symptomatic

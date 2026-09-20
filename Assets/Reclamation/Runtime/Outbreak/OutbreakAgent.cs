@@ -144,6 +144,32 @@ namespace Reclamation.Outbreak
                 nav.CalculatePath(hit.position, path) && path.status == NavMeshPathStatus.PathComplete;
         }
 
+        public bool ClearCombatLine(Vector3 point)
+        {
+            return CanNavigate && NavMesh.SamplePosition(point, out NavMeshHit hit, 0.3f, nav.areaMask) &&
+                !nav.Raycast(hit.position, out _);
+        }
+
+        public void CombatStop(string status, Transform face)
+        {
+            if (simulationPaused || !CanNavigate) return;
+            routine.enabled = false; fleeing = false; wantsBurst = false;
+            nav.ResetPath(); MovementStatus = status;
+            if (face != null)
+            {
+                Vector3 direction = face.position - transform.position; direction.y = 0;
+                if (direction.sqrMagnitude > 0.001f) transform.rotation = Quaternion.LookRotation(direction);
+            }
+        }
+
+        public bool CombatMove(Vector3 point, float multiplier, float metresPerSecond, float stoppingDistance, string status)
+        {
+            if (simulationPaused || !CanNavigate || !CanFlee || !CanReachPoint(point)) return false;
+            routine.enabled = false; fleeing = false; wantsBurst = false;
+            SetMovementSpeed(metresPerSecond, multiplier); nav.stoppingDistance = stoppingDistance;
+            MovementStatus = status; return nav.SetPath(path);
+        }
+
         public bool WorkAtDefense(Vector3 point, float speed)
         {
             if (!CanNavigate || simulationPaused || VisibleSymptoms || isolated) return false;
