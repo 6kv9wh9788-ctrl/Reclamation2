@@ -55,5 +55,42 @@ namespace Reclamation.Tests
             }
             finally { Object.DestroyImmediate(go); }
         }
+
+        [Test]
+        public void EnergyDrainsWhileAwakeAndRecoversOnlyWhileSleeping()
+        {
+            var go = new GameObject("survivor");
+            try
+            {
+                var needs = go.AddComponent<SurvivorNeeds>();
+                needs.ConfigureEnergy(34, 8, 25);
+                needs.Advance(30);
+                Assert.That(needs.Energy, Is.EqualTo(30).Within(0.001f));
+                Assert.That(needs.NeedsSleep, Is.True);
+                needs.Advance(2, true);
+                Assert.That(needs.Energy, Is.EqualTo(80).Within(0.001f));
+                Assert.That(needs.Rested, Is.False);
+                needs.Advance(0.2f, true);
+                Assert.That(needs.Rested, Is.True);
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        public void BedReservationIsExclusiveAndReleasable()
+        {
+            var go = new GameObject("bed");
+            try
+            {
+                var bed = go.AddComponent<Bed>();
+                Assert.That(bed.TryReserve("A"), Is.True);
+                Assert.That(bed.TryReserve("B"), Is.False);
+                bed.Release("B");
+                Assert.That(bed.Occupied, Is.True);
+                bed.Release("A");
+                Assert.That(bed.TryReserve("B"), Is.True);
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
     }
 }

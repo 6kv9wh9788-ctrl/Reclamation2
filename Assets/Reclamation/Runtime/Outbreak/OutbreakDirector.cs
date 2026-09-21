@@ -20,8 +20,11 @@ namespace Reclamation.Outbreak
         private Vector2 panelScroll;
         private CombatDirector combat;
         private bool resetProgressionArmed;
+        [SerializeField] private bool panelVisible = true;
+        [SerializeField] private string panelTitle = "RECLAMATION — PATIENT ZERO";
         private Rect PanelRect => new Rect(16, 16, 560, collapsed ? 130 : 700);
-        public bool ContainsGuiPoint(Vector2 point) => isActiveAndEnabled && PanelRect.Contains(point);
+        public bool ContainsGuiPoint(Vector2 point) => panelVisible && isActiveAndEnabled && PanelRect.Contains(point);
+        public bool PanelVisible => panelVisible;
         private string eventLog = "A visitor has entered the neighborhood.";
 
         public string Outcome { get; private set; } = "Normal life";
@@ -40,6 +43,11 @@ namespace Reclamation.Outbreak
 
         public void AttachSafeZone(SafeZone refuge) => safeZone = refuge;
         public void SetPopulation(OutbreakAgent[] agents) => population = agents;
+        public void SetPanelPresentation(bool visible, string title = null)
+        {
+            panelVisible = visible;
+            if (!string.IsNullOrWhiteSpace(title)) panelTitle = title;
+        }
 
         private void Awake() => combat = GetComponent<CombatDirector>();
 
@@ -183,7 +191,7 @@ namespace Reclamation.Outbreak
 
         private void OnGUI()
         {
-            if (clock == null || population == null) return;
+            if (!panelVisible || clock == null || population == null) return;
             if (label == null)
             {
                 label = new GUIStyle(GUI.skin.label) { fontSize = 18, wordWrap = true };
@@ -194,7 +202,7 @@ namespace Reclamation.Outbreak
             GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1));
             GUILayout.BeginArea(PanelRect, GUI.skin.box);
             GUILayout.BeginHorizontal();
-            GUILayout.Label("RECLAMATION — PATIENT ZERO", label);
+            GUILayout.Label(panelTitle, label);
             if (GUILayout.Button(collapsed ? "Expand" : "Collapse", button, GUILayout.Width(100))) collapsed = !collapsed;
             GUILayout.EndHorizontal();
             GUILayout.Label(clock.DisplayTime + (clock.Paused ? " (paused)" : $" ({clock.Speed:0.##}×)"), label);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Reclamation.Prototype;
 using UnityEngine;
 
 namespace Reclamation.Outbreak
@@ -23,7 +24,7 @@ namespace Reclamation.Outbreak
     }
 
     // State only. The director owns decisions and time, so pause/speed have one authority.
-    [RequireComponent(typeof(OutbreakAgent))]
+    [RequireComponent(typeof(OutbreakAgent), typeof(MedicalCondition), typeof(SurvivorMorale))]
     public sealed class Combatant : MonoBehaviour
     {
         [SerializeField] private CombatAttributes attributes = new CombatAttributes();
@@ -32,6 +33,8 @@ namespace Reclamation.Outbreak
         [SerializeField, Min(0)] private int startingExperience;
         public CombatAttributes Attributes => attributes;
         public OutbreakAgent Person { get; private set; }
+        public MedicalCondition Medical { get; private set; }
+        public SurvivorMorale Morale { get; private set; }
         public CombatOrder Order { get; private set; }
         public CombatAction Action { get; internal set; }
         public Combatant Target { get; internal set; }
@@ -75,7 +78,11 @@ namespace Reclamation.Outbreak
 
         private void Awake()
         {
-            Person = GetComponent<OutbreakAgent>(); Order = initialOrder;
+            Person = GetComponent<OutbreakAgent>(); Medical = GetComponent<MedicalCondition>();
+            if (Medical == null) Medical = gameObject.AddComponent<MedicalCondition>();
+            Morale = GetComponent<SurvivorMorale>();
+            if (Morale == null) Morale = gameObject.AddComponent<SurvivorMorale>();
+            Order = initialOrder;
             Anchor = Person.FeetPosition;
             Experience = persistentProgression ? SurvivorProgressionStore.Load(Person.DisplayName) : startingExperience;
             ApplyProgression();
@@ -150,7 +157,21 @@ namespace Reclamation.Outbreak
             wasZombie = Zombie;
             SweepCooldown = StaggerResistanceRemaining = 0;
             Health = Zombie ? Person.Class == ZombieClass.Brute ? 180 : 80 : 100;
+            if (Zombie) { Medical.Configure(0); Morale.Configure(70); }
             Begin(CombatAction.Ready, 0); Target = null;
+        }
+
+        internal void ApplyTrauma(float damage)
+        {
+            if (Zombie || !(damage > 0) || float.IsInfinity(damage)) return;
+            Health = Mathf.Max(0, Health - damage);
+            Medical.ApplyTrauma(damage);
+        }
+
+        internal void RestoreAfterTreatment(float amount)
+        {
+            if (Zombie || !(amount > 0) || float.IsInfinity(amount)) return;
+            Health = Mathf.Min(100, Health + amount);
         }
 
         public bool TrySpend(float amount)

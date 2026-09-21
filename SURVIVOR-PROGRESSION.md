@@ -8,11 +8,15 @@ Outside Play Mode:
 
 1. Choose **Reclamation > Validation > Create or Replace Systems Validation Lab**.
 2. Open/Play `Assets/Scenes/SystemsValidationLab.unity` if it is not already open.
-3. Use the upper-right panel to select one of six scenarios: civilian vs ordinary, veteran vs three, bite-rescue squad, three civilians vs brute, rank comparison, or hunger and meals.
-4. Each scenario is fresh the first time it is selected in a Play session. Stop/restart Play to reset all five.
+3. Use the upper-right panel to select one of eleven clearly labelled Combat or Settlement scenarios. The panel reports the active survivor/zombie count; settlement scenarios explicitly state that no zombies are expected.
+4. Each scenario is fresh the first time it is selected in a Play session. Stop/restart Play to reset all eleven.
 5. After confirming the consolidated lab works, choose **Reclamation > Validation > Remove Legacy Generated Combat Labs**. The confirmation-scoped cleanup removes only scene/navigation assets whose filenames begin `CivilianVsOne`, `VeteranVsThree`, `ProtectCivilian`, or `ThreeCiviliansVsBrute`. Patient Zero, neighborhood, hauling, and shelter scenes are not touched.
 
-The validation lab uses session-only progression and cannot erase or modify the persistent Patient Zero records. Orange, purple, and blue shirts represent Civilian, Trained, and Veteran starting ranks. The hunger-and-meals scenario validates that urgent personal needs can interrupt hauling, reserve exactly one meal, consume it on arrival, and then return the survivor to ordinary work.
+The validation lab uses session-only progression and cannot erase or modify the persistent Patient Zero records. Orange, purple, and blue shirts represent Civilian, Trained, and Veteran starting ranks. The settlement scenarios validate urgent meals, fatigue and sleep, the farm-to-store-to-meal supply chain, finite medical treatment, morale collapse/recovery, and broad player-directed job priorities.
+
+Combat scenarios begin at a shorter visible engagement distance. The left combat panel is titled Combat Validation and is hidden automatically for settlement scenarios, preventing it from overlapping the settlement decision overlay. Switching scenarios also refreshes the camera's Previous/Next target list. Scenario state is preserved during a Play session; when every zombie has been neutralized, the selector reports that combat is complete and instructs the tester to restart Play Mode for a fresh run.
+
+Encounter setup resolves required actor components before changing infection state. This permits inactive authored scenario zombies to turn safely before their scenario is selected and prevents an early inactive actor from aborting setup for all later combat scenarios.
 
 ## XP and ranks
 

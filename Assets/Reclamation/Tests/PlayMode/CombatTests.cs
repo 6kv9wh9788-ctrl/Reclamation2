@@ -65,6 +65,19 @@ namespace Reclamation.Tests
             for (int i = 0; i < 14; i++) Tick(0.1f, human, zombie);
             Assert.That(human.Person.State, Is.EqualTo(InfectionState.Exposed));
             Assert.That(human.Health, Is.EqualTo(75)); Assert.That(human.Grabber, Is.Null);
+            Assert.That(human.Medical.Injury, Is.EqualTo(25));
+            Assert.That(human.Morale.Morale, Is.EqualTo(55));
+        }
+
+        [UnityTest] public IEnumerator PanickedSurvivorFleesInsteadOfStartingAnAttack()
+        {
+            var human = Actor("Panicked civilian", Vector3.zero);
+            var zombie = Actor("Zombie", Vector3.forward * 1.4f, true);
+            human.Morale.Configure(10);
+            yield return null; Tick(0.1f, human, zombie);
+            Assert.That(human.Action, Is.EqualTo(CombatAction.Ready));
+            Assert.That(human.Person.IsFleeing, Is.True);
+            Assert.That(human.Status, Does.Contain("Panicking"));
         }
 
         [UnityTest] public IEnumerator ZeroTimeAndNewOrderCannotSkipGrab()
@@ -491,11 +504,12 @@ namespace Reclamation.Tests
         [UnityTest] public IEnumerator ValidationLabSwitchesPopulationWithoutActivatingOtherScenarios()
         {
             var firstRoot = Make("First scenario"); var secondRoot = Make("Second scenario");
+            var settlementRoot = Make("Settlement scenario");
             var first = Actor("First", Vector3.zero); var second = Actor("Second", Vector3.right * 3);
             first.transform.SetParent(firstRoot.transform); second.transform.SetParent(secondRoot.transform);
             var outbreak = Make("Outbreak").AddComponent<OutbreakDirector>();
             var lab = outbreak.gameObject.AddComponent<SystemsValidationLab>();
-            lab.Configure(new[] { firstRoot, secondRoot }, new[] { "First", "Second" }, outbreak);
+            lab.Configure(new[] { firstRoot, secondRoot, settlementRoot }, new[] { "First", "Second", "Settlement" }, outbreak);
             lab.Select(0);
             yield return null;
             Assert.That(firstRoot.activeSelf, Is.True); Assert.That(secondRoot.activeSelf, Is.False);
@@ -503,6 +517,11 @@ namespace Reclamation.Tests
             Assert.That(lab.Select(1), Is.True);
             Assert.That(firstRoot.activeSelf, Is.False); Assert.That(secondRoot.activeSelf, Is.True);
             Assert.That(outbreak.Population[0], Is.EqualTo(second.Person));
+            Assert.That(outbreak.PanelVisible, Is.True);
+            Assert.That(lab.Select(2), Is.True);
+            Assert.That(outbreak.Population.Count, Is.Zero);
+            Assert.That(outbreak.PanelVisible, Is.False,
+                "Settlement scenarios hide the combat panel so it cannot overlap the needs overlay.");
             Assert.That(lab.Select(99), Is.False);
         }
     }

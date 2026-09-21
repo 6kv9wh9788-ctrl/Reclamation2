@@ -69,16 +69,26 @@ namespace Reclamation.Outbreak
 
         private void Awake()
         {
-            routine = GetComponent<CivilianRoutine>();
-            nav = GetComponent<NavMeshAgent>();
-            body = GetComponent<Renderer>();
-            healthyColor = body == null ? Color.white : body.sharedMaterial.color;
-            path = new NavMeshPath();
-            escapePlanner = new EscapeRoutePlanner();
+            ResolveComponents();
             // Match the human body's width and let local avoidance negotiate passing.
             nav.radius = Mathf.Max(nav.radius, 0.45f);
             nav.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
             nav.avoidancePriority = 30 + (int)((uint)GetInstanceID() % 40);
+        }
+
+        private void ResolveComponents()
+        {
+            // Generated validation scenarios are inactive until selected. Encounter setup
+            // can expose those authored zombies before Unity invokes their Awake methods.
+            if (routine == null) routine = GetComponent<CivilianRoutine>();
+            if (nav == null) nav = GetComponent<NavMeshAgent>();
+            if (body == null)
+            {
+                body = GetComponent<Renderer>();
+                if (body != null) healthyColor = body.sharedMaterial == null ? Color.white : body.sharedMaterial.color;
+            }
+            if (path == null) path = new NavMeshPath();
+            if (escapePlanner == null) escapePlanner = new EscapeRoutePlanner();
         }
 
         public bool Expose(double now, double incubation, double symptomatic)
@@ -436,12 +446,13 @@ namespace Reclamation.Outbreak
 
         private void ApplyState()
         {
+            ResolveComponents();
             if (isolated || State == InfectionState.Turned || State == InfectionState.Neutralized) IsWithdrawing = false;
             bool canRoutine = !isolated && (State == InfectionState.Healthy || State == InfectionState.Exposed);
             if (!canRoutine) { fleeing = false; wantsBurst = false; nextRouteAt = 0; }
-            routine.enabled = canRoutine && !fleeing && refugeAssignment == RefugeAssignment.None;
+            if (routine != null) routine.enabled = canRoutine && !fleeing && refugeAssignment == RefugeAssignment.None;
             MovementStatus = isolated ? "Isolated" : State == InfectionState.Symptomatic ? "Symptomatic; stopped" : MovementStatus;
-            if (!canRoutine && nav.isActiveAndEnabled && nav.isOnNavMesh) nav.ResetPath();
+            if (!canRoutine && nav != null && nav.isActiveAndEnabled && nav.isOnNavMesh) nav.ResetPath();
             if (State == InfectionState.Neutralized)
             {
                 MovementStatus = "Neutralized";

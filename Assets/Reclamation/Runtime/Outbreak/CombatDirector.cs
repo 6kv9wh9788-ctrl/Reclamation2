@@ -150,7 +150,10 @@ namespace Reclamation.Outbreak
                 case CombatAction.Bite:
                     if (target != null && target.Grabber == f && Clear(f, target, 1.9f))
                     {
-                        target.Health = Mathf.Max(0, target.Health - 25);
+                        bool wasStanding = target.Health > 0;
+                        target.ApplyTrauma(25);
+                        target.Morale.ApplyEvent(-15);
+                        if (wasStanding && target.Health <= 0) ApplyAllyShock(target);
                         if (target.Person.Infectable) target.Person.Expose(minute, 12, 15);
                         LastEvent = $"BITE! {f.Person.DisplayName} bit {target.Person.DisplayName}.";
                     }
@@ -181,6 +184,8 @@ namespace Reclamation.Outbreak
             if (target.Health <= 0)
             {
                 source.AwardExperience("Threat defeated", target.IsBrute ? 35 : 20);
+                foreach (var human in fighters)
+                    if (!human.Zombie && human.Health > 0) human.Morale.ApplyEvent(6);
                 target.Person.Neutralize(); LastEvent = $"{source.Person.DisplayName} defeated {target.Person.DisplayName}.";
             }
             else if (rescue)
@@ -204,7 +209,10 @@ namespace Reclamation.Outbreak
                 human.Interrupt(0.45f); // Release any existing grab before applying displacement.
                 Vector3 away = human.Person.FeetPosition - brute.Person.FeetPosition; away.y = 0;
                 human.PushDirection = away.sqrMagnitude > 0.001f ? away.normalized : brute.SweepForward;
-                human.Health = Mathf.Max(0, human.Health - 10);
+                bool wasStanding = human.Health > 0;
+                human.ApplyTrauma(10);
+                human.Morale.ApplyEvent(-6);
+                if (wasStanding && human.Health <= 0) ApplyAllyShock(human);
                 human.Energy = Mathf.Max(0, human.Energy - 25);
                 human.Begin(CombatAction.KnockedBack, 0.45f);
                 human.Handled = true; human.Status = "Knocked back by sweep";
@@ -256,6 +264,11 @@ namespace Reclamation.Outbreak
             if (f.Health <= 0)
             { f.Handled = true; f.Person.CombatStop("Downed; needs rescue", null); return; }
             if (!f.Person.CanFlee) return;
+            if (f.Morale.Panicked && enemy != null)
+            {
+                f.Handled = true; f.Status = "Panicking — fleeing immediate danger";
+                f.Person.FleeFrom(enemy.transform.position, speed); return;
+            }
             if (requiresWitness && f.Awareness != ThreatAwareness.Alerted)
             {
                 foreach (var stranger in fighters)
@@ -405,6 +418,12 @@ namespace Reclamation.Outbreak
         {
             foreach (var fighter in fighters)
                 if (fighter != null) { fighter.ReleaseGrab(); fighter.Begin(CombatAction.Ready, 0); fighter.Handled = false; }
+        }
+
+        private void ApplyAllyShock(Combatant casualty)
+        {
+            foreach (var human in fighters)
+                if (human != casualty && !human.Zombie && human.Health > 0) human.Morale.ApplyEvent(-12);
         }
 
         private void ResolveEncounterExperience()

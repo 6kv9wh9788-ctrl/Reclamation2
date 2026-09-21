@@ -69,5 +69,27 @@ namespace Reclamation.Tests
             Assert.DoesNotThrow(() => agent.SetSimulationPaused(true));
             Assert.DoesNotThrow(() => agent.SetSimulationPaused(false));
         }
+
+        [UnityTest] public IEnumerator InactiveAuthoredZombieCanTurnBeforeAwakeWithoutAbortingEncounterSetup()
+        {
+            var inactive = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            inactive.SetActive(false);
+            inactive.AddComponent<CivilianRoutine>();
+            var authoredZombie = inactive.AddComponent<OutbreakAgent>();
+            authoredZombie.Configure("Inactive authored zombie");
+            try
+            {
+                Assert.DoesNotThrow(() =>
+                {
+                    authoredZombie.Expose(0, 1, 1);
+                    authoredZombie.Simulate(2);
+                });
+                Assert.That(authoredZombie.State, Is.EqualTo(InfectionState.Turned));
+                inactive.SetActive(true);
+                yield return null;
+                Assert.That(authoredZombie.State, Is.EqualTo(InfectionState.Turned));
+            }
+            finally { Object.DestroyImmediate(inactive); }
+        }
     }
 }

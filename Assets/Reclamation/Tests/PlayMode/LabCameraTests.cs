@@ -42,6 +42,7 @@ namespace Reclamation.Tests
         public IEnumerator FollowTracksMovingTargetWhileClockIsPaused()
         {
             controller.Follow(person.transform);
+            Assert.That(controller.SelectedTarget, Is.EqualTo(person.transform));
             yield return null;
             yield return null;
             Vector3 before = cameraObject.transform.position;
@@ -50,6 +51,18 @@ namespace Reclamation.Tests
             yield return null;
             Assert.That(Vector3.Distance(cameraObject.transform.position - before, new Vector3(3, 0, 2)), Is.LessThan(0.01f));
             Assert.That(clockObject.GetComponent<NeighborhoodClock>().Paused, Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator SelectionDoesNotForceCameraFollow()
+        {
+            controller.Select(person.transform);
+            yield return null;
+            Assert.That(controller.SelectedTarget, Is.EqualTo(person.transform));
+            Assert.That(controller.FollowTarget, Is.Null);
+            controller.ClearSelection();
+            Assert.That(controller.SelectedTarget, Is.Null);
+            Assert.That(controller.FollowTarget, Is.Null);
         }
 
         [UnityTest]
@@ -64,6 +77,7 @@ namespace Reclamation.Tests
             yield return null;
             yield return null;
             Assert.That(controller.FollowTarget == null, Is.True);
+            Assert.That(controller.SelectedTarget == null, Is.True);
             Assert.That(Vector3.Distance(cameraObject.transform.position, before), Is.LessThan(0.01f));
         }
 
@@ -78,6 +92,7 @@ namespace Reclamation.Tests
             yield return null;
             yield return null;
             Assert.That(controller.FollowTarget == null, Is.True);
+            Assert.That(controller.SelectedTarget == null, Is.True);
             Assert.That(Vector3.Distance(cameraObject.transform.position, initialPosition), Is.LessThan(0.01f));
             Assert.That(Quaternion.Angle(cameraObject.transform.rotation, initialRotation), Is.LessThan(0.01f));
             Assert.That(cameraObject.GetComponent<Camera>().orthographicSize, Is.EqualTo(20));

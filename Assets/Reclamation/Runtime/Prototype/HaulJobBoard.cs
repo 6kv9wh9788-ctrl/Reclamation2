@@ -8,6 +8,8 @@ namespace Reclamation.Prototype
     {
         [SerializeField] private Stockpile destination;
         [SerializeField] private List<ResourcePile> sources = new();
+        [SerializeField] private List<FarmPlot> farms = new();
+        [SerializeField] private SettlementPolicy policy;
 
         private readonly ReservationRegistry _reservations = new();
 
@@ -15,12 +17,37 @@ namespace Reclamation.Prototype
         public ShelterBlueprint Shelter { get; private set; }
         public void SetShelter(ShelterBlueprint shelter) => Shelter = shelter;
         public int OpenReservationCount => _reservations.Count;
+        public IReadOnlyList<FarmPlot> Farms => farms;
+        public SettlementPolicy Policy => policy;
+        public void SetPolicy(SettlementPolicy settlementPolicy) => policy = settlementPolicy;
 
         public void Configure(Stockpile stockpile, IEnumerable<ResourcePile> resourceSources)
         {
             destination = stockpile;
             sources.Clear();
             sources.AddRange(resourceSources);
+        }
+
+        public void SetFarms(IEnumerable<FarmPlot> plots)
+        {
+            farms.Clear();
+            if (plots != null) farms.AddRange(plots);
+        }
+
+        public bool TryClaimFarm(string workerId, Vector3 workerPosition,
+            out FarmPlot claimedFarm, System.Func<FarmPlot, bool> canUse = null)
+        {
+            claimedFarm = null; float nearest = float.MaxValue;
+            foreach (FarmPlot farm in farms)
+            {
+                if (farm == null || !farm.isActiveAndEnabled || !farm.Mature || farm.Reserved ||
+                    (canUse != null && !canUse(farm))) continue;
+                float distance = Vector3.Distance(workerPosition, farm.transform.position);
+                if (distance < nearest) { nearest = distance; claimedFarm = farm; }
+            }
+            if (claimedFarm == null || !claimedFarm.TryReserve(workerId))
+            { claimedFarm = null; return false; }
+            return true;
         }
 
         public bool TryClaimBest(
@@ -83,6 +110,7 @@ namespace Reclamation.Prototype
         public void ReleaseAll(string workerId)
         {
             _reservations.ReleaseAll(workerId);
+            foreach (FarmPlot farm in farms) if (farm != null) farm.Release(workerId);
         }
     }
 }

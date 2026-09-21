@@ -252,5 +252,142 @@ namespace Reclamation.Tests
                 "The survivor should resume hauling after eating.");
             AssertConserved();
         }
+
+        [UnityTest]
+        public IEnumerator CriticalFatigueReservesBedSleepsThenWorkResumes()
+        {
+            var bed = Make<Bed>("bed", new Vector3(0, 0, 3));
+            worker.ConfigureNeeds(null, 20, 0);
+            worker.ConfigureRest(new[] { bed }, 20, 0, 50);
+            float deadline = Time.realtimeSinceStartup + 10f;
+            while (!bed.Occupied && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(bed.Occupied, Is.True, worker.DecisionExplanation);
+
+            deadline = Time.realtimeSinceStartup + 10f;
+            while ((worker.Needs.Energy < SurvivorNeeds.WakeEnergy || bed.Occupied) &&
+                Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(worker.Needs.Energy, Is.GreaterThanOrEqualTo(SurvivorNeeds.WakeEnergy));
+            Assert.That(bed.Occupied, Is.False);
+
+            deadline = Time.realtimeSinceStartup + 15f;
+            while (!worker.Carrying && stock.StoredUnits == 0 && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(worker.Carrying || stock.StoredUnits > 0, Is.True,
+                "The survivor should resume hauling after sleeping.");
+            AssertConserved();
+        }
+
+        [UnityTest]
+        public IEnumerator HarvestedFoodIsStoredThenConsumedAsAMeal()
+        {
+            expectedWood = 0;
+            pile.Configure(0);
+            var food = Make<FoodStore>("food", new Vector3(4, 0, 3));
+            food.Configure(0);
+            var farm = Make<FarmPlot>("farm", new Vector3(-4, 0, 3));
+            farm.Configure(1, 4, 3);
+            board.SetFarms(new[] { farm });
+            worker.ConfigureNeeds(food, 20, 0);
+            worker.ConfigureRest(null, 100, 0, 25);
+
+            float deadline = Time.realtimeSinceStartup + 12f;
+            while (food.Servings < 3 && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(food.Servings, Is.EqualTo(3), worker.DecisionExplanation);
+            Assert.That(worker.CarriedFood, Is.Zero);
+            Assert.That(farm.Growth, Is.Zero);
+            Assert.That(farm.Reserved, Is.False);
+            AssertConserved();
+
+            worker.ConfigureNeeds(food, 75, 0);
+            deadline = Time.realtimeSinceStartup + 10f;
+            while (food.Servings > 2 && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(food.Servings, Is.EqualTo(2), worker.DecisionExplanation);
+            Assert.That(worker.Needs.Hunger, Is.EqualTo(10).Within(0.1f));
+            Assert.That(food.ReservedServings, Is.Zero);
+            AssertConserved();
+        }
+
+        [UnityTest]
+        public IEnumerator InjuredWorkerConsumesReservedMedicineThenResumesWork()
+        {
+            var medicine = Make<MedicineStore>("medicine", new Vector3(0, 0, 3));
+            medicine.Configure(1);
+            worker.ConfigureNeeds(null, 20, 0);
+            worker.ConfigureRest(null, 100, 0, 25);
+            worker.ConfigureMedicine(medicine, 75);
+
+            float deadline = Time.realtimeSinceStartup + 10f;
+            while (medicine.Supplies > 0 && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(medicine.Supplies, Is.Zero, worker.DecisionExplanation);
+            Assert.That(medicine.ReservedSupplies, Is.Zero);
+            Assert.That(worker.Medical.Injury, Is.EqualTo(10).Within(0.1f));
+            Assert.That(worker.Medical.NeedsTreatment, Is.False);
+
+            deadline = Time.realtimeSinceStartup + 15f;
+            while (!worker.Carrying && stock.StoredUnits == 0 && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(worker.Carrying || stock.StoredUnits > 0, Is.True,
+                "The survivor should return to settlement work after treatment.");
+            AssertConserved();
+        }
+
+        [UnityTest]
+        public IEnumerator PanickedWorkerRecoversAtGatheringSpotThenResumesWork()
+        {
+            var recreation = Make<RecreationSpot>("gathering spot", new Vector3(0, 0, 3));
+            recreation.Configure(1);
+            worker.ConfigureNeeds(null, 20, 0);
+            worker.ConfigureRest(null, 100, 0, 25);
+            worker.ConfigureMedicine(null, 0);
+            worker.ConfigureMorale(recreation, 15);
+
+            float deadline = Time.realtimeSinceStartup + 10f;
+            while ((worker.Morale.Morale < SurvivorMorale.RecoveryTarget || recreation.Occupancy > 0) &&
+                Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(worker.Morale.Morale, Is.GreaterThanOrEqualTo(SurvivorMorale.RecoveryTarget),
+                worker.DecisionExplanation);
+            Assert.That(recreation.Occupancy, Is.Zero);
+            Assert.That(worker.Morale.Panicked, Is.False);
+
+            deadline = Time.realtimeSinceStartup + 15f;
+            while (!worker.Carrying && stock.StoredUnits == 0 && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(worker.Carrying || stock.StoredUnits > 0, Is.True,
+                "The survivor should return to settlement work after morale recovery.");
+            AssertConserved();
+        }
+
+        [UnityTest]
+        public IEnumerator PlayerFocusReleasesFarmAndReplansToConstruction()
+        {
+            expectedWood = 12;
+            for (int i = 0; i < ShelterBlueprint.WoodCost; i++) stock.DepositOne();
+            var shelter = Make<ShelterBlueprint>("shelter", new Vector3(4, 0, 5));
+            board.SetShelter(shelter);
+            var food = Make<FoodStore>("food", new Vector3(4, 0, 3)); food.Configure(4);
+            var farm = Make<FarmPlot>("farm", new Vector3(-4, 0, 3)); farm.Configure(1, 4, 3);
+            board.SetFarms(new[] { farm });
+            var policy = Make<SettlementPolicy>("policy", Vector3.zero); board.SetPolicy(policy);
+            policy.SetFocus(SettlementFocus.Food);
+            worker.Configure("Tester", board);
+            worker.ConfigureNeeds(food, 20, 0);
+            worker.ConfigureRest(null, 100, 0, 25);
+            worker.ConfigureMedicine(null, 0);
+            worker.ConfigureMorale(null, 70);
+
+            float deadline = Time.realtimeSinceStartup + 5f;
+            while (worker.State != HaulWorker.WorkerState.MovingToFarm &&
+                worker.State != HaulWorker.WorkerState.Harvesting &&
+                Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(farm.Reserved, Is.True, worker.DecisionExplanation);
+
+            policy.SetFocus(SettlementFocus.BuildDefense);
+            deadline = Time.realtimeSinceStartup + 8f;
+            while (worker.State != HaulWorker.WorkerState.MovingToSupplies &&
+                worker.State != HaulWorker.WorkerState.MovingToShelter &&
+                shelter.DeliveredWood == 0 && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(farm.Reserved, Is.False, "Changing focus should release the old farm reservation.");
+            Assert.That(worker.State == HaulWorker.WorkerState.MovingToSupplies ||
+                worker.State == HaulWorker.WorkerState.MovingToShelter || shelter.DeliveredWood > 0,
+                Is.True, worker.DecisionExplanation);
+            AssertConserved();
+        }
     }
 }
