@@ -7,7 +7,7 @@ namespace Reclamation.Blight
     {
         private sealed class LimbRig
         {
-            public Transform body, head, grip, bladeBase, bladeTip;
+            public Transform body, head, grip, bladeBase, bladeTip, swordModel, axeModel;
             public readonly Transform[] joints = new Transform[5], bends = new Transform[5], caps = new Transform[5];
             public readonly Vector3[] previous = new Vector3[5];
             public Vector3 previousBase, previousTip;
@@ -85,13 +85,43 @@ namespace Reclamation.Blight
             }
             if (!actor.enemy)
             {
-                rig.grip = Pivot(actor.root, "Swept sword", Vector3.zero);
-                Part(rig.grip, "Blade", new Vector3(0, 0, 1), new Vector3(0.07f, 0.035f, 1.7f), steel);
-                Part(rig.grip, "Guard", new Vector3(0, 0, 0.12f), new Vector3(0.3f, 0.065f, 0.06f), steel);
-                Part(rig.grip, "Hilt", Vector3.back * 0.02f, new Vector3(0.065f, 0.065f, 0.23f), cloth);
+                rig.grip = Pivot(actor.root, "Swept weapon", Vector3.zero);
+                rig.swordModel = Pivot(rig.grip, "Sword model", Vector3.zero);
+                Part(rig.swordModel, "Blade", new Vector3(0, 0, 1), new Vector3(0.07f, 0.035f, 1.7f), steel);
+                Part(rig.swordModel, "Guard", new Vector3(0, 0, 0.12f), new Vector3(0.3f, 0.065f, 0.06f), steel);
+                Part(rig.swordModel, "Hilt", Vector3.back * 0.02f, new Vector3(0.065f, 0.065f, 0.23f), cloth);
+                rig.axeModel = Pivot(rig.grip, "Axe model", Vector3.zero);
+                Part(rig.axeModel, "Handle", new Vector3(0, 0, 0.68f), new Vector3(0.08f, 0.08f, 1.45f),
+                    Material(new Color(0.38f, 0.25f, 0.13f)));
+                Part(rig.axeModel, "Axe head", new Vector3(0, 0, 1.4f), new Vector3(0.48f, 0.1f, 0.3f), steel);
                 rig.bladeBase = Pivot(rig.grip, "Blade base", Vector3.forward * 0.15f);
                 rig.bladeTip = Pivot(rig.grip, "Blade tip", Vector3.forward * 1.85f);
+                EquipLimbWeapon(actor);
             }
+            InstallStylizedArt(actor);
+        }
+
+        private void InstallStylizedArt(Actor actor)
+        {
+            CharacterArtData data = StylizedCharacterArt.Load(actor.enemy);
+            if (data == null) return; // Original primitives remain a functional fallback.
+            LimbRig rig = actor.rig;
+            foreach (Renderer renderer in rig.body.GetComponentsInChildren<Renderer>(true))
+                if (!renderer.name.StartsWith("Sever cap")) renderer.enabled = false;
+            Transform[] bones = { rig.body, rig.head, rig.joints[1], rig.bends[1], rig.joints[2], rig.bends[2],
+                rig.joints[3], rig.bends[3], rig.joints[4], rig.bends[4] };
+            actor.root.gameObject.AddComponent<StylizedCharacterArt>().Build(data, bones);
+        }
+
+        private void EquipLimbWeapon(Actor actor)
+        {
+            LimbRig rig = actor.rig;
+            if (rig == null || rig.grip == null) return;
+            bool axe = actor.weapon == BlightWeapon.Axe;
+            rig.swordModel.gameObject.SetActive(!axe); rig.axeModel.gameObject.SetActive(axe);
+            // Only the axe head deals cutting damage, not its handle.
+            rig.bladeBase.localPosition = axe ? new Vector3(-0.24f, 0, 1.4f) : Vector3.forward * 0.15f;
+            rig.bladeTip.localPosition = axe ? new Vector3(0.24f, 0, 1.4f) : Vector3.forward * 1.85f;
         }
 
         private Material CapMaterial() => Material(lowGore ? new Color(0.11f, 0.1f, 0.14f) : new Color(0.36f, 0.07f, 0.09f));
@@ -170,13 +200,18 @@ namespace Reclamation.Blight
                         blade.bladeBase.position, blade.bladeTip.position, target.rig.previous[i], RegionCenter(target, i), i == 0 ? 0.27f : 0.19f)) continue;
                     blade.hit = true; LastLimbHit = region;
                     float before = target.fighter.Health;
+                    DuelAction previousAction = target.fighter.Action;
                     bool frontal = Vector3.Angle(target.root.forward, player.root.position - target.root.position) < 70;
-                    string result = target.fighter.Receive(player.fighter.Strike.Damage * playerDamageScale * (i == 0 ? 1 : 0.3f),
-                        frontal, player.fighter.Heavy);
-                    if (target.fighter.Health < before && target.limbs.Damage(region, player.fighter.Heavy ? 35 : 18, true))
+                    string result = target.fighter.ReceiveAttack(player.fighter.Strike, frontal,
+                        playerDamageScale * (i == 0 ? 1 : 0.3f));
+                    if (target.fighter.Health < before && target.limbs.Damage(region,
+                        BlightEquipment.LimbDamage(player.weapon, player.fighter.Heavy), true))
                     {
-                        DetachLimb(target, i); target.fighter.Interrupt(0.8f); result = "severed";
+                        DetachLimb(target, i);
+                        target.fighter.Interrupt(player.weapon == BlightWeapon.Axe ? Mathf.Max(0.8f, target.fighter.Remaining) : 0.8f);
+                        result = "severed";
                     }
+                    ShowCombatImpact(target, result, previousAction);
                     Say(region + ": " + result); Pose(target); return;
                 }
             }

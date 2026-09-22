@@ -9,9 +9,9 @@ namespace Reclamation.Blight
     {
         private sealed class Actor
         {
-            public Transform root, arm, offArm, leftLeg, rightLeg, sword, spear;
+            public Transform root, arm, offArm, leftLeg, rightLeg, sword, spear, axe;
             public DuelFighter fighter;
-            public bool enemy, hulk, moving;
+            public bool enemy, hulk, moving, lootDropped;
             public int slot, attacks;
             public float delay, radius = 0.43f, size = 1;
             public Vector3 spawn, anchor, dodgeDirection;
@@ -19,6 +19,7 @@ namespace Reclamation.Blight
             public BlightWeapon weapon;
             public LimbRig rig;
             public BlightLimbs limbs;
+            public ImpactFeedback feedback = new ImpactFeedback();
         }
 
         [Header("Provisional playtest tuning")]
@@ -62,7 +63,7 @@ namespace Reclamation.Blight
         }
         private bool HasSquad => Scenario == BlightScenario.Squad || Scenario == BlightScenario.Hulk || Scenario == BlightScenario.Patrol;
         private bool Ended => player != null && (!player.fighter.Alive ||
-            (Scenario != BlightScenario.Patrol && LivingEnemies == 0));
+            (Scenario != BlightScenario.Patrol && Scenario != BlightScenario.Weapons && LivingEnemies == 0));
         private float UiScale => Mathf.Max(0.15f, Mathf.Min(Screen.width / 1200f, Screen.height / 800f));
         private float UiWidth => Screen.width / UiScale;
         private float UiHeight => Screen.height / UiScale;
@@ -79,6 +80,8 @@ namespace Reclamation.Blight
         {
             if (view == null || (int)scenario < 0 || (int)scenario > 5) return;
             ClearLimbDebris();
+            ClearCombatFeedback();
+            ResetLoot();
             foreach (Actor actor in actors)
             {
                 actor.root.gameObject.SetActive(false);
@@ -86,6 +89,7 @@ namespace Reclamation.Blight
             }
             actors.Clear(); impacts.Clear(); victims.Clear();
             Scenario = scenario; Order = SquadOrder.Follow; patrol = new BlightPatrol();
+            equipmentMenu = scenario == BlightScenario.Weapons;
             paused = false; locked = true; selectedEnemy = assaultTarget = null;
             simulationTime = gait = yaw = 0; pitch = 24;
             pendingAttack = pendingDodge = playerBlock = false; playerMove = Vector3.zero;
@@ -127,6 +131,7 @@ namespace Reclamation.Blight
         public void SetPaused(bool value)
         {
             paused = value;
+            if (impactAudio != null) { if (value) impactAudio.Pause(); else impactAudio.UnPause(); }
             pendingAttack = pendingDodge = playerBlock = false; playerMove = Vector3.zero;
             if (player != null) player.fighter.Blocking = false;
         }
@@ -151,9 +156,11 @@ namespace Reclamation.Blight
 
         public bool TryEquip(BlightWeapon weapon)
         {
-            if (player == null || paused || !player.fighter.CanAct) return false;
-            if (Scenario == BlightScenario.LimbDamage)
-            { Say("Limb prototype uses the sword. Use Weapons to test the spear."); return false; }
+            if (player == null || paused || !player.fighter.CanAct || (int)weapon < 0 || (int)weapon > 2) return false;
+            if (Scenario == BlightScenario.LimbDamage && weapon == BlightWeapon.Spear)
+            { Say("Use sword or axe for limb contact testing; test the spear in Weapons."); return false; }
+            if (Scenario == BlightScenario.Patrol && weapon == BlightWeapon.Axe)
+            { Say("The axe is available in the combat labs; this patrol retains its spear reward."); return false; }
             if (Scenario == BlightScenario.Patrol && weapon == BlightWeapon.Spear && !patrol.SpearRecovered)
             { Say("Recover the patrol cache to unlock your spear."); return false; }
             if (NearestEnemy(player.root.position, 5) != null)
@@ -163,6 +170,7 @@ namespace Reclamation.Blight
 
         public bool Interact()
         {
+            if (Scenario == BlightScenario.Weapons) return CollectNearbyLoot();
             if (Scenario != BlightScenario.Patrol || paused || player == null || !player.fighter.CanAct) return false;
             patrol.ObserveEnemies(LivingEnemies);
             if (patrol.TryRecoverCache(Vector3.Distance(player.root.position, cache), player.fighter.Alive))
@@ -197,6 +205,9 @@ namespace Reclamation.Blight
                 if (keys.hKey.wasPressedThisFrame) help = !help;
                 if (keys.tabKey.wasPressedThisFrame) locked = !locked;
                 if (keys.qKey.wasPressedThisFrame) CycleTarget();
+                if (keys.mKey.wasPressedThisFrame) CombatAudioEnabled = !CombatAudioEnabled;
+                if (keys.bKey.wasPressedThisFrame) { equipmentMenu = !equipmentMenu; if (equipmentMenu) scenarioMenu = false; }
+                if (keys.nKey.wasPressedThisFrame) StartNextLootEncounter();
                 if (Scenario == BlightScenario.LimbDamage)
                 {
                     if (keys.zKey.wasPressedThisFrame) SetLimbAim((SwingHeight)(((int)LimbAim + 1) % 3));
@@ -219,7 +230,7 @@ namespace Reclamation.Blight
                 if (keys.digit2Key.wasPressedThisFrame) GiveOrder(SquadOrder.Hold);
                 if (keys.digit3Key.wasPressedThisFrame) GiveOrder(SquadOrder.Assault);
                 if (keys.digit4Key.wasPressedThisFrame) GiveOrder(SquadOrder.Withdraw);
-                if (keys.xKey.wasPressedThisFrame) TryEquip(PlayerWeapon == BlightWeapon.Sword ? BlightWeapon.Spear : BlightWeapon.Sword);
+                if (keys.xKey.wasPressedThisFrame) CycleWeapon();
                 if (keys.fKey.wasPressedThisFrame) Interact();
                 Vector3 raw = new Vector3((keys.dKey.isPressed ? 1 : 0) - (keys.aKey.isPressed ? 1 : 0),
                     0, (keys.wKey.isPressed ? 1 : 0) - (keys.sKey.isPressed ? 1 : 0));
@@ -278,6 +289,8 @@ namespace Reclamation.Blight
             }
             foreach (Actor actor in actors) Pose(actor);
             ResolveLimbSweep();
+            UpdateLootDrops();
+            UpdateCombatFeedback();
         }
 
         private void ControlPlayer(float dt)
@@ -402,7 +415,7 @@ namespace Reclamation.Blight
 
         private bool StartAttack(Actor actor, bool heavy)
         {
-            if (!actor.fighter.Attack(BlightEquipment.Weapon(actor.weapon, heavy))) return false;
+            if (!actor.fighter.Attack(actor == player ? PlayerAttack(heavy) : BlightEquipment.Weapon(actor.weapon, heavy))) return false;
             if (actor.rig != null) { actor.rig.height = LimbAim; actor.rig.hit = false; }
             return true;
         }
@@ -430,8 +443,10 @@ namespace Reclamation.Blight
             foreach (Actor target in victims)
             {
                 bool frontal = Vector3.Angle(target.root.forward, source.root.position - target.root.position) < 70;
-                string result = target.fighter.Receive(spec.Damage * (source.enemy ? enemyDamageScale :
-                    source == player ? playerDamageScale : 1), frontal, spec.Heavy);
+                DuelAction previousAction = target.fighter.Action;
+                string result = target.fighter.ReceiveAttack(spec, frontal, source.enemy ? enemyDamageScale :
+                    source == player ? playerDamageScale : 1);
+                ShowCombatImpact(target, result, previousAction);
                 if (target == player || source == player || !target.fighter.Alive) Say(target.root.name + ": " + result);
             }
         }
@@ -493,9 +508,21 @@ namespace Reclamation.Blight
         private void Say(string message) { feedback = message; feedbackUntil = simulationTime + 5; }
         private void Equip(Actor actor, BlightWeapon weapon)
         {
+            if (actor == player) equippedLoot = null;
             actor.weapon = weapon;
             if (actor.sword != null) actor.sword.gameObject.SetActive(weapon == BlightWeapon.Sword);
             if (actor.spear != null) actor.spear.gameObject.SetActive(weapon == BlightWeapon.Spear);
+            if (actor.axe != null) actor.axe.gameObject.SetActive(weapon == BlightWeapon.Axe);
+            if (actor.rig != null) EquipLimbWeapon(actor);
+        }
+
+        private void CycleWeapon()
+        {
+            BlightWeapon next = Scenario == BlightScenario.LimbDamage ?
+                (PlayerWeapon == BlightWeapon.Sword ? BlightWeapon.Axe : BlightWeapon.Sword) :
+                Scenario == BlightScenario.Patrol ? (PlayerWeapon == BlightWeapon.Sword ? BlightWeapon.Spear : BlightWeapon.Sword) :
+                (BlightWeapon)(((int)PlayerWeapon + 1) % 3);
+            TryEquip(next);
         }
 
         private void LateUpdate()

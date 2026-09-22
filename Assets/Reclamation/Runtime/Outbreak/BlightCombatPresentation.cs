@@ -13,7 +13,7 @@ namespace Reclamation.Blight
         private Rect ObjectiveRect => new Rect(365, 16, Mathf.Max(180, UiWidth - 690), 88);
         private bool ContainsGuiPoint(Vector2 point) =>
             StatusRect.Contains(point) || ScenarioRect.Contains(point) ||
-            CommandRect.Contains(point) || ObjectiveRect.Contains(point);
+            CommandRect.Contains(point) || ObjectiveRect.Contains(point) || (equipmentMenu && EquipmentRect.Contains(point));
 
         private Material Material(Color color)
         {
@@ -74,6 +74,10 @@ namespace Reclamation.Blight
                 Part(actor.spear, "Shaft", new Vector3(0, -0.5f, 0.7f), new Vector3(0.07f, 0.07f, 2.5f),
                     Material(new Color(0.38f, 0.25f, 0.13f)));
                 Part(actor.spear, "Spearhead", new Vector3(0, -0.5f, 2), new Vector3(0.15f, 0.05f, 0.35f), steel);
+                actor.axe = Pivot(actor.arm, "Axe", Vector3.zero);
+                Part(actor.axe, "Handle", new Vector3(0, -0.55f, 0.5f), new Vector3(0.08f, 0.08f, 1.2f),
+                    Material(new Color(0.38f, 0.25f, 0.13f)));
+                Part(actor.axe, "Axe head", new Vector3(0, -0.55f, 1.1f), new Vector3(0.48f, 0.1f, 0.3f), steel);
                 Equip(actor, BlightWeapon.Sword);
             }
             if (hulk) Part(actor.root, "Blight armour", new Vector3(0, 1.38f, -0.05f),
@@ -177,6 +181,8 @@ namespace Reclamation.Blight
             Matrix4x4 old = GUI.matrix; Color oldColor = GUI.color;
             GUI.matrix = Matrix4x4.Scale(new Vector3(UiScale, UiScale, 1));
             DrawWorldLabels();
+            DrawLootMarkers();
+            DrawCombatFeedback();
             GUI.Box(StatusRect, GUIContent.none);
             GUI.Label(new Rect(28, 23, 310, 28), "RECLAMATION | " + Scenario, title);
             Meter(new Rect(28, 56, 310, 23), player.fighter.Health, player.fighter.MaximumHealth,
@@ -199,6 +205,7 @@ namespace Reclamation.Blight
             GUI.Box(ObjectiveRect, GUIContent.none);
             GUI.Label(new Rect(ObjectiveRect.x + 8, 20, ObjectiveRect.width - 16, 76), ObjectiveText(), label);
             DrawScenarioMenu(); DrawCommands();
+            DrawEquipment();
             if (paused || Ended)
             {
                 string text = paused ? "PAUSED — Esc to resume" : !player.fighter.Alive
@@ -212,6 +219,9 @@ namespace Reclamation.Blight
 
         private string ObjectiveText()
         {
+            if (Scenario == BlightScenario.Weapons)
+                return (LivingEnemies == 0 ? "CLEAR — F loot / N next" : "Defeat the thrall; collect its gear") +
+                    "\nRecovered: " + OwnedLootCount + "/3 | B compare";
             if (Scenario == BlightScenario.LimbDamage)
                 return "Aim: " + LimbAim + " [Z]\n" + (LimbPractice ? "Stationary practice" : "Live enemy") + " [T]\n" +
                     (LowGore ? "Reduced gore" : "Visible debris") + " [G]";
@@ -231,7 +241,7 @@ namespace Reclamation.Blight
             GUI.Box(ScenarioRect, GUIContent.none);
             float x = ScenarioRect.x + 8;
             if (GUI.Button(new Rect(x, 23, 278, 27), scenarioMenu ? "Close scenarios" : "Choose scenario", button))
-                scenarioMenu = !scenarioMenu;
+            { scenarioMenu = !scenarioMenu; if (scenarioMenu) equipmentMenu = false; }
             GUI.Label(new Rect(x, 52, 278, 23), "Active: " + Scenario + " | Each choice resets", small);
             if (!scenarioMenu) return;
             for (int i = 0; i < 6; i++)
@@ -239,7 +249,7 @@ namespace Reclamation.Blight
                 BlightScenario scenario = (BlightScenario)i;
                 string name = scenario == BlightScenario.Squad ? "Squad orders — three thralls" :
                     scenario == BlightScenario.Hulk ? "Hulk — squad vs sweep / smash" :
-                    scenario == BlightScenario.Weapons ? "Weapons — sword / spear" :
+                    scenario == BlightScenario.Weapons ? "Weapons — sword / spear / axe" :
                     scenario == BlightScenario.Patrol ? "Patrol — cache and recovery" :
                     scenario == BlightScenario.LimbDamage ? "Limb damage — articulated models" : "Duel — one thrall";
                 if (GUI.Button(new Rect(x, 82 + i * 35, 278, 30), name, button)) SelectScenario(scenario);
@@ -261,18 +271,18 @@ namespace Reclamation.Blight
                 "Z aim height | T stationary practice | G reduced gore" :
                 "Solo test — try blocking, dodging, and heavy interruptions.", small);
             if (GUI.Button(new Rect(502, y, 142, 27), PlayerWeapon + " [X]", button))
-                TryEquip(PlayerWeapon == BlightWeapon.Sword ? BlightWeapon.Spear : BlightWeapon.Sword);
+                CycleWeapon();
             if (GUI.Button(new Rect(652, y, 132, 27), help ? "Hide help [H]" : "Help [H]", button)) help = !help;
-            AttackSpec light = BlightEquipment.Weapon(PlayerWeapon, false);
+            AttackSpec light = PlayerAttack(false);
             GUI.Label(new Rect(24, y + 33, 755, 25),
-                Scenario == BlightScenario.LimbDamage ? "Sword contact test | Arm loss: no heavy | Leg wound: limp / crawl | R resets" :
+                Scenario == BlightScenario.LimbDamage ? PlayerWeapon + " contact test | B equipment | Arm loss: no heavy | Leg wound: limp / crawl" :
                 "Light: " + light.Reach.ToString("0.0") + " m | " + light.Windup.ToString("0.00") +
                 " s windup | " + light.Cost + " stamina  •  Swap only with 5 m of space", small);
             if (help)
                 GUI.Label(new Rect(24, y + 61, 755, 78),
                     "WASD move | LMB light | E heavy | Hold RMB block | Space dodge\n" +
-                    "Tab lock facing | Q next target | Middle-drag camera | F recover cache\n" +
-                    "1–4 squad orders | X weapon | Esc pause | R fresh scenario | H help", label);
+                    "Tab lock | Q target | Middle-drag camera | F loot/cache | B gear | N next (Weapons)\n" +
+                    "1–4 squad orders | X weapon | Esc pause | R reset | M sound " + (CombatAudioEnabled ? "ON" : "OFF") + " | H help", label);
         }
 
         private void DrawWorldLabels()
@@ -319,6 +329,9 @@ namespace Reclamation.Blight
         }
 
         private void OnDestroy()
-        { foreach (Material material in materials.Values) if (material != null) Destroy(material); }
+        {
+            DestroyCombatAudio();
+            foreach (Material material in materials.Values) if (material != null) Destroy(material);
+        }
     }
 }

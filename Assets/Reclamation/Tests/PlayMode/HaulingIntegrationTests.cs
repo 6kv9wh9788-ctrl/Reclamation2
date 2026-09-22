@@ -284,7 +284,9 @@ namespace Reclamation.Tests
             var food = Make<FoodStore>("food", new Vector3(4, 0, 3));
             food.Configure(0);
             var farm = Make<FarmPlot>("farm", new Vector3(-4, 0, 3));
-            farm.Configure(1, 4, 3);
+            // This test inspects the harvest reset after the worker delivers food.
+            // Freeze regrowth during transit; FarmPlotTests covers timed growth.
+            farm.Configure(1, minutesToMature: 0f, servings: 3);
             board.SetFarms(new[] { farm });
             worker.ConfigureNeeds(food, 20, 0);
             worker.ConfigureRest(null, 100, 0, 25);

@@ -3,22 +3,23 @@ using UnityEngine;
 namespace Reclamation.Blight
 {
     public enum DuelAction { Ready, Windup, Recovery, Dodge, Stagger, Defeated }
-    public enum BlightWeapon { Sword, Spear }
+    public enum BlightWeapon { Sword, Spear, Axe }
     public enum BlightEnemy { Thrall, Hulk }
     public enum BlightAttack { Light, Heavy, Sweep, Smash }
 
     public struct AttackSpec
     {
-        public float Cost, Windup, Recovery, Reach, HalfAngle, Damage;
+        public float Cost, Windup, Recovery, Reach, HalfAngle, Damage, Stagger;
         public bool Heavy, MultipleTargets;
         public BlightAttack Kind;
 
         public AttackSpec(BlightAttack kind, float cost, float windup, float recovery,
-            float reach, float halfAngle, float damage, bool heavy, bool multiple = false)
+            float reach, float halfAngle, float damage, bool heavy, bool multiple = false, float stagger = 0.65f)
         {
             Kind = kind; Cost = cost; Windup = windup; Recovery = recovery;
             Reach = reach; HalfAngle = halfAngle; Damage = damage;
             Heavy = heavy; MultipleTargets = multiple;
+            Stagger = stagger;
         }
     }
 
@@ -26,6 +27,10 @@ namespace Reclamation.Blight
     {
         public static AttackSpec Weapon(BlightWeapon weapon, bool heavy)
         {
+            if (weapon == BlightWeapon.Axe)
+                return new AttackSpec(heavy ? BlightAttack.Heavy : BlightAttack.Light,
+                    heavy ? 42 : 24, heavy ? 1 : 0.5f, heavy ? 1.3f : 0.85f,
+                    heavy ? 2.3f : 2.1f, 55, heavy ? 44 : 24, heavy, false, heavy ? 0.95f : 0.65f);
             if (weapon == BlightWeapon.Spear)
                 return new AttackSpec(heavy ? BlightAttack.Heavy : BlightAttack.Light,
                     heavy ? 36 : 21, heavy ? 0.85f : 0.38f, heavy ? 1.05f : 0.65f,
@@ -34,6 +39,13 @@ namespace Reclamation.Blight
                 heavy ? 30 : 16, heavy ? 0.65f : 0.24f, heavy ? 0.85f : 0.48f,
                 heavy ? 2.65f : 2.3f, 65, heavy ? 32 : 18, heavy);
         }
+
+        public static float LimbDamage(BlightWeapon weapon, bool heavy)
+            => weapon == BlightWeapon.Axe ? (heavy ? 55 : 30) : (heavy ? 35 : 18);
+
+        public static string Role(BlightWeapon weapon)
+            => weapon == BlightWeapon.Axe ? "Axe: limb damage / longer heavy stagger" :
+                weapon == BlightWeapon.Spear ? "Spear: long reach / narrow thrust" : "Sword: quick / low stamina cost";
 
         public static AttackSpec Enemy(BlightEnemy enemy, int sequence)
         {
@@ -132,6 +144,16 @@ namespace Reclamation.Blight
                 return "Armoured windup";
             if (heavy) { Blocking = false; Begin(DuelAction.Stagger, 0.65f); }
             return "Hit";
+        }
+
+        public string ReceiveAttack(AttackSpec strike, bool frontal, float damageScale = 1)
+        {
+            string result = Receive(strike.Damage * damageScale, frontal, strike.Heavy);
+            // Armour, dodges, blocks and guard breaks retain their existing rules.
+            if (result == "Hit" && strike.Heavy && Action == DuelAction.Stagger &&
+                Finite(strike.Stagger) && strike.Stagger > Remaining)
+                Begin(DuelAction.Stagger, strike.Stagger);
+            return result;
         }
 
         public void Interrupt(float seconds)
