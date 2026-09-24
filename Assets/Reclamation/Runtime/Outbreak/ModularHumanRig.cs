@@ -45,11 +45,27 @@ namespace Reclamation.Blight
         public float GripError { get; private set; }
         private LineRenderer edgeLine;
         private bool crowdMode;
+        private bool sampledPose;
+        public bool SpearGrip { get; set; }
         private bool athleticBody;
         private Matrix4x4[] crowdBindPoses;
         private CrowdMeshCache.Entry crowdAssets;
         private SkinnedMeshRenderer crowdRenderer;
         private static readonly Dictionary<bool, ModularHumanData> DataCache = new Dictionary<bool, ModularHumanData>();
+        private static ModularHumanData thrallData;
+        private static ModularHumanData hulkData;
+        public static ModularHumanData LoadHulk()
+        {
+            if (hulkData != null) return hulkData;
+            TextAsset source = Resources.Load<TextAsset>("ReclamationArt/Modular/BlightedHulkModular");
+            return source == null ? null : hulkData = JsonUtility.FromJson<ModularHumanData>(source.text);
+        }
+        public static ModularHumanData LoadThrall()
+        {
+            if (thrallData != null) return thrallData;
+            TextAsset source = Resources.Load<TextAsset>("ReclamationArt/Modular/BlightedThrallModular");
+            return source == null ? null : thrallData = JsonUtility.FromJson<ModularHumanData>(source.text);
+        }
         public float SoftFace { get; private set; }
         public int BoneCount => bones == null ? 0 : bones.Length;
         public int PhysicsBodyCount => bodies.Count;
@@ -68,11 +84,12 @@ namespace Reclamation.Blight
             return DataCache[athletic] = JsonUtility.FromJson<ModularHumanData>(source.text);
         }
 
-        public void Build(bool athletic, bool forCrowd = false)
+        public void Build(bool athletic, bool forCrowd = false, bool withPhysics = true, bool blighted = false, bool hulk = false)
         {
             crowdMode = forCrowd;
             if (data != null) throw new InvalidOperationException("Build each modular rig once; create another instance to change body.");
-            data = Load(athletic);
+            if ((blighted || hulk) && forCrowd) throw new ArgumentException("Monsters are not part of the human crowd cache.");
+            data = hulk ? LoadHulk() : blighted ? LoadThrall() : Load(athletic);
             if (data == null) throw new InvalidOperationException("Missing modular human resources.");
             bones = new Transform[data.bones.Length];
             for (int i = 0; i < bones.Length; i++)
@@ -130,7 +147,7 @@ namespace Reclamation.Blight
                 renderers.Add(renderer);
             }
             BuildAnimations();
-            if (!crowdMode) BuildPhysics();
+            if (withPhysics) BuildPhysics();
             LongHair = athletic; SetAppearance(true, false, athletic ? 1 : 0);
             if (!crowdMode)
             {
@@ -202,6 +219,58 @@ namespace Reclamation.Blight
                 animationPlayer[CurrentClip].normalizedTime = Mathf.Repeat(phase, 1);
         }
 
+        // Combat owns time and root movement. Explicit sampling also freezes on
+        // pause and works during deterministic, multiple-substep test runs.
+        public void SamplePose(string clip, float phase)
+        {
+            if (IsRagdoll || animationPlayer == null) return;
+            AnimationClip source = animationPlayer.GetClip(clip);
+            if (source == null) throw new ArgumentException("Missing pose clip: " + clip);
+            sampledPose = true;
+            float sampledPhase = Mathf.Clamp01(phase);
+            animationPlayer.Stop(); animationPlayer.enabled = false;
+            CurrentClip = clip;
+            source.SampleAnimation(gameObject, sampledPhase * source.length);
+            ApplyHandPose(sampledPhase);
+        }
+
+        public void SetBuiltInWeaponsVisible(bool visible)
+        {
+            if (crowdMode) return;
+            for (int i = 0; i < renderers.Count; i++)
+                if (data.parts[i].slot == "Sword" || data.parts[i].slot == "Axe")
+                    renderers[i].gameObject.SetActive(visible && (data.parts[i].slot == "Axe" ? Axe : !Axe));
+        }
+
+        public IEnumerable<SkinnedMeshRenderer> RegionRenderers(string region)
+        {
+            for (int i = 0; i < renderers.Count; i++)
+                if (data.parts[i].region == region) yield return renderers[i];
+        }
+
+        // A deterministic starting pose for the limb lab's contact-driven rig.
+        // Keep the bone hierarchy intact even when its visible region is severed.
+        public void BindPose()
+        {
+            sampledPose = true; animationPlayer.Stop(); animationPlayer.enabled = false;
+            for (int i = 0; i < bones.Length; i++)
+            { bones[i].localPosition = ToVector(data.bones[i].position); bones[i].localRotation = Quaternion.identity; }
+        }
+
+        public void ExternalGrip(Vector3 contact, Quaternion rotation)
+        {
+            Transform socket = Bone("WeaponSocket_R");
+            ApplyGrip("R", contact, rotation, socket.localPosition);
+            Vector3 leftContact = contact + rotation * Vector3.forward * .14f;
+            ApplyGrip("L", leftContact, rotation, socket.localPosition);
+            GripError = Mathf.Max(Vector3.Distance(socket.position, contact),
+                Vector3.Distance(Bone("Hand_L").TransformPoint(socket.localPosition), leftContact));
+            foreach (string side in new[] { "L", "R" })
+                foreach (string finger in new[] { "Thumb", "Index", "Middle", "Ring", "Little" })
+                    for (int segment = 1; segment <= 3; segment++)
+                        Bone(finger + segment + "_" + side).localRotation = Quaternion.Euler(-65, 0, 0);
+        }
+
         public void SetAppearance(bool heavy, bool axe, float softFace)
         {
             HeavyArmour = heavy; Axe = axe; SoftFace = Mathf.Clamp01(softFace);
@@ -223,9 +292,24 @@ namespace Reclamation.Blight
         }
         public void SetHair(bool longHair)
         { LongHair = longHair; SetAppearance(HeavyArmour, Axe, SoftFace); }
+
+        public void SetUniformColors(Color cloth, Color scarf)
+        {
+            if (crowdMode) throw new InvalidOperationException("Crowd palettes belong to the shared mesh cache.");
+            // Non-crowd materials are owned by this rig, so changing an outfit
+            // cannot recolour another soldier or the player's hero.
+            for (int i = 0; i < renderers.Count; i++)
+            {
+                string name = data.parts[i].name;
+                if (name == "TorsoCloth" || name == "PelvisCloth" || name.EndsWith("_cloth"))
+                    renderers[i].sharedMaterial.color = cloth;
+                else if (name.EndsWith("_scarf")) renderers[i].sharedMaterial.color = scarf;
+            }
+        }
         public bool Play(string clip)
         {
             if (IsRagdoll || animationPlayer == null || animationPlayer.GetClip(clip) == null) return false;
+            sampledPose = false; animationPlayer.enabled = true;
             CurrentClip = clip; animationPlayer.Stop(); return animationPlayer.Play(clip);
         }
 
@@ -277,7 +361,7 @@ namespace Reclamation.Blight
 
         private void LateUpdate()
         {
-            if (data == null || IsRagdoll) return;
+            if (data == null || IsRagdoll || sampledPose) return;
             AnimationState state = animationPlayer[CurrentClip];
             if (state != null) state.speed = PlaybackSpeed;
             if (edgeLine != null)
@@ -292,10 +376,14 @@ namespace Reclamation.Blight
                 Bone("Jaw").localRotation = Quaternion.Euler(Mathf.Max(0, Mathf.Sin(Time.time * 3)) * 15, 0, 0);
                 Bone("Eye_R").localRotation = Bone("Eye_L").localRotation = Quaternion.Euler(0, Mathf.Sin(Time.time * 2) * 9, 0);
             }
+            ApplyHandPose(state == null ? 0 : Mathf.Clamp01(state.normalizedTime));
+        }
+
+        private void ApplyHandPose(float phase)
+        {
             if (crowdMode || !TwoHandGrip) { GripError = 0; return; }
             // A shared, reachable weapon pose drives BOTH arms. The blade broad
             // face remains normal to the swing plane, so an edge leads the cut.
-            float phase = state == null ? 0 : Mathf.Clamp01(state.normalizedTime);
             bool attack = CurrentClip == "LightAttack" || CurrentClip == "HeavyAttack";
             float angle = 15;
             if (attack)
@@ -310,9 +398,24 @@ namespace Reclamation.Blight
             // character-right, increasing pitch drives that edge forward/down.
             Quaternion rotation = transform.rotation * Quaternion.AngleAxis(angle, Vector3.right) * Quaternion.LookRotation(Vector3.up, Vector3.right);
             Vector3 anchor = chest.position + transform.rotation * new Vector3(0, 0, .25f) + rotation * new Vector3(0, 0, .11f);
+            Vector3 offHandOffset = new Vector3(0, 0, -.22f);
+            if (SpearGrip)
+            {
+                float thrust = attack ? Mathf.SmoothStep(0, 1, (phase - .3f) / .2f) *
+                    (1 - Mathf.SmoothStep(0, 1, (phase - .65f) / .35f)) : 0;
+                rotation = transform.rotation;
+                anchor = chest.position + transform.rotation * new Vector3(-.08f, -.16f, .12f + .16f * thrust);
+                offHandOffset = new Vector3(0, 0, .24f);
+            }
+            if (sampledPose && CurrentClip == "Block")
+            {
+                rotation = transform.rotation * Quaternion.LookRotation(Vector3.right, Vector3.forward);
+                anchor = chest.position + transform.rotation * new Vector3(.05f, .1f, .32f);
+                offHandOffset = new Vector3(0, 0, -.22f);
+            }
             ApplyGrip("R", anchor, rotation, socket.localPosition);
-            ApplyGrip("L", anchor + rotation * new Vector3(0, 0, -.22f), rotation, socket.localPosition);
-            GripError = Vector3.Distance(Bone("Hand_L").TransformPoint(socket.localPosition), socket.TransformPoint(new Vector3(0, 0, -.22f)));
+            ApplyGrip("L", anchor + rotation * offHandOffset, rotation, socket.localPosition);
+            GripError = Vector3.Distance(Bone("Hand_L").TransformPoint(socket.localPosition), socket.TransformPoint(offHandOffset));
             foreach (string side in new[] { "L", "R" })
                 foreach (string finger in new[] { "Thumb", "Index", "Middle", "Ring", "Little" })
                     for (int segment = 1; segment <= 3; segment++)

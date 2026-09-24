@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Reclamation.Blight
 {
-    public enum BlightScenario { Duel, Squad, Hulk, Weapons, Patrol, LimbDamage }
+    public enum BlightScenario { Duel, Squad, Hulk, Weapons, Patrol, LimbDamage, Outpost, Skirmish, Horde, Gateway, Company }
     public enum SquadOrder { Follow, Hold, Assault, Withdraw }
     public enum PatrolStage { Outbound, CacheAvailable, Returning, Complete }
 

@@ -7,7 +7,7 @@ namespace Reclamation.Editor
 {
     public static class CharacterCrowdBenchmarkBuilder
     {
-        [MenuItem("Reclamation/Art/Open Character Crowd Benchmark")]
+        [MenuItem("Reclamation/Testing/Open Character Crowd Benchmark")]
         public static void Create()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode || !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;

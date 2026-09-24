@@ -17,7 +17,7 @@ namespace Reclamation.Editor
         private static readonly string[] LegacyPrefixes =
             { "CivilianVsOne", "VeteranVsThree", "ProtectCivilian", "ThreeCiviliansVsBrute" };
 
-        [MenuItem("Reclamation/Validation/Create or Replace Systems Validation Lab")]
+        [MenuItem("Reclamation/Legacy/Validation/Create or Replace Systems Validation Lab")]
         public static void Create()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode || !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
@@ -179,7 +179,7 @@ namespace Reclamation.Editor
             overlay.AddComponent<SettlementDebugOverlay>().Configure(board, stock, food, beds, medicine, recreation);
         }
 
-        [MenuItem("Reclamation/Validation/Remove Legacy Generated Combat Labs")]
+        [MenuItem("Reclamation/Legacy/Validation/Remove Legacy Generated Combat Labs")]
         public static void CleanupLegacyLabs()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode ||
@@ -195,7 +195,7 @@ namespace Reclamation.Editor
             AssetDatabase.SaveAssets(); AssetDatabase.Refresh(); Debug.Log($"Removed {removed} legacy generated combat-lab assets. Patient Zero was not touched.");
         }
 
-        [MenuItem("Reclamation/Combat/Enable Combat in Open Outbreak Scene")]
+        [MenuItem("Reclamation/Legacy/Combat/Enable Combat in Open Outbreak Scene")]
         public static void Enable()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) return;

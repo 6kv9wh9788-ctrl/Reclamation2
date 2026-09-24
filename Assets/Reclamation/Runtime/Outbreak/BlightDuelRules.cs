@@ -77,6 +77,9 @@ namespace Reclamation.Blight
         public float Progress => Duration > 0 ? Mathf.Clamp01(1 - Remaining / Duration) : 0;
         private readonly bool armouredWindup;
         private int poiseHits;
+        private float sprintRecoveryDelay;
+        public int AttackSequence { get; private set; }
+        public bool SprintRecoveryBlocked => sprintRecoveryDelay > 0;
 
         public DuelFighter(float maximumHealth = 100, bool armoured = false)
         {
@@ -97,7 +100,7 @@ namespace Reclamation.Blight
                 !(strike.Windup > 0) || !Finite(strike.Windup) ||
                 !(strike.Recovery > 0) || !Finite(strike.Recovery) ||
                 !(strike.Damage >= 0) || !Finite(strike.Damage) || Stamina < strike.Cost) return false;
-            Stamina -= strike.Cost; Blocking = false; Strike = strike; poiseHits = 0;
+            AttackSequence++; Stamina -= strike.Cost; Blocking = false; Strike = strike; poiseHits = 0;
             Begin(DuelAction.Windup, strike.Windup); return true;
         }
 
@@ -107,12 +110,25 @@ namespace Reclamation.Blight
             Stamina -= 25; Blocking = false; Begin(DuelAction.Dodge, 0.32f); return true;
         }
 
+        // Sprint shares stamina with attacks, dodges and blocking. No regeneration
+        // during sprint or for a short interval after the last sprint step.
+        public bool TrySprint(float seconds)
+        {
+            if (!CanAct || Blocking || !(seconds > 0) || !Finite(seconds)) return false;
+            float cost = 18 * seconds;
+            if (Stamina < cost) return false;
+            Stamina -= cost; sprintRecoveryDelay = .7f; return true;
+        }
+
         // Returns true once at impact. Callers substep to retain recovery and dodge windows.
         public bool Advance(float seconds)
         {
             if (!Alive || !(seconds > 0) || !Finite(seconds)) return false;
+            bool sprintRest = sprintRecoveryDelay > 0;
+            sprintRecoveryDelay = Mathf.Max(0, sprintRecoveryDelay - seconds);
             if (Action == DuelAction.Ready)
             {
+                if (sprintRest) return false;
                 Stamina = Mathf.Min(100, Stamina + seconds * (Blocking ? 7 : 24));
                 return false;
             }
@@ -166,7 +182,7 @@ namespace Reclamation.Blight
         {
             if (!CanAct || !(seconds > 0) || !Finite(seconds)) return;
             Health = Mathf.Min(MaximumHealth, Health + seconds * 18);
-            Stamina = Mathf.Min(100, Stamina + seconds * 35);
+            if (!SprintRecoveryBlocked) Stamina = Mathf.Min(100, Stamina + seconds * 35);
         }
 
         public static bool InReach(Vector3 origin, Vector3 forward, Vector3 target,

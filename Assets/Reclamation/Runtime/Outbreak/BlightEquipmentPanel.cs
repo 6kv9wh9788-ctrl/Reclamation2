@@ -6,7 +6,7 @@ namespace Reclamation.Blight
     {
         private bool equipmentMenu;
         private Rect EquipmentRect => new Rect(UiWidth - 378, ScenarioRect.yMax + 8, 362,
-            Scenario == BlightScenario.Weapons && lootPage ? 510 : 294);
+            (Scenario == BlightScenario.Weapons || Scenario == BlightScenario.Outpost) && lootPage ? 510 : 294);
 
         private void DrawEquipment()
         {
@@ -14,7 +14,7 @@ namespace Reclamation.Blight
             Rect panel = EquipmentRect;
             GUI.Box(panel, GUIContent.none);
             GUI.Label(new Rect(panel.x + 10, panel.y + 6, 340, 24), "EQUIPMENT [B]  |  Equipped: " + PlayerWeapon, label);
-            if (Scenario == BlightScenario.Weapons)
+            if (Scenario == BlightScenario.Weapons || Scenario == BlightScenario.Outpost)
             {
                 if (GUI.Button(new Rect(panel.x + 10, panel.y + 34, 164, 25), "Standard weapons", button)) lootPage = false;
                 if (GUI.Button(new Rect(panel.x + 184, panel.y + 34, 168, 25), "Recovered gear (" + OwnedLootCount + ")", button)) lootPage = true;

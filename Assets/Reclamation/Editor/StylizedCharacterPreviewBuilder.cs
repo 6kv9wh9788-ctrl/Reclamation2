@@ -7,7 +7,7 @@ namespace Reclamation.Editor
 {
     public static class StylizedCharacterPreviewBuilder
     {
-        [MenuItem("Reclamation/Art/Preview Stylized Characters")]
+        [MenuItem("Reclamation/Legacy/Art/Preview Stylized Characters")]
         public static void Create()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode || !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;

@@ -8,7 +8,7 @@ namespace Reclamation.Editor
 {
     public static class PerimeterInstaller
     {
-        [MenuItem("Reclamation/Add Buildable Perimeter to Open Refuge")]
+        [MenuItem("Reclamation/Legacy/Add Buildable Perimeter to Open Refuge")]
         public static void Install()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) return;
@@ -39,9 +39,9 @@ namespace Reclamation.Editor
             Debug.Log("Perimeter slots added. Save the scene. In Play, evacuate a worker, then build sections from the panel. Gate starts open.");
         }
 
-        [MenuItem("Reclamation/Scenario/Visitor Becomes Brute")]
+        [MenuItem("Reclamation/Legacy/Scenario/Visitor Becomes Brute")]
         public static void Brute() => SetVisitor(ZombieClass.Brute);
-        [MenuItem("Reclamation/Scenario/Visitor Becomes Ordinary Zombie")]
+        [MenuItem("Reclamation/Legacy/Scenario/Visitor Becomes Ordinary Zombie")]
         public static void Ordinary() => SetVisitor(ZombieClass.Ordinary);
 
         private static void SetVisitor(ZombieClass variant)

@@ -51,6 +51,7 @@ namespace Reclamation.Blight
             if (!combatFeedbackEnabled) return;
             CombatImpact kind = ClassifyImpact(result, previousAction, target.fighter.Action);
             if (kind == CombatImpact.None) return;
+            if (target == player) AddCameraImpact(kind);
             LastCombatImpact = kind; FeedbackEventCount++;
             target.feedback.kind = kind; target.feedback.until = simulationTime + 0.55f;
             if (combatAudioEnabled && kind != CombatImpact.Dodge && simulationTime >= nextImpactSound)
@@ -96,6 +97,15 @@ namespace Reclamation.Blight
                     }
                     renderer.SetPropertyBlock(f.tint);
                 }
+                if (active && actor.enemy && actor.fighter.Alive && strength > 0 &&
+                    (f.kind == CombatImpact.Hit || f.kind == CombatImpact.Armoured || f.kind == CombatImpact.Block))
+                {
+                    ModularHumanRig visualRig = actor.thrall != null ? actor.thrall.Rig :
+                        actor.hulkVisual != null ? actor.hulkVisual.Rig : null;
+                    // Head-only flinch preserves attack/weapon/contact geometry.
+                    if (visualRig != null)
+                        visualRig.Bone("Neck").localRotation *= Quaternion.Euler(-24 * strength, 0, 10 * strength);
+                }
                 // The head is cosmetic: it is not used by limb contact queries.
                 // Never move the actor root, sword or region joints for feedback.
                 if (actor.rig != null && actor.fighter.Alive && strength > 0)
@@ -112,6 +122,7 @@ namespace Reclamation.Blight
                     foreach (Renderer renderer in actor.feedback.renderers) if (renderer != null) renderer.SetPropertyBlock(null);
             }
             if (impactAudio != null) impactAudio.Stop();
+            cameraImpact = 0;
             FeedbackEventCount = 0; LastCombatImpact = CombatImpact.None; nextImpactSound = 0;
         }
 

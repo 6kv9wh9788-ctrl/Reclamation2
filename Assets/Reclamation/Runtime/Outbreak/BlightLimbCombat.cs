@@ -8,6 +8,8 @@ namespace Reclamation.Blight
         private sealed class LimbRig
         {
             public Transform body, head, grip, bladeBase, bladeTip, swordModel, axeModel;
+            public RefinedLimbVisual visual;
+            public readonly Transform[] wounds = new Transform[5];
             public readonly Transform[] joints = new Transform[5], bends = new Transform[5], caps = new Transform[5];
             public readonly Vector3[] previous = new Vector3[5];
             public Vector3 previousBase, previousTip;
@@ -19,6 +21,7 @@ namespace Reclamation.Blight
             public Transform root;
             public Vector3 velocity;
             public float age;
+            public readonly List<Mesh> meshes = new List<Mesh>();
         }
         private readonly List<LimbDebris> limbDebris = new List<LimbDebris>();
         private bool lowGore = true;
@@ -80,8 +83,11 @@ namespace Reclamation.Blight
                 Rounded(rig.bends[i], "Lower segment", Vector3.down * 0.19f, new Vector3(0.15f, 0.19f, 0.17f), arm ? skin : cloth, PrimitiveType.Capsule);
                 Rounded(rig.bends[i], arm ? "Hand" : "Boot", new Vector3(0, -0.36f, arm ? 0 : 0.05f),
                     new Vector3(0.17f, 0.17f, arm ? 0.16f : 0.3f), arm ? skin : cloth);
-                rig.caps[i] = Rounded(rig.body, "Sever cap " + (BodyRegion)i, joint, Vector3.one * 0.17f, CapMaterial());
+                rig.caps[i] = Rounded(rig.body, "Sever cap " + (BodyRegion)i, joint, new Vector3(.26f, .13f, .26f), CapMaterial());
                 rig.caps[i].gameObject.SetActive(false);
+                rig.wounds[i] = Rounded(rig.joints[i], "Wound " + (BodyRegion)i, Vector3.down * .19f,
+                    new Vector3(arm ? .25f : .29f, .045f, arm ? .25f : .28f), CapMaterial());
+                rig.wounds[i].gameObject.SetActive(false);
             }
             if (!actor.enemy)
             {
@@ -98,7 +104,22 @@ namespace Reclamation.Blight
                 rig.bladeTip = Pivot(rig.grip, "Blade tip", Vector3.forward * 1.85f);
                 EquipLimbWeapon(actor);
             }
-            InstallStylizedArt(actor);
+            if (ModularHumanRig.Load(false) != null)
+            {
+                foreach (Renderer renderer in rig.body.GetComponentsInChildren<Renderer>(true))
+                    if (!renderer.name.StartsWith("Sever cap") && !renderer.name.StartsWith("Wound")) renderer.enabled = false;
+                if (rig.grip != null)
+                    foreach (Renderer renderer in rig.grip.GetComponentsInChildren<Renderer>(true)) renderer.enabled = false;
+                var visual = new GameObject("Refined limb body"); visual.transform.SetParent(actor.root, false);
+                rig.visual = visual.AddComponent<RefinedLimbVisual>(); rig.visual.Build(actor.enemy);
+                if (rig.grip != null)
+                {
+                    Transform socket = rig.visual.Rig.Bone("WeaponSocket_R");
+                    rig.bladeBase.SetParent(socket, false); rig.bladeTip.SetParent(socket, false);
+                    EquipLimbWeapon(actor);
+                }
+            }
+            else InstallStylizedArt(actor);
         }
 
         private void InstallStylizedArt(Actor actor)
@@ -118,6 +139,14 @@ namespace Reclamation.Blight
             LimbRig rig = actor.rig;
             if (rig == null || rig.grip == null) return;
             bool axe = actor.weapon == BlightWeapon.Axe;
+            if (rig.visual != null)
+            {
+                rig.visual.Equip(actor.weapon);
+                // Sample the visible leading edge, in weapon socket space.
+                rig.bladeBase.localPosition = axe ? new Vector3(.34f, 0, .76f) : new Vector3(.055f, 0, .17f);
+                rig.bladeTip.localPosition = axe ? new Vector3(.40f, 0, 1.15f) : new Vector3(.001f, 0, 1.46f);
+                return;
+            }
             rig.swordModel.gameObject.SetActive(!axe); rig.axeModel.gameObject.SetActive(axe);
             // Only the axe head deals cutting damage, not its handle.
             rig.bladeBase.localPosition = axe ? new Vector3(-0.24f, 0, 1.4f) : Vector3.forward * 0.15f;
@@ -129,31 +158,46 @@ namespace Reclamation.Blight
         {
             LimbRig rig = actor.rig; DuelFighter f = actor.fighter;
             bool crawl = actor.limbs != null && actor.limbs.Crawling;
+            bool limp = actor.limbs != null && actor.limbs.Limping;
             bool wind = f.Action == DuelAction.Windup, swing = f.Action == DuelAction.Recovery;
             SwingHeight height = wind || swing ? rig.height : LimbAim;
             bool crouch = actor == player && height == SwingHeight.Legs && f.Alive;
             float bodyHeight = crawl || !f.Alive ? 0.3f : crouch ? 0.43f : 0.85f;
             rig.body.localPosition = Vector3.up * bodyHeight;
-            rig.body.localRotation = Quaternion.Euler(!f.Alive ? 85 : crawl ? 75 : 0, 0, 0);
+            rig.body.localRotation = Quaternion.Euler(!f.Alive ? 85 : crawl ? 75 : 0, 0,
+                limp && actor.moving ? Mathf.Sin(gait) * 4 : 0);
             rig.head.localRotation = Quaternion.Euler(actor.limbs != null && actor.limbs.BiteOnly && swing ? -25 : 0, 0, 0);
             for (int i = 1; i <= 4; i++)
             {
                 if (actor.limbs != null && actor.limbs.Missing((BodyRegion)i)) continue;
                 float stride = actor.moving ? Mathf.Sin(gait + (i % 2) * Mathf.PI) * 24 : 0;
+                if (limp && i >= 3 && actor.limbs.Integrity((BodyRegion)i) <= 30) stride *= .35f;
                 bool strikingArm = i == 1 || (i == 2 && actor.limbs != null && actor.limbs.Missing(BodyRegion.RightArm));
                 float attack = wind ? Mathf.Lerp(0, -125, f.Progress) : swing ? Mathf.Lerp(-125, 20, Mathf.Clamp01(f.Progress / 0.3f)) : 0;
                 rig.joints[i].localRotation = Quaternion.Euler(i >= 3 && crouch ? -60 :
                     i <= 2 && strikingArm && actor.enemy ? attack : stride, 0, 0);
                 rig.bends[i].localRotation = Quaternion.Euler(i >= 3 && crouch ? 120 : i <= 2 ? -12 : Mathf.Max(0, -stride), 0, 0);
             }
-            if (rig.grip == null) return;
+            if (rig.grip == null) { PoseRefinedLimbs(actor); return; }
             float elevation = height == SwingHeight.Arms ? 1.28f : height == SwingHeight.Legs ? 0.42f : 1;
             float yawAngle = wind ? Mathf.Lerp(0, -75, Mathf.SmoothStep(0, 1, f.Progress)) :
                 swing ? Mathf.Lerp(-75, 75, Mathf.Clamp01((f.Duration - f.Remaining) / 0.22f)) : 10;
-            rig.grip.localPosition = new Vector3(0.18f, elevation, 0.4f);
+            rig.grip.localPosition = new Vector3(rig.visual != null ? 0 : .18f, elevation, 0.4f);
             rig.grip.localRotation = Quaternion.Euler(f.Blocking ? -60 : 0, yawAngle, 0);
             if (f.Alive) AimArm(rig.joints[1], rig.bends[1], rig.grip.position, actor.root.right);
             rig.grip.gameObject.SetActive(f.Alive);
+            PoseRefinedLimbs(actor);
+        }
+
+        private void PoseRefinedLimbs(Actor actor)
+        {
+            LimbRig rig = actor.rig;
+            if (rig.visual != null)
+                rig.visual.Pose(rig.body, rig.head, rig.joints, rig.bends, rig.grip, actor.fighter, actor.limbs);
+            if (actor.limbs != null)
+                for (int i = 1; i <= 4; i++)
+                    if (rig.wounds[i] != null) rig.wounds[i].gameObject.SetActive(!actor.limbs.Missing((BodyRegion)i) &&
+                        actor.limbs.Integrity((BodyRegion)i) < (i <= 2 ? 50 : 60));
         }
 
         private static void AimArm(Transform shoulder, Transform elbow, Vector3 hand, Vector3 bendDirection)
@@ -219,8 +263,13 @@ namespace Reclamation.Blight
 
         private void DetachLimb(Actor actor, int region)
         {
-            Transform part = actor.rig.joints[region]; part.SetParent(transform, true);
-            limbDebris.Add(new LimbDebris { root = part, velocity = player.root.right * 1.3f + Vector3.up * 2 });
+            var debris = new LimbDebris { velocity = player.root.right * 1.3f + Vector3.up * 2 };
+            if (actor.rig.visual != null)
+                debris.root = actor.rig.visual.Detach((BodyRegion)region, transform, actor.rig.joints[region].position, debris.meshes);
+            else
+            { debris.root = actor.rig.joints[region]; debris.root.SetParent(transform, true); }
+            if (debris.root != null) limbDebris.Add(debris);
+            actor.rig.wounds[region].gameObject.SetActive(false);
             actor.rig.caps[region].gameObject.SetActive(true); RefreshLimbVisibility();
         }
         private void RefreshLimbVisibility()
@@ -228,14 +277,18 @@ namespace Reclamation.Blight
             foreach (LimbDebris debris in limbDebris) if (debris.root != null) debris.root.gameObject.SetActive(!lowGore);
             foreach (Actor actor in actors)
                 if (actor.rig != null)
-                    for (int i = 1; i <= 4; i++) actor.rig.caps[i].GetComponent<Renderer>().sharedMaterial = CapMaterial();
+                    for (int i = 1; i <= 4; i++)
+                    {
+                        actor.rig.caps[i].GetComponent<Renderer>().sharedMaterial = CapMaterial();
+                        if (actor.rig.wounds[i] != null) actor.rig.wounds[i].GetComponent<Renderer>().sharedMaterial = CapMaterial();
+                    }
         }
         private void AdvanceLimbDebris(float dt)
         {
             for (int i = limbDebris.Count - 1; i >= 0; i--)
             {
                 LimbDebris debris = limbDebris[i]; debris.age += dt;
-                if (debris.age > 8) { Destroy(debris.root.gameObject); limbDebris.RemoveAt(i); continue; }
+                if (debris.age > 8) { DestroyLimbDebris(debris); limbDebris.RemoveAt(i); continue; }
                 if (debris.root.position.y > 0.45f || debris.velocity.y > 0)
                 {
                     debris.velocity += Vector3.down * 9.8f * dt;
@@ -246,8 +299,14 @@ namespace Reclamation.Blight
         }
         private void ClearLimbDebris()
         {
-            foreach (LimbDebris debris in limbDebris) if (debris.root != null) Destroy(debris.root.gameObject);
+            foreach (LimbDebris debris in limbDebris) DestroyLimbDebris(debris);
             limbDebris.Clear(); LimbAim = SwingHeight.Arms; LimbPractice = false; LastLimbHit = null;
+        }
+
+        private void DestroyLimbDebris(LimbDebris debris)
+        {
+            foreach (Mesh mesh in debris.meshes) if (mesh != null) Destroy(mesh);
+            if (debris.root != null) Destroy(debris.root.gameObject);
         }
     }
 }

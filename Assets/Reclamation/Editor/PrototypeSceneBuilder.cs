@@ -13,13 +13,13 @@ namespace Reclamation.Editor
     {
         private const string ScenePath = "Assets/Scenes/AutonomousHaulingLab.unity";
 
-        [MenuItem("Reclamation/Create Autonomous Hauling Lab")]
+        [MenuItem("Reclamation/Legacy/Create Autonomous Hauling Lab")]
         public static void CreateScene()
         {
             CreateSceneAt(ScenePath, false);
         }
 
-        [MenuItem("Reclamation/Create Shelter Construction Lab")]
+        [MenuItem("Reclamation/Legacy/Create Shelter Construction Lab")]
         public static void CreateShelterScene()
         {
             CreateSceneAt("Assets/Scenes/ShelterConstructionLab.unity", true);

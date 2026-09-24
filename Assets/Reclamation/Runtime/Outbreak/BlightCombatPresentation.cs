@@ -7,12 +7,12 @@ namespace Reclamation.Blight
     {
         private readonly Dictionary<Color, Material> materials = new Dictionary<Color, Material>();
         private GUIStyle label, title, small, button, centered;
-        private Rect StatusRect => new Rect(16, 16, 335, HasSquad ? 200 : 116);
-        private Rect ScenarioRect => new Rect(UiWidth - 310, 16, 294, scenarioMenu ? 301 : 70);
+        private Rect StatusRect => new Rect(16, 16, 335, Scenario == BlightScenario.Company ? 116 : HasSquad ? 200 : 116);
+        private Rect ScenarioRect => new Rect(UiWidth - 310, 16, 294, scenarioMenu ? 476 : 70);
         private Rect CommandRect => new Rect(16, UiHeight - (help ? 168 : 92), 780, help ? 152 : 76);
         private Rect ObjectiveRect => new Rect(365, 16, Mathf.Max(180, UiWidth - 690), 88);
         private bool ContainsGuiPoint(Vector2 point) =>
-            StatusRect.Contains(point) || ScenarioRect.Contains(point) ||
+            CompanyUiContains(point) || StatusRect.Contains(point) || ScenarioRect.Contains(point) ||
             CommandRect.Contains(point) || ObjectiveRect.Contains(point) || (equipmentMenu && EquipmentRect.Contains(point));
 
         private Material Material(Color color)
@@ -50,7 +50,7 @@ namespace Reclamation.Blight
             var actor = new Actor
             {
                 root = Pivot(transform, name, position), enemy = enemy, hulk = hulk,
-                fighter = new DuelFighter(hulk ? 260 : enemy && Scenario == BlightScenario.LimbDamage ? 160 : 100, hulk),
+                defenseSeed = actors.Count, fighter = new DuelFighter(hulk ? 260 : enemy && Scenario == BlightScenario.LimbDamage ? 160 : 100, hulk),
                 spawn = position, anchor = position, radius = hulk ? 0.8f : 0.43f,
                 size = hulk ? 1.65f : 1, delay = 0.7f
             };
@@ -84,6 +84,18 @@ namespace Reclamation.Blight
                 new Vector3(0.88f, 0.35f, 0.45f), Material(new Color(0.22f, 0.12f, 0.29f)));
             Face(actor, enemy ? Vector3.back : Vector3.forward);
             if (Scenario == BlightScenario.LimbDamage) BuildLimbRig(actor);
+            else if (hulk)
+            {
+                foreach (Transform child in actor.root) child.gameObject.SetActive(false);
+                var visual = new GameObject("Blightbound hulk"); visual.transform.SetParent(actor.root, false);
+                actor.hulkVisual = visual.AddComponent<BlightHulkVisual>(); actor.hulkVisual.Build();
+            }
+            else if (enemy && !hulk)
+            {
+                foreach (Transform child in actor.root) child.gameObject.SetActive(false);
+                var visual = new GameObject("Blighted thrall"); visual.transform.SetParent(actor.root, false);
+                actor.thrall = visual.AddComponent<BlightThrallVisual>(); actor.thrall.Build();
+            }
             actors.Add(actor); return actor;
         }
 
@@ -128,6 +140,15 @@ namespace Reclamation.Blight
 
         private void Pose(Actor actor)
         {
+            if (actor.hulkVisual != null)
+            {
+                actor.root.localScale = Vector3.one * actor.size;
+                actor.hulkVisual.Pose(actor.fighter, actor.moving, simulationTime); return;
+            }
+            if (actor.thrall != null)
+            { actor.thrall.Pose(actor.fighter, actor.moving, simulationTime); return; }
+            if (actor.hero != null)
+            { actor.hero.Pose(actor.fighter, actor.moving, simulationTime); return; }
             if (actor.rig != null) { PoseLimbRig(actor); return; }
             DuelFighter f = actor.fighter;
             bool winding = f.Action == DuelAction.Windup, recovering = f.Action == DuelAction.Recovery;
@@ -180,16 +201,21 @@ namespace Reclamation.Blight
             EnsureStyles();
             Matrix4x4 old = GUI.matrix; Color oldColor = GUI.color;
             GUI.matrix = Matrix4x4.Scale(new Vector3(UiScale, UiScale, 1));
+            bool oldEnabled = GUI.enabled;
+            if (CompanyMapOpen) GUI.enabled = false;
             DrawWorldLabels();
             DrawLootMarkers();
+            DrawOutpostMarkers();
+            DrawGatewayMarkers();
+            DrawCompanyMarkers();
             DrawCombatFeedback();
             GUI.Box(StatusRect, GUIContent.none);
-            GUI.Label(new Rect(28, 23, 310, 28), "RECLAMATION | " + Scenario, title);
+            GUI.Label(new Rect(28, 23, 310, 28), "RECLAMATION | " + (VillageDefense ? "Village" : Scenario.ToString()), title);
             Meter(new Rect(28, 56, 310, 23), player.fighter.Health, player.fighter.MaximumHealth,
                 new Color(0.65f, 0.18f, 0.2f), "Health  " + player.fighter.Health.ToString("0"));
             Meter(new Rect(28, 84, 310, 23), player.fighter.Stamina, 100,
-                new Color(0.18f, 0.5f, 0.3f), "Stamina  " + player.fighter.Stamina.ToString("0"));
-            if (HasSquad)
+                new Color(0.18f, 0.5f, 0.3f), (IsSprinting ? "SPRINT  " : sprintExhausted ? "Release Shift to recover  " : "Stamina  ") + player.fighter.Stamina.ToString("0"));
+            if (HasSquad && Scenario != BlightScenario.Company)
             {
                 int row = 0;
                 foreach (Actor actor in actors)
@@ -200,25 +226,33 @@ namespace Reclamation.Blight
                             new Color(0.15f, 0.45f, 0.3f), actor.fighter.Alive ? actor.fighter.Health.ToString("0") : "Down");
                         row++;
                     }
-                GUI.Label(new Rect(28, 181, 310, 22), "Order: " + Order + "  |  Hostiles: " + LivingEnemies, small);
+                GUI.Label(new Rect(28, Scenario == BlightScenario.Company ? 309 : 181, 310, 22), Scenario == BlightScenario.Company ? "Company | Known contacts: " + KnownHostileCount : "Order: " + (TacticalScenario && Order == SquadOrder.Hold ? (HoldAtAllCosts ? "Stand fast" : "Defend") : Order.ToString()) + "  |  Hostiles: " + LivingEnemies, small);
             }
             GUI.Box(ObjectiveRect, GUIContent.none);
             GUI.Label(new Rect(ObjectiveRect.x + 8, 20, ObjectiveRect.width - 16, 76), ObjectiveText(), label);
             DrawScenarioMenu(); DrawCommands();
             DrawEquipment();
-            if (paused || Ended)
+            if ((paused || Ended) && !companyReportOpen && !CompanyMapOpen)
             {
-                string text = paused ? "PAUSED — Esc to resume" : !player.fighter.Alive
-                    ? "DEFEATED — R to retry" : "ENCOUNTER CLEAR — R to retry";
+                string text = VillageLost ? "VILLAGE LOST — R to retry" : paused ? "PAUSED — Esc to resume" : !player.fighter.Alive
+                    ? "DEFEATED — R to retry" : Scenario == BlightScenario.Outpost ? "OUTPOST CLEARED — R to replay" : "ENCOUNTER CLEAR — R to retry";
                 GUI.Box(new Rect(UiWidth / 2 - 210, UiHeight / 2 - 24, 420, 48), text, title);
             }
             else if (simulationTime < feedbackUntil)
                 GUI.Box(new Rect(365, 112, Mathf.Max(250, UiWidth - 690), 62), feedback, small);
+            DrawCompanyPanels();
+            GUI.enabled = oldEnabled;
+            DrawCommandMap();
             GUI.color = oldColor; GUI.matrix = old;
         }
 
         private string ObjectiveText()
         {
+            if (VillageDefense) return VillageObjective();
+            if (Scenario == BlightScenario.Company) return "Command prototype | 3 small platoons\nScout, coordinate, then return to camp\nF at camp: operation report";
+            if (TacticalScenario) return "Hostiles: " + LivingEnemies + " | " + (Scenario == BlightScenario.Gateway ? "Ruined gateway" : "Open ground") +
+                "\n2: Defend | 4: Fallback | 5: Stand fast\n" + (HoldAtAllCosts ? "HOLD AT ALL COSTS" : "Adaptive defense");
+            if (Scenario == BlightScenario.Outpost) return OutpostObjective();
             if (Scenario == BlightScenario.Weapons)
                 return (LivingEnemies == 0 ? "CLEAR — F loot / N next" : "Defeat the thrall; collect its gear") +
                     "\nRecovered: " + OwnedLootCount + "/3 | B compare";
@@ -244,10 +278,15 @@ namespace Reclamation.Blight
             { scenarioMenu = !scenarioMenu; if (scenarioMenu) equipmentMenu = false; }
             GUI.Label(new Rect(x, 52, 278, 23), "Active: " + Scenario + " | Each choice resets", small);
             if (!scenarioMenu) return;
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 11; i++)
             {
                 BlightScenario scenario = (BlightScenario)i;
-                string name = scenario == BlightScenario.Squad ? "Squad orders — three thralls" :
+                string name = scenario == BlightScenario.Company ? "Company — orders and intelligence" :
+                    scenario == BlightScenario.Gateway ? "Gateway — same twelve, terrain" :
+                    scenario == BlightScenario.Skirmish ? "Skirmish — squad vs six" :
+                    scenario == BlightScenario.Horde ? "Horde — squad vs twelve" :
+                    scenario == BlightScenario.Outpost ? "Outpost — connected mission" :
+                    scenario == BlightScenario.Squad ? "Squad orders — three thralls" :
                     scenario == BlightScenario.Hulk ? "Hulk — squad vs sweep / smash" :
                     scenario == BlightScenario.Weapons ? "Weapons — sword / spear / axe" :
                     scenario == BlightScenario.Patrol ? "Patrol — cache and recovery" :
@@ -258,13 +297,14 @@ namespace Reclamation.Blight
 
         private void DrawCommands()
         {
+            if (Scenario == BlightScenario.Company) { DrawCompanyCommands(); return; }
             GUI.Box(CommandRect, GUIContent.none);
             float y = CommandRect.y + 8;
             if (HasSquad)
             {
                 for (int i = 0; i < 4; i++)
                     if (GUI.Button(new Rect(24 + i * 118, y, 112, 27),
-                        (Order == (SquadOrder)i ? "> " : "") + (i + 1) + " " + (SquadOrder)i, button))
+                        (Order == (SquadOrder)i ? "> " : "") + (i + 1) + " " + (TacticalScenario && i == 3 ? "Fallback" : TacticalScenario && i == 1 ? "Defend" : ((SquadOrder)i).ToString()), button))
                         GiveOrder((SquadOrder)i);
             }
             else GUI.Label(new Rect(24, y, 450, 27), Scenario == BlightScenario.LimbDamage ?
@@ -274,15 +314,17 @@ namespace Reclamation.Blight
                 CycleWeapon();
             if (GUI.Button(new Rect(652, y, 132, 27), help ? "Hide help [H]" : "Help [H]", button)) help = !help;
             AttackSpec light = PlayerAttack(false);
-            GUI.Label(new Rect(24, y + 33, 755, 25),
+            if (TacticalScenario && GUI.Button(new Rect(24, y + 33, 220, 25), HoldAtAllCosts ? "5: Hold at all costs [ON]" : "5: Hold at all costs [OFF]", button))
+                SetHoldAtAllCosts(!HoldAtAllCosts);
+            GUI.Label(new Rect(TacticalScenario ? 252 : 24, y + 33, TacticalScenario ? 532 : 755, 25),
                 Scenario == BlightScenario.LimbDamage ? PlayerWeapon + " contact test | B equipment | Arm loss: no heavy | Leg wound: limp / crawl" :
                 "Light: " + light.Reach.ToString("0.0") + " m | " + light.Windup.ToString("0.00") +
                 " s windup | " + light.Cost + " stamina  •  Swap only with 5 m of space", small);
             if (help)
                 GUI.Label(new Rect(24, y + 61, 755, 78),
-                    "WASD move | LMB light | E heavy | Hold RMB block | Space dodge\n" +
-                    "Tab lock | Q target | Middle-drag camera | F loot/cache | B gear | N next (Weapons)\n" +
-                    "1–4 squad orders | X weapon | Esc pause | R reset | M sound " + (CombatAudioEnabled ? "ON" : "OFF") + " | H help", label);
+                    "WASD move | LMB light | E heavy | Ctrl block | Space dodge\n" +
+                    "RMB camera | Tab lock | Q target | Shift sprint | F interact | B gear\n" +
+                    "1–4 squad orders | X weapon | Esc pause | R reset | M sound " + (CombatAudioEnabled ? "ON" : "OFF") + " | I camera motion " + (CameraMotionEnabled ? "ON" : "OFF"), label);
         }
 
         private void DrawWorldLabels()
@@ -296,10 +338,16 @@ namespace Reclamation.Blight
                 float x = screen.x / UiScale, y = (Screen.height - screen.y) / UiScale;
                 bool target = actor == selectedEnemy;
                 Rect box = new Rect(x - 125, y - 25, 250, 24);
-                GUI.Box(box, (target ? "[TARGET] " : "") + actor.root.name, centered);
+                GUI.Box(box, Scenario == BlightScenario.Company && !actor.enemy && actor != player ?
+                    "P" + (actor.platoon + 1) + " " + actor.root.name.Split(' ')[0] :
+                    (target ? "[TARGET] " : "") + actor.root.name + (!actor.enemy && actor != player ? " | " + actor.intent : ""), centered);
                 Meter(new Rect(x - 65, y + 1, 130, 8), actor.fighter.Health, actor.fighter.MaximumHealth,
                     actor.enemy ? new Color(0.7f, 0.25f, 0.25f) : new Color(0.25f, 0.7f, 0.4f), "");
-                if (actor.enemy && actor.fighter.Action == DuelAction.Windup)
+                if (actor.enemy && actor.fighter.Blocking && actor.fighter.CanAct)
+                    GUI.Box(new Rect(x - 105, y + 12, 210, 24), "BRACED — flank or wait", centered);
+                else if (actor.enemy && actor.fighter.Action == DuelAction.Dodge)
+                    GUI.Box(new Rect(x - 80, y + 12, 160, 24), "EVADING", centered);
+                else if (actor.enemy && actor.fighter.Action == DuelAction.Windup)
                 {
                     string tell = actor.fighter.Strike.Kind == BlightAttack.Sweep ? "SWEEP — step back / dodge" :
                         actor.fighter.Strike.Kind == BlightAttack.Smash ? "SMASH — sidestep / dodge" :
@@ -330,6 +378,7 @@ namespace Reclamation.Blight
 
         private void OnDestroy()
         {
+            ClearLimbDebris();
             DestroyCombatAudio();
             foreach (Material material in materials.Values) if (material != null) Destroy(material);
         }

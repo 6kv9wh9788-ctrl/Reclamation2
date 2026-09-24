@@ -58,7 +58,7 @@ namespace Reclamation.Blight
 
         public bool TryEquipLoot(BlightLoot item)
         {
-            if (Scenario != BlightScenario.Weapons || !BlightLootCatalog.Valid(item) || !inventory.Owns(item)) return false;
+            if ((Scenario != BlightScenario.Weapons && Scenario != BlightScenario.Outpost) || !BlightLootCatalog.Valid(item) || !inventory.Owns(item)) return false;
             if (!TryEquip(BlightLootCatalog.Weapon(item))) return false;
             equippedLoot = item; Say("Equipped " + BlightLootCatalog.Name(item) + "."); return true;
         }
@@ -116,7 +116,7 @@ namespace Reclamation.Blight
                     "s (now " + Pair(currentLight.Windup + currentLight.Recovery, currentHeavy.Windup + currentHeavy.Recovery) + "s)" +
                     "\nReach " + Pair(light.Reach, heavy.Reach) + "m (now " + Pair(currentLight.Reach, currentHeavy.Reach) + "m)", small);
             }
-            GUI.Label(new Rect(panel.x + 10, panel.y + 462, 342, 42), "N: next encounter after collecting loot\nR: fresh run (clears recovered gear)", small);
+            GUI.Label(new Rect(panel.x + 10, panel.y + 462, 342, 42), Scenario == BlightScenario.Outpost ? "F at cache: depart when ready\nR: fresh mission (clears recovered gear)" : "N: next encounter after collecting loot\nR: fresh run (clears recovered gear)", small);
         }
 
         private static string Pair(float light, float heavy) => light.ToString("0.##") + "/" + heavy.ToString("0.##");

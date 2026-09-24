@@ -8,7 +8,7 @@ namespace Reclamation.Editor
 {
     public static class LabCameraInstaller
     {
-        [MenuItem("Reclamation/Upgrade Open Scene with Camera Controls")]
+        [MenuItem("Reclamation/Legacy/Upgrade Open Scene with Camera Controls")]
         public static void Install()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) return;

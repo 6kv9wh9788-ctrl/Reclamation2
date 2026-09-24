@@ -9,7 +9,7 @@ namespace Reclamation.Editor
 {
     public static class HumanVisualBuilder
     {
-        [MenuItem("Reclamation/Upgrade Open Scene to Human Characters")]
+        [MenuItem("Reclamation/Legacy/Upgrade Open Scene to Human Characters")]
         public static void UpgradeOpenScene()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) return;

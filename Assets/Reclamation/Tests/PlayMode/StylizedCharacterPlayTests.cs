@@ -23,12 +23,11 @@ namespace Reclamation.Tests
                 if (child.name == "Company fighter") player = child;
                 if (child.name == "Blighted Thrall") enemy = child;
             }
-            Assert.That(player.GetComponent<StylizedCharacterArt>(), Is.Not.Null);
-            Assert.That(enemy.GetComponent<StylizedCharacterArt>(), Is.Not.Null);
-            Transform mesh = null;
-            foreach (MeshFilter filter in enemy.GetComponentsInChildren<MeshFilter>())
-                if (filter.name == "Forearm_R_blight") mesh = filter.transform;
-            Assert.That(mesh, Is.Not.Null);
+            Assert.That(player.GetComponentInChildren<RefinedLimbVisual>(), Is.Not.Null);
+            var visual = enemy.GetComponentInChildren<RefinedLimbVisual>();
+            Assert.That(visual, Is.Not.Null);
+            Renderer claw = visual.transform.Find("HookedClaw_Index_R").GetComponent<Renderer>();
+            Assert.That(claw.enabled, Is.True);
             player.position = Vector3.zero; enemy.position = Vector3.forward * 1.8f; lab.Simulate(.02f);
             for (int attack = 0; attack < 2; attack++)
             {
@@ -36,9 +35,11 @@ namespace Reclamation.Tests
                 for (int i = 0; i < 120; i++) lab.Simulate(1f / 60f);
             }
             Assert.That(lab.GetLimbs(enemy).Missing(BodyRegion.RightArm), Is.True);
-            Assert.That(mesh.IsChildOf(enemy), Is.False, "Visible forearm must detach with the damage region.");
+            Assert.That(claw.enabled, Is.False, "Attached art must hide after severing.");
+            Assert.That(root.transform.Find("Severed RightArm/HookedClaw_Index_R"), Is.Not.Null);
             lab.ResetFight(); yield return null;
-            Assert.That(root.GetComponentsInChildren<StylizedCharacterArt>().Length, Is.EqualTo(2));
+            Assert.That(root.transform.Find("Blighted Thrall").GetComponentInChildren<RefinedLimbVisual>().transform.Find("HookedClaw_Index_R").GetComponent<Renderer>().enabled, Is.True);
+            Assert.That(root.transform.Find("Severed RightArm"), Is.Null);
             LogAssert.NoUnexpectedReceived();
         }
 

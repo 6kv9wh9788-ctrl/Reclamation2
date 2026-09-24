@@ -7,7 +7,7 @@ namespace Reclamation.Editor
 {
     public static class SafeZoneInstaller
     {
-        [MenuItem("Reclamation/Add Safe Zone to Open Outbreak Scene")]
+        [MenuItem("Reclamation/Legacy/Add Safe Zone to Open Outbreak Scene")]
         public static void InstallInOpenScene()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) return;

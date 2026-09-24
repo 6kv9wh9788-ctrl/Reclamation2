@@ -12,12 +12,24 @@ namespace Reclamation.Blight
             public Transform root, arm, offArm, leftLeg, rightLeg, sword, spear, axe;
             public DuelFighter fighter;
             public bool enemy, hulk, moving, lootDropped;
-            public int slot, attacks;
+            public float navigationStall;
+            public int slot, attacks, defenseSeed, observedAttack;
+            public int platoon = -1;
+            public DefenseMemory defense = new DefenseMemory();
+            public Actor observedThreat;
+            public Vector3 routeGoal, routeWaypoint;
+            public float routeUntil;
+            public float defenseCooldown, reactionTime;
             public float delay, radius = 0.43f, size = 1;
             public Vector3 spawn, anchor, dodgeDirection;
             public Actor target;
+            public Vector3 engagementAxis;
+            public string intent = "Follow";
             public BlightWeapon weapon;
             public LimbRig rig;
+            public BlightHeroVisual hero;
+            public BlightThrallVisual thrall;
+            public BlightHulkVisual hulkVisual;
             public BlightLimbs limbs;
             public ImpactFeedback feedback = new ImpactFeedback();
         }
@@ -61,9 +73,10 @@ namespace Reclamation.Blight
             foreach (Actor actor in actors) if (actor.root == actorRoot) return actor.fighter;
             return null;
         }
-        private bool HasSquad => Scenario == BlightScenario.Squad || Scenario == BlightScenario.Hulk || Scenario == BlightScenario.Patrol;
-        private bool Ended => player != null && (!player.fighter.Alive ||
-            (Scenario != BlightScenario.Patrol && Scenario != BlightScenario.Weapons && LivingEnemies == 0));
+        private bool HasSquad => Scenario == BlightScenario.Squad || Scenario == BlightScenario.Hulk || Scenario == BlightScenario.Patrol || Scenario == BlightScenario.Outpost || Scenario == BlightScenario.Skirmish || Scenario == BlightScenario.Horde || Scenario == BlightScenario.Gateway || Scenario == BlightScenario.Company;
+        private bool Ended => player != null && (!player.fighter.Alive || VillageLost ||
+            (Scenario == BlightScenario.Outpost ? MissionStage == OutpostStage.Complete :
+                Scenario != BlightScenario.Patrol && Scenario != BlightScenario.Weapons && Scenario != BlightScenario.Company && LivingEnemies == 0));
         private float UiScale => Mathf.Max(0.15f, Mathf.Min(Screen.width / 1200f, Screen.height / 800f));
         private float UiWidth => Screen.width / UiScale;
         private float UiHeight => Screen.height / UiScale;
@@ -78,36 +91,48 @@ namespace Reclamation.Blight
 
         public void SelectScenario(BlightScenario scenario)
         {
-            if (view == null || (int)scenario < 0 || (int)scenario > 5) return;
+            if (view == null || (int)scenario < 0 || (int)scenario > 10) return;
             ClearLimbDebris();
             ClearCombatFeedback();
             ResetLoot();
+            ClearOutpost();
+            ClearGateway();
+            ClearCompany();
             foreach (Actor actor in actors)
             {
                 actor.root.gameObject.SetActive(false);
                 Destroy(actor.root.gameObject);
             }
             actors.Clear(); impacts.Clear(); victims.Clear();
-            Scenario = scenario; Order = SquadOrder.Follow; patrol = new BlightPatrol();
+            Scenario = scenario; scenarioMenu = false; Order = SquadOrder.Follow; patrol = new BlightPatrol();
             equipmentMenu = scenario == BlightScenario.Weapons;
             paused = false; locked = true; selectedEnemy = assaultTarget = null;
             simulationTime = gait = yaw = 0; pitch = 24;
             pendingAttack = pendingDodge = playerBlock = false; playerMove = Vector3.zero;
-            camp = new Vector3(0, 0, Scenario == BlightScenario.Patrol ? -19 : -8);
+            ConfigureCompanyGround();
+            camp = new Vector3(0, 0, Scenario == BlightScenario.Patrol || Scenario == BlightScenario.Outpost || Scenario == BlightScenario.Company ? -19 : -8) * CompanyScale;
+            if (VillageDefense) camp = VillageSite(CompanySite.Fortress);
             cache = new Vector3(0, 0, 13);
-            campMarker.position = camp; campMarker.gameObject.SetActive(Scenario == BlightScenario.Patrol);
+            campMarker.position = camp; campMarker.gameObject.SetActive(Scenario == BlightScenario.Patrol || Scenario == BlightScenario.Outpost || Scenario == BlightScenario.Company);
             cacheMarker.position = cache; cacheMarker.gameObject.SetActive(Scenario == BlightScenario.Patrol);
             holdMarker.gameObject.SetActive(false);
-            Vector3 origin = Scenario == BlightScenario.Patrol ? camp : new Vector3(0, 0, -4);
+            Vector3 origin = Scenario == BlightScenario.Patrol || Scenario == BlightScenario.Outpost || Scenario == BlightScenario.Company ? camp : new Vector3(0, 0, -4);
             player = CreateActor("Company fighter", origin, false);
+            if (Scenario != BlightScenario.LimbDamage)
+                InstallHumanVisual(player, BlightHumanLook.Hero);
             if (HasSquad)
             {
                 Actor left = CreateActor("Mara - swordswoman", origin + new Vector3(-1.8f, 0, -1.8f), false);
                 left.slot = 0;
+                InstallHumanVisual(left, BlightHumanLook.Mara);
                 Actor right = CreateActor("Bren - spearman", origin + new Vector3(1.8f, 0, -1.8f), false);
                 right.slot = 1; Equip(right, BlightWeapon.Spear);
+                InstallHumanVisual(right, BlightHumanLook.Bren);
             }
-            if (Scenario == BlightScenario.Hulk)
+            if (Scenario == BlightScenario.Company) BuildCompany();
+            else if (Scenario == BlightScenario.Outpost) BuildOutpost();
+            else if (Scenario == BlightScenario.Skirmish || Scenario == BlightScenario.Horde || Scenario == BlightScenario.Gateway) BuildLargerEncounter();
+            else if (Scenario == BlightScenario.Hulk)
                 CreateActor("Blightbound Hulk", new Vector3(0, 0, 4), true, true);
             else if (Scenario == BlightScenario.Squad)
             {
@@ -122,23 +147,38 @@ namespace Reclamation.Blight
                 CreateActor("Cache guardian", new Vector3(0, 0, 11), true, true);
             }
             else CreateActor("Blighted Thrall", new Vector3(0, 0, 3), true);
+            if (TacticalScenario) BuildGateway();
             selectedEnemy = NearestEnemy(player.root.position, float.MaxValue);
             foreach (Actor actor in actors) Pose(actor);
-            Say(Scenario == BlightScenario.Patrol ? "Patrol: travel north, clear the road, recover the cache, return to camp."
+            ResetCombatCamera();
+            Say(Scenario == BlightScenario.Outpost ? "Clear the Blighted Outpost: choose a marked approach and press F." : Scenario == BlightScenario.Patrol ? "Patrol: travel north, clear the road, recover the cache, return to camp."
                 : "Ready. Every scenario is a fresh fight; R resets this scenario.");
         }
 
         public void SetPaused(bool value)
         {
             paused = value;
+            sprintHeld = cameraManual = false; IsSprinting = false;
             if (impactAudio != null) { if (value) impactAudio.Pause(); else impactAudio.UnPause(); }
             pendingAttack = pendingDodge = playerBlock = false; playerMove = Vector3.zero;
             if (player != null) player.fighter.Blocking = false;
         }
 
+        private void InstallHumanVisual(Actor actor, BlightHumanLook look)
+        {
+            foreach (Transform child in actor.root) child.gameObject.SetActive(false);
+            var visual = new GameObject(look == BlightHumanLook.Hero ? "Refined hero" : "Refined " + look);
+            visual.transform.SetParent(actor.root, false);
+            actor.hero = visual.AddComponent<BlightHeroVisual>(); actor.hero.Build(look);
+            actor.hero.Equip(actor.weapon);
+        }
+
         public void GiveOrder(SquadOrder order)
         {
-            if (player == null || !HasSquad || !player.fighter.Alive) return;
+            if (player == null || !HasSquad || !player.fighter.Alive || (int)order < 0 || (int)order > 3) return;
+            if (Scenario == BlightScenario.Company)
+            { GiveCompanyOrder(selectedPlatoon, order == SquadOrder.Withdraw ? CompanyOrder.Withdraw : order == SquadOrder.Assault ? CompanyOrder.Assault : order == SquadOrder.Follow ? CompanyOrder.Escort : CompanyOrder.Defend, selectedCompanySite); return; }
+            if (TacticalScenario && SetTacticalOrder(order)) return;
             Order = order; assaultTarget = order == SquadOrder.Assault ? selectedEnemy : null;
             foreach (Actor actor in actors)
                 if (!actor.enemy && actor != player)
@@ -170,6 +210,8 @@ namespace Reclamation.Blight
 
         public bool Interact()
         {
+            if (Scenario == BlightScenario.Company) return ReviewCompanyOperation();
+            if (Scenario == BlightScenario.Outpost) return InteractOutpost();
             if (Scenario == BlightScenario.Weapons) return CollectNearbyLoot();
             if (Scenario != BlightScenario.Patrol || paused || player == null || !player.fighter.CanAct) return false;
             patrol.ObserveEnemies(LivingEnemies);
@@ -194,16 +236,22 @@ namespace Reclamation.Blight
 
         private void ReadInput()
         {
-            playerMove = Vector3.zero; playerBlock = false;
+            playerMove = Vector3.zero; playerBlock = sprintHeld = cameraManual = false;
             if (!InputEnabled || !Application.isFocused) return;
             Keyboard keys = Keyboard.current; Mouse mouse = Mouse.current;
             bool busy = GUIUtility.hotControl != 0;
             if (keys != null && !busy)
             {
-                if (keys.escapeKey.wasPressedThisFrame) SetPaused(!paused);
+                if (keys.escapeKey.wasPressedThisFrame)
+                { if (CompanyMapOpen) CloseCompanyMap(false); else if (companyReportOpen) { companyReportOpen = false; SetPaused(false); } else SetPaused(!paused); }
                 if (keys.rKey.wasPressedThisFrame) { ResetFight(); return; }
+                if (companyReportOpen) return;
+                if (Scenario == BlightScenario.Company && keys.gKey.wasPressedThisFrame)
+                { if (CompanyMapOpen) CloseCompanyMap(false); else OpenCompanyMap(); return; }
+                if (CompanyMapOpen) return;
                 if (keys.hKey.wasPressedThisFrame) help = !help;
                 if (keys.tabKey.wasPressedThisFrame) locked = !locked;
+                if (keys.iKey.wasPressedThisFrame) CameraMotionEnabled = !CameraMotionEnabled;
                 if (keys.qKey.wasPressedThisFrame) CycleTarget();
                 if (keys.mKey.wasPressedThisFrame) CombatAudioEnabled = !CombatAudioEnabled;
                 if (keys.bKey.wasPressedThisFrame) { equipmentMenu = !equipmentMenu; if (equipmentMenu) scenarioMenu = false; }
@@ -218,30 +266,41 @@ namespace Reclamation.Blight
             Vector2 pixel = mouse == null ? Vector2.zero : mouse.position.ReadValue();
             bool overUi = mouse != null && ContainsGuiPoint(new Vector2(pixel.x, Screen.height - pixel.y) / UiScale);
             bool inside = pixel.x >= 0 && pixel.y >= 0 && pixel.x < Screen.width && pixel.y < Screen.height;
-            if (mouse != null && !busy && !overUi && inside && mouse.middleButton.isPressed)
+            if (mouse != null && !busy && !overUi && inside && !paused && !Ended && mouse.rightButton.isPressed)
             {
-                Vector2 delta = mouse.delta.ReadValue();
-                yaw += delta.x * 0.18f; pitch = Mathf.Clamp(pitch - delta.y * 0.15f, 12, 60);
+                SetCameraOrbit(mouse.delta.ReadValue(), true);
             }
             if (paused || Ended || busy) return;
             if (keys != null)
             {
+                if (Scenario == BlightScenario.Company)
+                {
+                    if (keys.digit1Key.wasPressedThisFrame) selectedPlatoon = 0;
+                    if (keys.digit2Key.wasPressedThisFrame) selectedPlatoon = 1;
+                    if (keys.digit3Key.wasPressedThisFrame) selectedPlatoon = 2;
+                    if (keys.digit4Key.wasPressedThisFrame) RecallCompany();
+                }
+                else
+                {
                 if (keys.digit1Key.wasPressedThisFrame) GiveOrder(SquadOrder.Follow);
                 if (keys.digit2Key.wasPressedThisFrame) GiveOrder(SquadOrder.Hold);
                 if (keys.digit3Key.wasPressedThisFrame) GiveOrder(SquadOrder.Assault);
                 if (keys.digit4Key.wasPressedThisFrame) GiveOrder(SquadOrder.Withdraw);
+                if (keys.digit5Key.wasPressedThisFrame) SetHoldAtAllCosts(!HoldAtAllCosts);
+                }
                 if (keys.xKey.wasPressedThisFrame) CycleWeapon();
                 if (keys.fKey.wasPressedThisFrame) Interact();
                 Vector3 raw = new Vector3((keys.dKey.isPressed ? 1 : 0) - (keys.aKey.isPressed ? 1 : 0),
                     0, (keys.wKey.isPressed ? 1 : 0) - (keys.sKey.isPressed ? 1 : 0));
                 playerMove = Quaternion.Euler(0, yaw, 0) * raw.normalized;
+                sprintHeld = keys.leftShiftKey.isPressed || keys.rightShiftKey.isPressed;
+                playerBlock = keys.leftCtrlKey.isPressed || keys.rightCtrlKey.isPressed;
                 pendingHeavy = keys.eKey.wasPressedThisFrame;
                 pendingAttack |= pendingHeavy;
                 pendingDodge |= keys.spaceKey.wasPressedThisFrame;
             }
             if (mouse != null && !overUi && inside)
             {
-                playerBlock = mouse.rightButton.isPressed;
                 if (mouse.leftButton.wasPressedThisFrame && !pendingHeavy) { pendingAttack = true; pendingHeavy = false; }
             }
         }
@@ -260,12 +319,14 @@ namespace Reclamation.Blight
 
         private void Tick(float dt)
         {
+            Vector3 previousPlayerPosition = player.root.position;
             CaptureLimbPose();
             AdvanceLimbDebris(dt);
             simulationTime += dt; gait += dt * 9;
             if (selectedEnemy == null || !selectedEnemy.fighter.Alive)
                 selectedEnemy = NearestEnemy(player.root.position, float.MaxValue);
-            foreach (Actor actor in actors) { actor.moving = false; actor.delay -= dt; }
+            foreach (Actor actor in actors) { actor.moving = false; actor.delay -= dt; actor.defenseCooldown -= dt; }
+            if (Scenario == BlightScenario.Company) UpdateCompany(dt);
             ControlPlayer(dt);
             foreach (Actor actor in actors)
                 if (actor != player && actor.fighter.Alive)
@@ -287,118 +348,62 @@ namespace Reclamation.Blight
                 if (patrol.TryComplete(Vector3.Distance(player.root.position, camp), CampThreatened(), player.fighter.Alive))
                     Say("PATROL COMPLETE — spear recovered. Survivors recover inside camp. R starts a fresh patrol.");
             }
+            if (Scenario == BlightScenario.Outpost) UpdateOutpost(dt);
+            UpdateFallback();
             foreach (Actor actor in actors) Pose(actor);
             ResolveLimbSweep();
             UpdateLootDrops();
             UpdateCombatFeedback();
+            UpdateCombatCamera(dt, previousPlayerPosition);
         }
 
         private void ControlPlayer(float dt)
         {
+            IsSprinting = false;
+            if (!sprintHeld && player.fighter.Stamina >= 20) sprintExhausted = false;
             if (player.fighter.CanAct)
             {
-                Face(player, locked && selectedEnemy != null ? selectedEnemy.root.position - player.root.position : playerMove);
+                Face(player, CameraLockActive ? selectedEnemy.root.position - player.root.position : playerMove);
                 player.fighter.Blocking = playerBlock;
                 if (pendingDodge && player.fighter.Dodge())
                     player.dodgeDirection = playerMove.sqrMagnitude > 0 ? playerMove : -player.root.forward;
                 else if (pendingAttack) StartAttack(player, pendingHeavy);
-                if (player.fighter.CanAct) Move(player, playerMove * (playerBlock ? 1.8f : 3.8f) * dt);
-            }
-            pendingAttack = pendingDodge = false;
-        }
-
-        private Actor Incoming(Actor actor)
-        {
-            foreach (Actor other in actors)
-                if (other.enemy != actor.enemy && other.fighter.Action == DuelAction.Windup &&
-                    DuelFighter.InReach(other.root.position, other.root.forward, actor.root.position,
-                        other.fighter.Strike.Reach + 0.3f, other.fighter.Strike.HalfAngle + 8))
-                    return other;
-            return null;
-        }
-
-        private bool Defend(Actor actor)
-        {
-            Actor threat = Incoming(actor);
-            actor.fighter.Blocking = false;
-            if (threat == null || threat.fighter.Progress < 0.38f) return false;
-            Face(actor, threat.root.position - actor.root.position);
-            if (threat.fighter.Heavy)
-            {
-                // React late enough that the short dodge can cover impact; otherwise keep distance.
-                if (threat.fighter.Remaining <= 0.25f && actor.fighter.Dodge())
+                if (player.fighter.CanAct)
                 {
-                    Vector3 away = actor.root.position - threat.root.position;
-                    actor.dodgeDirection = threat.fighter.Strike.Kind == BlightAttack.Smash
-                        ? Vector3.Cross(Vector3.up, away).normalized : away.normalized;
+                    bool wantsSprint = sprintHeld && !playerBlock && playerMove.sqrMagnitude > .01f && !sprintExhausted;
+                    IsSprinting = wantsSprint && player.fighter.TrySprint(dt);
+                    if (wantsSprint && !IsSprinting) sprintExhausted = true;
+                    Move(player, playerMove * (IsSprinting ? 6.2f : playerBlock ? 1.8f : 3.8f) * dt);
                 }
             }
-            else actor.fighter.Blocking = true;
-            return true;
-        }
-
-        private void ControlCompanion(Actor actor, float dt)
-        {
-            if (!actor.fighter.CanAct) return;
-            bool defending = Defend(actor);
-            if (!actor.fighter.CanAct) return;
-            Vector3 anchor = Order == SquadOrder.Hold ? actor.anchor : player.root.position;
-            if (Order == SquadOrder.Withdraw)
-            {
-                Vector3 rally = camp + new Vector3(actor.slot == 0 ? -1.8f : 1.8f, 0, 0);
-                MoveToward(actor, rally, 3.8f, dt, 0.4f); return;
-            }
-            if (defending) return;
-            Actor target = Order == SquadOrder.Assault && assaultTarget != null && assaultTarget.fighter.Alive &&
-                Vector3.Distance(assaultTarget.root.position, anchor) <= 14 ? assaultTarget : NearestEnemy(actor.root.position, 10);
-            if (target != null && (!BlightSquadRules.CanEngage(Order, Vector3.Distance(target.root.position, anchor)) ||
-                !BlightSquadRules.CanEngage(Order, Vector3.Distance(actor.root.position, anchor)))) target = null;
-            actor.target = target;
-            if (target == null)
-            {
-                Vector3 goal = Order == SquadOrder.Hold ? actor.anchor :
-                    BlightSquadRules.Formation(player.root.position, player.root.forward, actor.slot);
-                MoveToward(actor, goal, 3.5f, dt, 0.5f); return;
-            }
-            Face(actor, target.root.position - actor.root.position);
-            float reach = BlightEquipment.Weapon(actor.weapon, false).Reach;
-            float distance = Vector3.Distance(actor.root.position, target.root.position);
-            if (distance > reach - 0.35f)
-            {
-                // Opposite approach offsets reduce both allies piling into the same lane.
-                Vector3 side = Vector3.Cross(Vector3.up, (target.root.position - actor.root.position).normalized);
-                MoveToward(actor, target.root.position + side * (actor.slot == 0 ? -0.6f : 0.6f), 3, dt, reach - 0.5f);
-            }
-            else if (actor.delay <= 0)
-            {
-                bool heavy = actor.attacks % 3 == 2;
-                if (StartAttack(actor, heavy)) { actor.attacks++; actor.delay = 1.1f; }
-            }
+            pendingAttack = pendingDodge = false;
         }
 
         private void ControlEnemy(Actor actor, float dt)
         {
             if (!actor.fighter.CanAct) return;
             if (actor.limbs != null && LimbPractice) return;
-            Actor target = null; float best = Scenario == BlightScenario.Patrol ? 11 : 100;
+            if (ControlEnemyDefense(actor, dt)) return;
+            Actor target = null; float best = Scenario == BlightScenario.Company ? 7 : Scenario == BlightScenario.Outpost ? 9 : Scenario == BlightScenario.Patrol ? 11 : 100;
             foreach (Actor other in actors)
             {
                 if (other.enemy || !other.fighter.Alive) continue;
                 // A patrol enemy guards its sector; it cannot chase into the camp indefinitely.
-                if (Scenario == BlightScenario.Patrol && Vector3.Distance(other.root.position, actor.spawn) > 15) continue;
+                if (!VillageDefense && (Scenario == BlightScenario.Patrol || Scenario == BlightScenario.Outpost || Scenario == BlightScenario.Company) && Vector3.Distance(other.root.position, actor.spawn) > 15 * CompanyScale) continue;
                 float distance = Vector3.Distance(other.root.position, actor.root.position);
-                if (distance < best) { best = distance; target = other; }
+                if (distance < best && (Scenario != BlightScenario.Company || TerrainSight(actor.root.position, other.root.position))) { best = distance; target = other; }
             }
             actor.target = target;
-            if (target == null) { MoveToward(actor, actor.spawn, 2, dt, 0.2f); return; }
+            if (target == null) { if (!ControlVillageEnemyIdle(actor, dt) && !ControlCompanyFieldIdle(actor, dt)) MoveToward(actor, actor.spawn, 2, dt, 0.2f); return; }
             Face(actor, target.root.position - actor.root.position);
             AttackSpec spec = BlightEquipment.Enemy(actor.hulk ? BlightEnemy.Hulk : BlightEnemy.Thrall, actor.attacks);
             if (actor.limbs != null) spec = actor.limbs.Attack(actor.attacks);
+            if (RepositionWaitingEnemy(actor, target, spec, dt)) return;
             float stop = actor.limbs != null && (actor.limbs.Crawling || actor.limbs.BiteOnly) ? 1 : spec.Reach - 0.55f;
-            if (best > stop)
+            if (best > stop || !TerrainSight(actor.root.position, target.root.position))
                 MoveToward(actor, target.root.position, (actor.hulk ? 1.8f : 2.2f) *
                     (actor.limbs == null ? 1 : actor.limbs.SpeedMultiplier), dt, stop);
-            else if (actor.delay <= 0 && EnemyAttackSlots() < maximumEnemyAttackers)
+            else if (actor.delay <= 0 && EnemyAttackSlots() < ActiveEnemyAttackLimit)
             {
                 spec.Windup *= enemyWindupScale;
                 if (actor.fighter.Attack(spec)) { actor.attacks++; actor.delay = spec.Windup + spec.Recovery + 0.45f; }
@@ -430,7 +435,8 @@ namespace Reclamation.Blight
             foreach (Actor target in actors)
             {
                 if (source.enemy == target.enemy || !target.fighter.Alive ||
-                    !DuelFighter.InReach(source.root.position, source.root.forward, target.root.position, spec.Reach, spec.HalfAngle)) continue;
+                    !DuelFighter.InReach(source.root.position, source.root.forward, target.root.position, spec.Reach, spec.HalfAngle) ||
+                    !TerrainSight(source.root.position, target.root.position)) continue;
                 if (spec.MultipleTargets) victims.Add(target);
                 else
                 {
@@ -453,6 +459,7 @@ namespace Reclamation.Blight
 
         private void MoveToward(Actor actor, Vector3 goal, float speed, float dt, float stop)
         {
+            goal = RouteGoal(actor, goal, ref stop);
             Vector3 delta = goal - actor.root.position; delta.y = 0;
             if (delta.magnitude <= stop) return;
             if (!actor.fighter.Blocking) Face(actor, delta);
@@ -463,7 +470,7 @@ namespace Reclamation.Blight
         {
             if (offset.sqrMagnitude < 0.000001f) return;
             Vector3 next = actor.root.position + offset;
-            // Two passes resolve crowd overlap in this obstacle-free greybox.
+            // Separate bodies, then sweep against the static terrain to prevent wall tunnelling.
             for (int pass = 0; pass < 2; pass++)
                 foreach (Actor other in actors)
                 {
@@ -473,7 +480,8 @@ namespace Reclamation.Blight
                     if (delta.sqrMagnitude < radius * radius)
                         next = other.root.position + (delta.sqrMagnitude > 0.0001f ? delta.normalized : -actor.root.forward) * radius;
                 }
-            actor.root.position = new Vector3(Mathf.Clamp(next.x, -15, 15), 0, Mathf.Clamp(next.z, -23, 20));
+            next = ClampCompanionGoal(next);
+            actor.root.position = terrain.Move(actor.root.position, next, actor.radius);
             actor.moving = true;
         }
 
@@ -510,6 +518,8 @@ namespace Reclamation.Blight
         {
             if (actor == player) equippedLoot = null;
             actor.weapon = weapon;
+            if (actor.hero != null)
+            { actor.hero.Equip(weapon); Pose(actor); return; }
             if (actor.sword != null) actor.sword.gameObject.SetActive(weapon == BlightWeapon.Sword);
             if (actor.spear != null) actor.spear.gameObject.SetActive(weapon == BlightWeapon.Spear);
             if (actor.axe != null) actor.axe.gameObject.SetActive(weapon == BlightWeapon.Axe);
@@ -525,13 +535,7 @@ namespace Reclamation.Blight
             TryEquip(next);
         }
 
-        private void LateUpdate()
-        {
-            if (view == null || player == null) return;
-            Vector3 focus = player.root.position + Vector3.up * 1.3f;
-            Quaternion rotation = Quaternion.Euler(pitch, yaw, 0);
-            view.transform.SetPositionAndRotation(focus - rotation * Vector3.forward * 7.5f, rotation);
-        }
+        private void LateUpdate() => RenderCombatCamera();
 
         private void OnApplicationFocus(bool focused)
         { if (!focused && player != null) SetPaused(true); }

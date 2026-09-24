@@ -1,0 +1,1427 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="183" result="Failed(Child)" total="183" passed="182" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-23 22:42:26Z" end-time="2026-09-23 22:46:28Z" duration="242.2776542">
+  <test-suite type="TestSuite" id="1221" name="Reclamation2" fullname="Reclamation2" runstate="Runnable" testcasecount="183" result="Failed" site="Child" start-time="2026-09-23 22:42:26Z" end-time="2026-09-23 22:46:28Z" duration="242.277654" total="183" passed="182" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1215" name="Reclamation.PlayModeTests.dll" fullname="C:/Users/thoma/Reclamation2/Library/ScriptAssemblies/Reclamation.PlayModeTests.dll" runstate="Runnable" testcasecount="183" result="Failed" site="Child" start-time="2026-09-23 22:42:26Z" end-time="2026-09-23 22:46:28Z" duration="242.269287" total="183" passed="182" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="32096" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1216" name="Reclamation" fullname="Reclamation" runstate="Runnable" testcasecount="183" result="Failed" site="Child" start-time="2026-09-23 22:42:26Z" end-time="2026-09-23 22:46:28Z" duration="242.266622" total="183" passed="182" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1217" name="Tests" fullname="Reclamation.Tests" runstate="Runnable" testcasecount="183" result="Failed" site="Child" start-time="2026-09-23 22:42:26Z" end-time="2026-09-23 22:46:28Z" duration="242.263461" total="183" passed="182" failed="1" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestFixture" id="1001" name="BlightAdaptiveDefenseTests" fullname="Reclamation.Tests.BlightAdaptiveDefenseTests" classname="Reclamation.Tests.BlightAdaptiveDefenseTests" runstate="Runnable" testcasecount="6" result="Failed" site="Child" start-time="2026-09-23 22:42:26Z" end-time="2026-09-23 22:42:35Z" duration="8.663542" total="6" passed="5" failed="1" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-case id="1007" name="DefenseCannotCancelCommittedAttacksAndPauseFreezesDecisions" fullname="Reclamation.Tests.BlightAdaptiveDefenseTests.DefenseCannotCancelCommittedAttacksAndPauseFreezesDecisions" methodname="DefenseCannotCancelCommittedAttacksAndPauseFreezesDecisions" classname="Reclamation.Tests.BlightAdaptiveDefenseTests" runstate="Runnable" seed="832938256" result="Failed" start-time="2026-09-23 22:42:26Z" end-time="2026-09-23 22:42:28Z" duration="1.991734" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[Unhandled log message: '[Warning] Ran out of Graphics Ring Buffer space. Consider using the -gfx-ring-buffer-size command line option to increase the size.'. Use UnityEngine.TestTools.LogAssert.Expect]]></message>
+                <stack-trace><![CDATA[
+]]></stack-trace>
+              </failure>
+              <output><![CDATA[Ran out of Graphics Ring Buffer space. Consider using the -gfx-ring-buffer-size command line option to increase the size.
+]]></output>
+            </test-case>
+            <test-case id="1004" name="EnemiesOccludedByWallDoNotTriggerFallback" fullname="Reclamation.Tests.BlightAdaptiveDefenseTests.EnemiesOccludedByWallDoNotTriggerFallback" methodname="EnemiesOccludedByWallDoNotTriggerFallback" classname="Reclamation.Tests.BlightAdaptiveDefenseTests" runstate="Runnable" seed="59309139" result="Passed" start-time="2026-09-23 22:42:28Z" end-time="2026-09-23 22:42:30Z" duration="1.465575" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1002" name="ExhaustedSoldierCreatesSpaceAndHealthyBuddyCovers" fullname="Reclamation.Tests.BlightAdaptiveDefenseTests.ExhaustedSoldierCreatesSpaceAndHealthyBuddyCovers" methodname="ExhaustedSoldierCreatesSpaceAndHealthyBuddyCovers" classname="Reclamation.Tests.BlightAdaptiveDefenseTests" runstate="Runnable" seed="757224641" result="Passed" start-time="2026-09-23 22:42:30Z" end-time="2026-09-23 22:42:31Z" duration="1.184221" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1005" name="StandFastDisablesAutonomousRetreatButExplicitFallbackStillWorks" fullname="Reclamation.Tests.BlightAdaptiveDefenseTests.StandFastDisablesAutonomousRetreatButExplicitFallbackStillWorks" methodname="StandFastDisablesAutonomousRetreatButExplicitFallbackStillWorks" classname="Reclamation.Tests.BlightAdaptiveDefenseTests" runstate="Runnable" seed="1525365060" result="Passed" start-time="2026-09-23 22:42:31Z" end-time="2026-09-23 22:42:32Z" duration="0.917202" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1003" name="SustainedLocalPressureTriggersFallbackButDistantEnemiesDoNot" fullname="Reclamation.Tests.BlightAdaptiveDefenseTests.SustainedLocalPressureTriggersFallbackButDistantEnemiesDoNot" methodname="SustainedLocalPressureTriggersFallbackButDistantEnemiesDoNot" classname="Reclamation.Tests.BlightAdaptiveDefenseTests" runstate="Runnable" seed="414344317" result="Passed" start-time="2026-09-23 22:42:32Z" end-time="2026-09-23 22:42:34Z" duration="1.961512" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1006" name="WoundedSoldierDoesNotHealOrAbandonDefendedArea" fullname="Reclamation.Tests.BlightAdaptiveDefenseTests.WoundedSoldierDoesNotHealOrAbandonDefendedArea" methodname="WoundedSoldierDoesNotHealOrAbandonDefendedArea" classname="Reclamation.Tests.BlightAdaptiveDefenseTests" runstate="Runnable" seed="68250992" result="Passed" start-time="2026-09-23 22:42:34Z" end-time="2026-09-23 22:42:35Z" duration="1.129572" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1008" name="BlightCombatFeelTests" fullname="Reclamation.Tests.BlightCombatFeelTests" classname="Reclamation.Tests.BlightCombatFeelTests" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-09-23 22:42:35Z" end-time="2026-09-23 22:42:41Z" duration="6.364823" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1013" name="BobIsSmallAndSettlesWhenMovementStops" fullname="Reclamation.Tests.BlightCombatFeelTests.BobIsSmallAndSettlesWhenMovementStops" methodname="BobIsSmallAndSettlesWhenMovementStops" classname="Reclamation.Tests.BlightCombatFeelTests" runstate="Runnable" seed="928684112" result="Passed" start-time="2026-09-23 22:42:35Z" end-time="2026-09-23 22:42:35Z" duration="0.246140" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1015" name="CommittedEnemyCannotCancelIntoDefense" fullname="Reclamation.Tests.BlightCombatFeelTests.CommittedEnemyCannotCancelIntoDefense" methodname="CommittedEnemyCannotCancelIntoDefense" classname="Reclamation.Tests.BlightCombatFeelTests" runstate="Runnable" seed="918111894" result="Passed" start-time="2026-09-23 22:42:35Z" end-time="2026-09-23 22:42:35Z" duration="0.284418" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1010" name="GuardAndAttackPreventSprinting" fullname="Reclamation.Tests.BlightCombatFeelTests.GuardAndAttackPreventSprinting" methodname="GuardAndAttackPreventSprinting" classname="Reclamation.Tests.BlightCombatFeelTests" runstate="Runnable" seed="1256640897" result="Passed" start-time="2026-09-23 22:42:35Z" end-time="2026-09-23 22:42:36Z" duration="0.201792" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1017" name="HordeLimitsSimultaneousAttacksDuringLiveSimulation" fullname="Reclamation.Tests.BlightCombatFeelTests.HordeLimitsSimultaneousAttacksDuringLiveSimulation" methodname="HordeLimitsSimultaneousAttacksDuringLiveSimulation" classname="Reclamation.Tests.BlightCombatFeelTests" runstate="Runnable" seed="903268103" result="Passed" start-time="2026-09-23 22:42:36Z" end-time="2026-09-23 22:42:37Z" duration="1.626140" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1016" name="HulkBracesAfterTellAndGuardCostsStamina" fullname="Reclamation.Tests.BlightCombatFeelTests.HulkBracesAfterTellAndGuardCostsStamina" methodname="HulkBracesAfterTellAndGuardCostsStamina" classname="Reclamation.Tests.BlightCombatFeelTests" runstate="Runnable" seed="510586256" result="Passed" start-time="2026-09-23 22:42:37Z" end-time="2026-09-23 22:42:38Z" duration="0.400336" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1018" name="LargerEncountersSpawnCorrectCountsAndResetWithoutDuplicates" fullname="Reclamation.Tests.BlightCombatFeelTests.LargerEncountersSpawnCorrectCountsAndResetWithoutDuplicates" methodname="LargerEncountersSpawnCorrectCountsAndResetWithoutDuplicates" classname="Reclamation.Tests.BlightCombatFeelTests" runstate="Runnable" seed="1277706885" result="Passed" start-time="2026-09-23 22:42:38Z" end-time="2026-09-23 22:42:40Z" duration="2.163892" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1011" name="LockFollowsTargetManualOrbitOverridesAndPauseFreezesCamera" fullname="Reclamation.Tests.BlightCombatFeelTests.LockFollowsTargetManualOrbitOverridesAndPauseFreezesCamera" methodname="LockFollowsTargetManualOrbitOverridesAndPauseFreezesCamera" classname="Reclamation.Tests.BlightCombatFeelTests" runstate="Runnable" seed="2042073585" result="Passed" start-time="2026-09-23 22:42:40Z" end-time="2026-09-23 22:42:40Z" duration="0.335733" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1012" name="RealBlockTriggersShakeAndComfortToggleRemovesMotion" fullname="Reclamation.Tests.BlightCombatFeelTests.RealBlockTriggersShakeAndComfortToggleRemovesMotion" methodname="RealBlockTriggersShakeAndComfortToggleRemovesMotion" classname="Reclamation.Tests.BlightCombatFeelTests" runstate="Runnable" seed="1415057391" result="Passed" start-time="2026-09-23 22:42:40Z" end-time="2026-09-23 22:42:40Z" duration="0.303803" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1009" name="SprintMovesFasterUsesStaminaAndPauseResetClearIt" fullname="Reclamation.Tests.BlightCombatFeelTests.SprintMovesFasterUsesStaminaAndPauseResetClearIt" methodname="SprintMovesFasterUsesStaminaAndPauseResetClearIt" classname="Reclamation.Tests.BlightCombatFeelTests" runstate="Runnable" seed="1878652593" result="Passed" start-time="2026-09-23 22:42:40Z" end-time="2026-09-23 22:42:41Z" duration="0.482266" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1014" name="ThrallEvadesSomeHeavyTellsAfterDelayAndSpendsStamina" fullname="Reclamation.Tests.BlightCombatFeelTests.ThrallEvadesSomeHeavyTellsAfterDelayAndSpendsStamina" methodname="ThrallEvadesSomeHeavyTellsAfterDelayAndSpendsStamina" classname="Reclamation.Tests.BlightCombatFeelTests" runstate="Runnable" seed="443779795" result="Passed" start-time="2026-09-23 22:42:41Z" end-time="2026-09-23 22:42:41Z" duration="0.314956" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1019" name="BlightCommandMapTests" fullname="Reclamation.Tests.BlightCommandMapTests" classname="Reclamation.Tests.BlightCommandMapTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-23 22:42:41Z" end-time="2026-09-23 22:42:46Z" duration="4.767743" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1022" name="ApplyReplacesQueuedOrdersAndRestoresExistingPause" fullname="Reclamation.Tests.BlightCommandMapTests.ApplyReplacesQueuedOrdersAndRestoresExistingPause" methodname="ApplyReplacesQueuedOrdersAndRestoresExistingPause" classname="Reclamation.Tests.BlightCommandMapTests" runstate="Runnable" seed="975674686" result="Passed" start-time="2026-09-23 22:42:41Z" end-time="2026-09-23 22:42:42Z" duration="0.615570" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1025" name="BriefingUsesLastObservationAndDoesNotRevealUnseenHulk" fullname="Reclamation.Tests.BlightCommandMapTests.BriefingUsesLastObservationAndDoesNotRevealUnseenHulk" methodname="BriefingUsesLastObservationAndDoesNotRevealUnseenHulk" classname="Reclamation.Tests.BlightCommandMapTests" runstate="Runnable" seed="1489031592" result="Passed" start-time="2026-09-23 22:42:42Z" end-time="2026-09-23 22:42:43Z" duration="0.722570" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1020" name="FogSharesExplorationRemembersItAndResets" fullname="Reclamation.Tests.BlightCommandMapTests.FogSharesExplorationRemembersItAndResets" methodname="FogSharesExplorationRemembersItAndResets" classname="Reclamation.Tests.BlightCommandMapTests" runstate="Runnable" seed="1687017796" result="Passed" start-time="2026-09-23 22:42:43Z" end-time="2026-09-23 22:42:44Z" duration="1.184223" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1024" name="InvalidBatchDoesNotPartiallyApplyAndResetClearsMap" fullname="Reclamation.Tests.BlightCommandMapTests.InvalidBatchDoesNotPartiallyApplyAndResetClearsMap" methodname="InvalidBatchDoesNotPartiallyApplyAndResetClearsMap" classname="Reclamation.Tests.BlightCommandMapTests" runstate="Runnable" seed="791587833" result="Passed" start-time="2026-09-23 22:42:44Z" end-time="2026-09-23 22:42:45Z" duration="1.014198" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1021" name="PlanningFreezesSimulationAndDiscardPreservesOrders" fullname="Reclamation.Tests.BlightCommandMapTests.PlanningFreezesSimulationAndDiscardPreservesOrders" methodname="PlanningFreezesSimulationAndDiscardPreservesOrders" classname="Reclamation.Tests.BlightCommandMapTests" runstate="Runnable" seed="1694404096" result="Passed" start-time="2026-09-23 22:42:45Z" end-time="2026-09-23 22:42:45Z" duration="0.666399" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1023" name="TemplatesReplaceIndividualOrdersAndRecallReplacesTemplate" fullname="Reclamation.Tests.BlightCommandMapTests.TemplatesReplaceIndividualOrdersAndRecallReplacesTemplate" methodname="TemplatesReplaceIndividualOrdersAndRecallReplacesTemplate" classname="Reclamation.Tests.BlightCommandMapTests" runstate="Runnable" seed="999075078" result="Passed" start-time="2026-09-23 22:42:45Z" end-time="2026-09-23 22:42:46Z" duration="0.559936" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1026" name="BlightCompanionPlayTests" fullname="Reclamation.Tests.BlightCompanionPlayTests" classname="Reclamation.Tests.BlightCompanionPlayTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-23 22:42:46Z" end-time="2026-09-23 22:42:49Z" duration="2.554840" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1027" name="AssaultUsesSeparateWeaponRangesAndPauseFreezesMovement" fullname="Reclamation.Tests.BlightCompanionPlayTests.AssaultUsesSeparateWeaponRangesAndPauseFreezesMovement" methodname="AssaultUsesSeparateWeaponRangesAndPauseFreezesMovement" classname="Reclamation.Tests.BlightCompanionPlayTests" runstate="Runnable" seed="1254518840" result="Passed" start-time="2026-09-23 22:42:46Z" end-time="2026-09-23 22:42:46Z" duration="0.417174" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1031" name="CompanionGuardsTheEarliestThreatRatherThanTheFirstActor" fullname="Reclamation.Tests.BlightCompanionPlayTests.CompanionGuardsTheEarliestThreatRatherThanTheFirstActor" methodname="CompanionGuardsTheEarliestThreatRatherThanTheFirstActor" classname="Reclamation.Tests.BlightCompanionPlayTests" runstate="Runnable" seed="1914171581" result="Passed" start-time="2026-09-23 22:42:46Z" end-time="2026-09-23 22:42:47Z" duration="0.334238" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1032" name="EmptyStaminaCannotProduceAFreeDodge" fullname="Reclamation.Tests.BlightCompanionPlayTests.EmptyStaminaCannotProduceAFreeDodge" methodname="EmptyStaminaCannotProduceAFreeDodge" classname="Reclamation.Tests.BlightCompanionPlayTests" runstate="Runnable" seed="485178145" result="Passed" start-time="2026-09-23 22:42:47Z" end-time="2026-09-23 22:42:47Z" duration="0.522115" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1028" name="FollowFiltersIneligibleEnemiesBeforePickingNearest" fullname="Reclamation.Tests.BlightCompanionPlayTests.FollowFiltersIneligibleEnemiesBeforePickingNearest" methodname="FollowFiltersIneligibleEnemiesBeforePickingNearest" classname="Reclamation.Tests.BlightCompanionPlayTests" runstate="Runnable" seed="2061887448" result="Passed" start-time="2026-09-23 22:42:47Z" end-time="2026-09-23 22:42:48Z" duration="0.300390" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1029" name="HoldReturnsToItsOriginalAnchorAfterTargetLeavesLeash" fullname="Reclamation.Tests.BlightCompanionPlayTests.HoldReturnsToItsOriginalAnchorAfterTargetLeavesLeash" methodname="HoldReturnsToItsOriginalAnchorAfterTargetLeavesLeash" classname="Reclamation.Tests.BlightCompanionPlayTests" runstate="Runnable" seed="1314525098" result="Passed" start-time="2026-09-23 22:42:48Z" end-time="2026-09-23 22:42:48Z" duration="0.449982" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1030" name="WithdrawHonorsCommittedAttackThenDisengages" fullname="Reclamation.Tests.BlightCompanionPlayTests.WithdrawHonorsCommittedAttackThenDisengages" methodname="WithdrawHonorsCommittedAttackThenDisengages" classname="Reclamation.Tests.BlightCompanionPlayTests" runstate="Runnable" seed="44065433" result="Passed" start-time="2026-09-23 22:42:48Z" end-time="2026-09-23 22:42:49Z" duration="0.526483" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1033" name="BlightCompanyFieldTests" fullname="Reclamation.Tests.BlightCompanyFieldTests" classname="Reclamation.Tests.BlightCompanyFieldTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-09-23 22:42:49Z" end-time="2026-09-23 22:43:05Z" duration="16.017588" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1037" name="DeliveriesFundGrowthAndDeadGatherersStopIt" fullname="Reclamation.Tests.BlightCompanyFieldTests.DeliveriesFundGrowthAndDeadGatherersStopIt" methodname="DeliveriesFundGrowthAndDeadGatherersStopIt" classname="Reclamation.Tests.BlightCompanyFieldTests" runstate="Runnable" seed="1975424719" result="Passed" start-time="2026-09-23 22:42:49Z" end-time="2026-09-23 22:43:01Z" duration="12.505559" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Account API did not become accessible within 30 seconds. This may be due to network issues or editor focus.
+]]></output>
+            </test-case>
+            <test-case id="1036" name="ExpandedRegionHasBridgePatrolsAndResetRestoresBounds" fullname="Reclamation.Tests.BlightCompanyFieldTests.ExpandedRegionHasBridgePatrolsAndResetRestoresBounds" methodname="ExpandedRegionHasBridgePatrolsAndResetRestoresBounds" classname="Reclamation.Tests.BlightCompanyFieldTests" runstate="Runnable" seed="1849567465" result="Passed" start-time="2026-09-23 22:43:01Z" end-time="2026-09-23 22:43:03Z" duration="1.749711" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1035" name="MultiplePlatoonsStrikeFromReachInsteadOfOrbiting" fullname="Reclamation.Tests.BlightCompanyFieldTests.MultiplePlatoonsStrikeFromReachInsteadOfOrbiting" methodname="MultiplePlatoonsStrikeFromReachInsteadOfOrbiting" classname="Reclamation.Tests.BlightCompanyFieldTests" runstate="Runnable" seed="80899898" result="Passed" start-time="2026-09-23 22:43:03Z" end-time="2026-09-23 22:43:04Z" duration="0.938597" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1034" name="NoFailCommitsBothAttackersButRecallAlwaysWorks" fullname="Reclamation.Tests.BlightCompanyFieldTests.NoFailCommitsBothAttackersButRecallAlwaysWorks" methodname="NoFailCommitsBothAttackersButRecallAlwaysWorks" classname="Reclamation.Tests.BlightCompanyFieldTests" runstate="Runnable" seed="1530244838" result="Passed" start-time="2026-09-23 22:43:04Z" end-time="2026-09-23 22:43:05Z" duration="0.819211" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1038" name="BlightCompanyPlayTests" fullname="Reclamation.Tests.BlightCompanyPlayTests" classname="Reclamation.Tests.BlightCompanyPlayTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-23 22:43:05Z" end-time="2026-09-23 22:43:12Z" duration="7.828657" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1041" name="AssaultWaitsForBothPlatoonsAndAChangedOrderCancelsThePlan" fullname="Reclamation.Tests.BlightCompanyPlayTests.AssaultWaitsForBothPlatoonsAndAChangedOrderCancelsThePlan" methodname="AssaultWaitsForBothPlatoonsAndAChangedOrderCancelsThePlan" classname="Reclamation.Tests.BlightCompanyPlayTests" runstate="Runnable" seed="1815946217" result="Passed" start-time="2026-09-23 22:43:05Z" end-time="2026-09-23 22:43:05Z" duration="0.602215" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1044" name="DebriefRequiresReturnCountsCasualtiesAndResetClearsOperation" fullname="Reclamation.Tests.BlightCompanyPlayTests.DebriefRequiresReturnCountsCasualtiesAndResetClearsOperation" methodname="DebriefRequiresReturnCountsCasualtiesAndResetClearsOperation" classname="Reclamation.Tests.BlightCompanyPlayTests" runstate="Runnable" seed="1703505778" result="Passed" start-time="2026-09-23 22:43:05Z" end-time="2026-09-23 22:43:07Z" duration="1.465950" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1043" name="EscortCompletesAtDestinationAndDefendDutyEarnsOnlyOnce" fullname="Reclamation.Tests.BlightCompanyPlayTests.EscortCompletesAtDestinationAndDefendDutyEarnsOnlyOnce" methodname="EscortCompletesAtDestinationAndDefendDutyEarnsOnlyOnce" classname="Reclamation.Tests.BlightCompanyPlayTests" runstate="Runnable" seed="1264537512" result="Passed" start-time="2026-09-23 22:43:07Z" end-time="2026-09-23 22:43:10Z" duration="3.796748" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1042" name="OvermatchedScoutsReturnWithoutClaimingMissionSuccess" fullname="Reclamation.Tests.BlightCompanyPlayTests.OvermatchedScoutsReturnWithoutClaimingMissionSuccess" methodname="OvermatchedScoutsReturnWithoutClaimingMissionSuccess" classname="Reclamation.Tests.BlightCompanyPlayTests" runstate="Runnable" seed="748487257" result="Passed" start-time="2026-09-23 22:43:10Z" end-time="2026-09-23 22:43:11Z" duration="0.730036" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1039" name="PlatoonsReceiveIndependentOrdersAndStartWithoutEnemyIntel" fullname="Reclamation.Tests.BlightCompanyPlayTests.PlatoonsReceiveIndependentOrdersAndStartWithoutEnemyIntel" methodname="PlatoonsReceiveIndependentOrdersAndStartWithoutEnemyIntel" classname="Reclamation.Tests.BlightCompanyPlayTests" runstate="Runnable" seed="906651157" result="Passed" start-time="2026-09-23 22:43:11Z" end-time="2026-09-23 22:43:12Z" duration="0.618758" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1040" name="ScoutReportsOnlyObservedPositionsThenReturnsForCredit" fullname="Reclamation.Tests.BlightCompanyPlayTests.ScoutReportsOnlyObservedPositionsThenReturnsForCredit" methodname="ScoutReportsOnlyObservedPositionsThenReturnsForCredit" classname="Reclamation.Tests.BlightCompanyPlayTests" runstate="Runnable" seed="1921416915" result="Passed" start-time="2026-09-23 22:43:12Z" end-time="2026-09-23 22:43:12Z" duration="0.610182" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1045" name="BlightFeedbackTests" fullname="Reclamation.Tests.BlightFeedbackTests" classname="Reclamation.Tests.BlightFeedbackTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-09-23 22:43:12Z" end-time="2026-09-23 22:43:14Z" duration="2.071355" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1046" name="FeedbackDoesNotChangeHealthStaminaOrSeverOutcome" fullname="Reclamation.Tests.BlightFeedbackTests.FeedbackDoesNotChangeHealthStaminaOrSeverOutcome" methodname="FeedbackDoesNotChangeHealthStaminaOrSeverOutcome" classname="Reclamation.Tests.BlightFeedbackTests" runstate="Runnable" seed="927645049" result="Passed" start-time="2026-09-23 22:43:12Z" end-time="2026-09-23 22:43:13Z" duration="0.650015" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1047" name="MissPauseAndResetDoNotLeaveStaleImpactEvents" fullname="Reclamation.Tests.BlightFeedbackTests.MissPauseAndResetDoNotLeaveStaleImpactEvents" methodname="MissPauseAndResetDoNotLeaveStaleImpactEvents" classname="Reclamation.Tests.BlightFeedbackTests" runstate="Runnable" seed="61406998" result="Passed" start-time="2026-09-23 22:43:13Z" end-time="2026-09-23 22:43:13Z" duration="0.307464" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1054" name="OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks" fullname="Reclamation.Tests.BlightFeedbackTests.OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks" classname="Reclamation.Tests.BlightFeedbackTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-23 22:43:13Z" end-time="2026-09-23 22:43:14Z" duration="1.110081" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1048" name="OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks(&quot;Blocked&quot;,Ready,Ready,Block)" fullname="Reclamation.Tests.BlightFeedbackTests.OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks(&quot;Blocked&quot;,Ready,Ready,Block)" methodname="OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks" classname="Reclamation.Tests.BlightFeedbackTests" runstate="Runnable" seed="224954671" result="Passed" start-time="2026-09-23 22:43:13Z" end-time="2026-09-23 22:43:14Z" duration="0.291416" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1049" name="OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks(&quot;Dodged&quot;,Dodge,Dodge,Dodge)" fullname="Reclamation.Tests.BlightFeedbackTests.OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks(&quot;Dodged&quot;,Dodge,Dodge,Dodge)" methodname="OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks" classname="Reclamation.Tests.BlightFeedbackTests" runstate="Runnable" seed="1028987259" result="Passed" start-time="2026-09-23 22:43:14Z" end-time="2026-09-23 22:43:14Z" duration="0.247370" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1050" name="OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks(&quot;Armoured windup&quot;,Windup,Windup,Armoured)" fullname="Reclamation.Tests.BlightFeedbackTests.OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks(&quot;Armoured windup&quot;,Windup,Windup,Armoured)" methodname="OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks" classname="Reclamation.Tests.BlightFeedbackTests" runstate="Runnable" seed="2055316411" result="Passed" start-time="2026-09-23 22:43:14Z" end-time="2026-09-23 22:43:14Z" duration="0.128710" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1051" name="OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks(&quot;Hit&quot;,Windup,Stagger,Interrupt)" fullname="Reclamation.Tests.BlightFeedbackTests.OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks(&quot;Hit&quot;,Windup,Stagger,Interrupt)" methodname="OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks" classname="Reclamation.Tests.BlightFeedbackTests" runstate="Runnable" seed="1391233426" result="Passed" start-time="2026-09-23 22:43:14Z" end-time="2026-09-23 22:43:14Z" duration="0.169308" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1052" name="OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks(&quot;Hit&quot;,Ready,Stagger,Hit)" fullname="Reclamation.Tests.BlightFeedbackTests.OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks(&quot;Hit&quot;,Ready,Stagger,Hit)" methodname="OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks" classname="Reclamation.Tests.BlightFeedbackTests" runstate="Runnable" seed="737557802" result="Passed" start-time="2026-09-23 22:43:14Z" end-time="2026-09-23 22:43:14Z" duration="0.133068" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1053" name="OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks(&quot;Guard broken&quot;,Ready,Stagger,GuardBreak)" fullname="Reclamation.Tests.BlightFeedbackTests.OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks(&quot;Guard broken&quot;,Ready,Stagger,GuardBreak)" methodname="OutcomeCuesDistinguishInterruptedAttacksFromArmourAndBlocks" classname="Reclamation.Tests.BlightFeedbackTests" runstate="Runnable" seed="360930949" result="Passed" start-time="2026-09-23 22:43:14Z" end-time="2026-09-23 22:43:14Z" duration="0.133345" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+          </test-suite>
+          <test-suite type="TestFixture" id="1055" name="BlightGatewayPlayTests" fullname="Reclamation.Tests.BlightGatewayPlayTests" classname="Reclamation.Tests.BlightGatewayPlayTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-09-23 22:43:14Z" end-time="2026-09-23 22:43:19Z" duration="4.880634" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1056" name="GatewayAndOpenGroundMatchForcesAndStartingFormation" fullname="Reclamation.Tests.BlightGatewayPlayTests.GatewayAndOpenGroundMatchForcesAndStartingFormation" methodname="GatewayAndOpenGroundMatchForcesAndStartingFormation" classname="Reclamation.Tests.BlightGatewayPlayTests" runstate="Runnable" seed="2091936804" result="Passed" start-time="2026-09-23 22:43:14Z" end-time="2026-09-23 22:43:16Z" duration="1.351652" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1058" name="HoldDoesNotChaseAndFallbackRegroupsAtSecondLine" fullname="Reclamation.Tests.BlightGatewayPlayTests.HoldDoesNotChaseAndFallbackRegroupsAtSecondLine" methodname="HoldDoesNotChaseAndFallbackRegroupsAtSecondLine" classname="Reclamation.Tests.BlightGatewayPlayTests" runstate="Runnable" seed="617124607" result="Passed" start-time="2026-09-23 22:43:16Z" end-time="2026-09-23 22:43:17Z" duration="1.537101" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1059" name="PauseResetAndScenarioSwitchClearTacticalState" fullname="Reclamation.Tests.BlightGatewayPlayTests.PauseResetAndScenarioSwitchClearTacticalState" methodname="PauseResetAndScenarioSwitchClearTacticalState" classname="Reclamation.Tests.BlightGatewayPlayTests" runstate="Runnable" seed="562091591" result="Passed" start-time="2026-09-23 22:43:17Z" end-time="2026-09-23 22:43:18Z" duration="1.123469" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1057" name="PlayerMovementAndMeleeCannotPassThroughSolidWall" fullname="Reclamation.Tests.BlightGatewayPlayTests.PlayerMovementAndMeleeCannotPassThroughSolidWall" methodname="PlayerMovementAndMeleeCannotPassThroughSolidWall" classname="Reclamation.Tests.BlightGatewayPlayTests" runstate="Runnable" seed="1773820424" result="Passed" start-time="2026-09-23 22:43:18Z" end-time="2026-09-23 22:43:19Z" duration="0.864090" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1060" name="BlightHeroPlayTests" fullname="Reclamation.Tests.BlightHeroPlayTests" classname="Reclamation.Tests.BlightHeroPlayTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-09-23 22:43:19Z" end-time="2026-09-23 22:43:21Z" duration="1.606612" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1064" name="DefenseInjuryAndDeathUseTheirOwnPoses" fullname="Reclamation.Tests.BlightHeroPlayTests.DefenseInjuryAndDeathUseTheirOwnPoses" methodname="DefenseInjuryAndDeathUseTheirOwnPoses" classname="Reclamation.Tests.BlightHeroPlayTests" runstate="Runnable" seed="1636312822" result="Passed" start-time="2026-09-23 22:43:19Z" end-time="2026-09-23 22:43:19Z" duration="0.100423" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1063" name="EquipmentUsesCorrectMeshAndHandsStayAttached" fullname="Reclamation.Tests.BlightHeroPlayTests.EquipmentUsesCorrectMeshAndHandsStayAttached" methodname="EquipmentUsesCorrectMeshAndHandsStayAttached" classname="Reclamation.Tests.BlightHeroPlayTests" runstate="Runnable" seed="366818368" result="Passed" start-time="2026-09-23 22:43:19Z" end-time="2026-09-23 22:43:20Z" duration="0.435032" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1062" name="HeroAttackPreservesDamageAndPauseFreezesPose" fullname="Reclamation.Tests.BlightHeroPlayTests.HeroAttackPreservesDamageAndPauseFreezesPose" methodname="HeroAttackPreservesDamageAndPauseFreezesPose" classname="Reclamation.Tests.BlightHeroPlayTests" runstate="Runnable" seed="782783487" result="Passed" start-time="2026-09-23 22:43:20Z" end-time="2026-09-23 22:43:20Z" duration="0.203697" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1061" name="ScenariosUseExpectedHumansAndPreserveLimbContactRig" fullname="Reclamation.Tests.BlightHeroPlayTests.ScenariosUseExpectedHumansAndPreserveLimbContactRig" methodname="ScenariosUseExpectedHumansAndPreserveLimbContactRig" classname="Reclamation.Tests.BlightHeroPlayTests" runstate="Runnable" seed="623704703" result="Passed" start-time="2026-09-23 22:43:20Z" end-time="2026-09-23 22:43:21Z" duration="0.863338" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1065" name="BlightHulkPlayTests" fullname="Reclamation.Tests.BlightHulkPlayTests" classname="Reclamation.Tests.BlightHulkPlayTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-09-23 22:43:21Z" end-time="2026-09-23 22:43:23Z" duration="1.930616" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1068" name="AttackTargetsStayReachableAndPresentationDoesNotAdvanceCombat" fullname="Reclamation.Tests.BlightHulkPlayTests.AttackTargetsStayReachableAndPresentationDoesNotAdvanceCombat" methodname="AttackTargetsStayReachableAndPresentationDoesNotAdvanceCombat" classname="Reclamation.Tests.BlightHulkPlayTests" runstate="Runnable" seed="686121523" result="Passed" start-time="2026-09-23 22:43:21Z" end-time="2026-09-23 22:43:21Z" duration="0.348493" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1066" name="HulkAndGuardianUseOneNewBodyAndResetCleanly" fullname="Reclamation.Tests.BlightHulkPlayTests.HulkAndGuardianUseOneNewBodyAndResetCleanly" methodname="HulkAndGuardianUseOneNewBodyAndResetCleanly" classname="Reclamation.Tests.BlightHulkPlayTests" runstate="Runnable" seed="188891438" result="Passed" start-time="2026-09-23 22:43:21Z" end-time="2026-09-23 22:43:22Z" duration="0.790802" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1069" name="PauseFreezesSweepAndDefeatKeepsBodyScale" fullname="Reclamation.Tests.BlightHulkPlayTests.PauseFreezesSweepAndDefeatKeepsBodyScale" methodname="PauseFreezesSweepAndDefeatKeepsBodyScale" classname="Reclamation.Tests.BlightHulkPlayTests" runstate="Runnable" seed="1306289889" result="Passed" start-time="2026-09-23 22:43:22Z" end-time="2026-09-23 22:43:23Z" duration="0.511380" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1067" name="SmashRaisesBothFistsAndMeetsImpactWithoutAPoseJump" fullname="Reclamation.Tests.BlightHulkPlayTests.SmashRaisesBothFistsAndMeetsImpactWithoutAPoseJump" methodname="SmashRaisesBothFistsAndMeetsImpactWithoutAPoseJump" classname="Reclamation.Tests.BlightHulkPlayTests" runstate="Runnable" seed="1828175241" result="Passed" start-time="2026-09-23 22:43:23Z" end-time="2026-09-23 22:43:23Z" duration="0.269926" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1070" name="BlightLabSmokeTests" fullname="Reclamation.Tests.BlightLabSmokeTests" classname="Reclamation.Tests.BlightLabSmokeTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-09-23 22:43:23Z" end-time="2026-09-23 22:43:26Z" duration="3.382011" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1071" name="ArenaStartsAndResetRestoresActors" fullname="Reclamation.Tests.BlightLabSmokeTests.ArenaStartsAndResetRestoresActors" methodname="ArenaStartsAndResetRestoresActors" classname="Reclamation.Tests.BlightLabSmokeTests" runstate="Runnable" seed="243720323" result="Passed" start-time="2026-09-23 22:43:23Z" end-time="2026-09-23 22:43:23Z" duration="0.216439" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1072" name="EveryScenarioResetsWithoutLeakingActorsOrLoot" fullname="Reclamation.Tests.BlightLabSmokeTests.EveryScenarioResetsWithoutLeakingActorsOrLoot" methodname="EveryScenarioResetsWithoutLeakingActorsOrLoot" classname="Reclamation.Tests.BlightLabSmokeTests" runstate="Runnable" seed="1054638044" result="Passed" start-time="2026-09-23 22:43:23Z" end-time="2026-09-23 22:43:24Z" duration="1.105759" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1075" name="HoldAndWithdrawPreserveOrderAndDoNotChase" fullname="Reclamation.Tests.BlightLabSmokeTests.HoldAndWithdrawPreserveOrderAndDoNotChase" methodname="HoldAndWithdrawPreserveOrderAndDoNotChase" classname="Reclamation.Tests.BlightLabSmokeTests" runstate="Runnable" seed="1525841042" result="Passed" start-time="2026-09-23 22:43:24Z" end-time="2026-09-23 22:43:25Z" duration="0.529754" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1077" name="HulkSweepHitsMultipleFightersOnlyOnce" fullname="Reclamation.Tests.BlightLabSmokeTests.HulkSweepHitsMultipleFightersOnlyOnce" methodname="HulkSweepHitsMultipleFightersOnlyOnce" classname="Reclamation.Tests.BlightLabSmokeTests" runstate="Runnable" seed="1512941423" result="Passed" start-time="2026-09-23 22:43:25Z" end-time="2026-09-23 22:43:25Z" duration="0.252658" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1078" name="NearbyHostilesPreventCampHealing" fullname="Reclamation.Tests.BlightLabSmokeTests.NearbyHostilesPreventCampHealing" methodname="NearbyHostilesPreventCampHealing" classname="Reclamation.Tests.BlightLabSmokeTests" runstate="Runnable" seed="1085286401" result="Passed" start-time="2026-09-23 22:43:25Z" end-time="2026-09-23 22:43:25Z" duration="0.360227" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1076" name="PatrolRequiresClearCacheThenReturnAndHealsOnlyAtCamp" fullname="Reclamation.Tests.BlightLabSmokeTests.PatrolRequiresClearCacheThenReturnAndHealsOnlyAtCamp" methodname="PatrolRequiresClearCacheThenReturnAndHealsOnlyAtCamp" classname="Reclamation.Tests.BlightLabSmokeTests" runstate="Runnable" seed="558508545" result="Passed" start-time="2026-09-23 22:43:25Z" end-time="2026-09-23 22:43:26Z" duration="0.529129" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1073" name="PauseFreezesDamageTimersAndMovement" fullname="Reclamation.Tests.BlightLabSmokeTests.PauseFreezesDamageTimersAndMovement" methodname="PauseFreezesDamageTimersAndMovement" classname="Reclamation.Tests.BlightLabSmokeTests" runstate="Runnable" seed="1624044253" result="Passed" start-time="2026-09-23 22:43:26Z" end-time="2026-09-23 22:43:26Z" duration="0.117915" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1074" name="WeaponSwapRequiresSpaceAndCannotCancelWindup" fullname="Reclamation.Tests.BlightLabSmokeTests.WeaponSwapRequiresSpaceAndCannotCancelWindup" methodname="WeaponSwapRequiresSpaceAndCannotCancelWindup" classname="Reclamation.Tests.BlightLabSmokeTests" runstate="Runnable" seed="683412812" result="Passed" start-time="2026-09-23 22:43:26Z" end-time="2026-09-23 22:43:26Z" duration="0.265280" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1079" name="BlightLimbPlayTests" fullname="Reclamation.Tests.BlightLimbPlayTests" classname="Reclamation.Tests.BlightLimbPlayTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-09-23 22:43:26Z" end-time="2026-09-23 22:43:28Z" duration="1.655141" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1082" name="GoreToggleChangesPresentationButNotOutcome" fullname="Reclamation.Tests.BlightLimbPlayTests.GoreToggleChangesPresentationButNotOutcome" methodname="GoreToggleChangesPresentationButNotOutcome" classname="Reclamation.Tests.BlightLimbPlayTests" runstate="Runnable" seed="1767920873" result="Passed" start-time="2026-09-23 22:43:26Z" end-time="2026-09-23 22:43:27Z" duration="0.413849" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1081" name="LowSwingsWoundThenCrawlAndLiveEnemyStillAttacks" fullname="Reclamation.Tests.BlightLimbPlayTests.LowSwingsWoundThenCrawlAndLiveEnemyStillAttacks" methodname="LowSwingsWoundThenCrawlAndLiveEnemyStillAttacks" classname="Reclamation.Tests.BlightLimbPlayTests" runstate="Runnable" seed="1367064082" result="Passed" start-time="2026-09-23 22:43:27Z" end-time="2026-09-23 22:43:27Z" duration="0.424087" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1083" name="OutOfReachAndPausedSwingsDoNotDamageAndAimCannotChangeMidAttack" fullname="Reclamation.Tests.BlightLimbPlayTests.OutOfReachAndPausedSwingsDoNotDamageAndAimCannotChangeMidAttack" methodname="OutOfReachAndPausedSwingsDoNotDamageAndAimCannotChangeMidAttack" classname="Reclamation.Tests.BlightLimbPlayTests" runstate="Runnable" seed="122483904" result="Passed" start-time="2026-09-23 22:43:27Z" end-time="2026-09-23 22:43:27Z" duration="0.251290" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1080" name="SwordContactsOnceThenSeversArmAndResetRestoresIt" fullname="Reclamation.Tests.BlightLimbPlayTests.SwordContactsOnceThenSeversArmAndResetRestoresIt" methodname="SwordContactsOnceThenSeversArmAndResetRestoresIt" classname="Reclamation.Tests.BlightLimbPlayTests" runstate="Runnable" seed="407623120" result="Passed" start-time="2026-09-23 22:43:27Z" end-time="2026-09-23 22:43:28Z" duration="0.561607" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1084" name="BlightLootPlayTests" fullname="Reclamation.Tests.BlightLootPlayTests" classname="Reclamation.Tests.BlightLootPlayTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-09-23 22:43:28Z" end-time="2026-09-23 22:43:29Z" duration="1.228759" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1085" name="LastEnemyDropsOnceAndCollectionRequiresRangeAndDoesNotAutoEquip" fullname="Reclamation.Tests.BlightLootPlayTests.LastEnemyDropsOnceAndCollectionRequiresRangeAndDoesNotAutoEquip" methodname="LastEnemyDropsOnceAndCollectionRequiresRangeAndDoesNotAutoEquip" classname="Reclamation.Tests.BlightLootPlayTests" runstate="Runnable" seed="327924696" result="Passed" start-time="2026-09-23 22:43:28Z" end-time="2026-09-23 22:43:28Z" duration="0.218716" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1088" name="PauseAndScenarioSwitchProtectLootState" fullname="Reclamation.Tests.BlightLootPlayTests.PauseAndScenarioSwitchProtectLootState" methodname="PauseAndScenarioSwitchProtectLootState" classname="Reclamation.Tests.BlightLootPlayTests" runstate="Runnable" seed="822967537" result="Passed" start-time="2026-09-23 22:43:28Z" end-time="2026-09-23 22:43:29Z" duration="0.396958" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1087" name="RecoveredStatsReachActualAttackAndCannotSwapMidWindup" fullname="Reclamation.Tests.BlightLootPlayTests.RecoveredStatsReachActualAttackAndCannotSwapMidWindup" methodname="RecoveredStatsReachActualAttackAndCannotSwapMidWindup" classname="Reclamation.Tests.BlightLootPlayTests" runstate="Runnable" seed="909405817" result="Passed" start-time="2026-09-23 22:43:29Z" end-time="2026-09-23 22:43:29Z" duration="0.249099" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1086" name="ThreeEncountersRecoverAllVariantsAndResetClearsThem" fullname="Reclamation.Tests.BlightLootPlayTests.ThreeEncountersRecoverAllVariantsAndResetClearsThem" methodname="ThreeEncountersRecoverAllVariantsAndResetClearsThem" classname="Reclamation.Tests.BlightLootPlayTests" runstate="Runnable" seed="1795780530" result="Passed" start-time="2026-09-23 22:43:29Z" end-time="2026-09-23 22:43:29Z" duration="0.359740" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1089" name="BlightOutpostPlayTests" fullname="Reclamation.Tests.BlightOutpostPlayTests" classname="Reclamation.Tests.BlightOutpostPlayTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-09-23 22:43:29Z" end-time="2026-09-23 22:43:32Z" duration="2.419873" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1091" name="ApproachNeedsRallyAndPausePreventsProgressOrSpawns" fullname="Reclamation.Tests.BlightOutpostPlayTests.ApproachNeedsRallyAndPausePreventsProgressOrSpawns" methodname="ApproachNeedsRallyAndPausePreventsProgressOrSpawns" classname="Reclamation.Tests.BlightOutpostPlayTests" runstate="Runnable" seed="1460093357" result="Passed" start-time="2026-09-23 22:43:29Z" end-time="2026-09-23 22:43:29Z" duration="0.308397" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1092" name="CasualtiesDoNotBlockCompletionAndResetClearsMissionState" fullname="Reclamation.Tests.BlightOutpostPlayTests.CasualtiesDoNotBlockCompletionAndResetClearsMissionState" methodname="CasualtiesDoNotBlockCompletionAndResetClearsMissionState" classname="Reclamation.Tests.BlightOutpostPlayTests" runstate="Runnable" seed="923177628" result="Passed" start-time="2026-09-23 22:43:29Z" end-time="2026-09-23 22:43:30Z" duration="0.642193" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1094" name="ClearIntervalsKeepSimulationRunningAndGearPreparationDoesNotStartReturn" fullname="Reclamation.Tests.BlightOutpostPlayTests.ClearIntervalsKeepSimulationRunningAndGearPreparationDoesNotStartReturn" methodname="ClearIntervalsKeepSimulationRunningAndGearPreparationDoesNotStartReturn" classname="Reclamation.Tests.BlightOutpostPlayTests" runstate="Runnable" seed="1312555888" result="Passed" start-time="2026-09-23 22:43:30Z" end-time="2026-09-23 22:43:31Z" duration="0.468414" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1090" name="ConnectedMissionRetainsRewardAndRequiresSurvivorsAtCamp" fullname="Reclamation.Tests.BlightOutpostPlayTests.ConnectedMissionRetainsRewardAndRequiresSurvivorsAtCamp" methodname="ConnectedMissionRetainsRewardAndRequiresSurvivorsAtCamp" classname="Reclamation.Tests.BlightOutpostPlayTests" runstate="Runnable" seed="1170275622" result="Passed" start-time="2026-09-23 22:43:31Z" end-time="2026-09-23 22:43:31Z" duration="0.558988" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1093" name="DefeatStopsMissionAndRewardCannotBeClaimedEarly" fullname="Reclamation.Tests.BlightOutpostPlayTests.DefeatStopsMissionAndRewardCannotBeClaimedEarly" methodname="DefeatStopsMissionAndRewardCannotBeClaimedEarly" classname="Reclamation.Tests.BlightOutpostPlayTests" runstate="Runnable" seed="1257442577" result="Passed" start-time="2026-09-23 22:43:31Z" end-time="2026-09-23 22:43:32Z" duration="0.432213" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1095" name="BlightThrallPlayTests" fullname="Reclamation.Tests.BlightThrallPlayTests" classname="Reclamation.Tests.BlightThrallPlayTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-09-23 22:43:32Z" end-time="2026-09-23 22:43:33Z" duration="1.423023" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1098" name="ClawsAndGrowthsDetachWithTheirArmAndBiteUsesJaw" fullname="Reclamation.Tests.BlightThrallPlayTests.ClawsAndGrowthsDetachWithTheirArmAndBiteUsesJaw" methodname="ClawsAndGrowthsDetachWithTheirArmAndBiteUsesJaw" classname="Reclamation.Tests.BlightThrallPlayTests" runstate="Runnable" seed="885571629" result="Passed" start-time="2026-09-23 22:43:32Z" end-time="2026-09-23 22:43:32Z" duration="0.299384" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1097" name="PauseFreezesClawPoseAndResetRestoresEnemy" fullname="Reclamation.Tests.BlightThrallPlayTests.PauseFreezesClawPoseAndResetRestoresEnemy" methodname="PauseFreezesClawPoseAndResetRestoresEnemy" classname="Reclamation.Tests.BlightThrallPlayTests" runstate="Runnable" seed="1594936674" result="Passed" start-time="2026-09-23 22:43:32Z" end-time="2026-09-23 22:43:32Z" duration="0.244534" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1096" name="ScenariosInstallThrallsWithoutReplacingTheHulk" fullname="Reclamation.Tests.BlightThrallPlayTests.ScenariosInstallThrallsWithoutReplacingTheHulk" methodname="ScenariosInstallThrallsWithoutReplacingTheHulk" classname="Reclamation.Tests.BlightThrallPlayTests" runstate="Runnable" seed="283075640" result="Passed" start-time="2026-09-23 22:43:32Z" end-time="2026-09-23 22:43:33Z" duration="0.870298" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1099" name="BlightWeaponPlayTests" fullname="Reclamation.Tests.BlightWeaponPlayTests" classname="Reclamation.Tests.BlightWeaponPlayTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-09-23 22:43:33Z" end-time="2026-09-23 22:43:34Z" duration="1.289834" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1101" name="AxeHeadContactSeversOnceAndResetRestoresSword" fullname="Reclamation.Tests.BlightWeaponPlayTests.AxeHeadContactSeversOnceAndResetRestoresSword" methodname="AxeHeadContactSeversOnceAndResetRestoresSword" classname="Reclamation.Tests.BlightWeaponPlayTests" runstate="Runnable" seed="1107984673" result="Passed" start-time="2026-09-23 22:43:33Z" end-time="2026-09-23 22:43:33Z" duration="0.453953" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1102" name="PatrolKeepsItsOriginalRewardGate" fullname="Reclamation.Tests.BlightWeaponPlayTests.PatrolKeepsItsOriginalRewardGate" methodname="PatrolKeepsItsOriginalRewardGate" classname="Reclamation.Tests.BlightWeaponPlayTests" runstate="Runnable" seed="1894758553" result="Passed" start-time="2026-09-23 22:43:33Z" end-time="2026-09-23 22:43:34Z" duration="0.497311" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1100" name="SwapUsesSpacingAndCannotCancelAnAttackOrDodge" fullname="Reclamation.Tests.BlightWeaponPlayTests.SwapUsesSpacingAndCannotCancelAnAttackOrDodge" methodname="SwapUsesSpacingAndCannotCancelAnAttackOrDodge" classname="Reclamation.Tests.BlightWeaponPlayTests" runstate="Runnable" seed="1087151491" result="Passed" start-time="2026-09-23 22:43:34Z" end-time="2026-09-23 22:43:34Z" duration="0.334647" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1103" name="CharacterReviewPlayTests" fullname="Reclamation.Tests.CharacterReviewPlayTests" classname="Reclamation.Tests.CharacterReviewPlayTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-09-23 22:43:34Z" end-time="2026-09-23 22:43:35Z" duration="0.790277" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1104" name="BothHandsStayOnHandleThroughCuts" fullname="Reclamation.Tests.CharacterReviewPlayTests.BothHandsStayOnHandleThroughCuts" methodname="BothHandsStayOnHandleThroughCuts" classname="Reclamation.Tests.CharacterReviewPlayTests" runstate="Runnable" seed="1381048898" result="Passed" start-time="2026-09-23 22:43:34Z" end-time="2026-09-23 22:43:35Z" duration="0.682578" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1106" name="CrowdVariantWalksWithoutPhysicsBodies" fullname="Reclamation.Tests.CharacterReviewPlayTests.CrowdVariantWalksWithoutPhysicsBodies" methodname="CrowdVariantWalksWithoutPhysicsBodies" classname="Reclamation.Tests.CharacterReviewPlayTests" runstate="Runnable" seed="496905373" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.052900" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1105" name="ExpressionsPreserveIdentityAndResetToNeutral" fullname="Reclamation.Tests.CharacterReviewPlayTests.ExpressionsPreserveIdentityAndResetToNeutral" methodname="ExpressionsPreserveIdentityAndResetToNeutral" classname="Reclamation.Tests.CharacterReviewPlayTests" runstate="Runnable" seed="2112018333" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.050886" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1107" name="CombatTests" fullname="Reclamation.Tests.CombatTests" classname="Reclamation.Tests.CombatTests" runstate="Runnable" testcasecount="33" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.297642" total="33" passed="33" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1138" name="BiteRescueAndVictoryProduceAttributedSummary" fullname="Reclamation.Tests.CombatTests.BiteRescueAndVictoryProduceAttributedSummary" methodname="BiteRescueAndVictoryProduceAttributedSummary" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="1542766458" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.019896" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1135" name="BruteWaitsForCloseCrowdBeforeCommittingSweep" fullname="Reclamation.Tests.CombatTests.BruteWaitsForCloseCrowdBeforeCommittingSweep" methodname="BruteWaitsForCloseCrowdBeforeCommittingSweep" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="1110811968" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005727" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1134" name="CrowdedSurvivorsChooseSeparateMeleePositions" fullname="Reclamation.Tests.CombatTests.CrowdedSurvivorsChooseSeparateMeleePositions" methodname="CrowdedSurvivorsChooseSeparateMeleePositions" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="12123040" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005892" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1115" name="DisengageDoesNotStartAnOffensiveStrike" fullname="Reclamation.Tests.CombatTests.DisengageDoesNotStartAnOffensiveStrike" methodname="DisengageDoesNotStartAnOffensiveStrike" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="15259911" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005912" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1137" name="EffectiveCombatAwardsXpButFailedActionsDoNot" fullname="Reclamation.Tests.CombatTests.EffectiveCombatAwardsXpButFailedActionsDoNot" methodname="EffectiveCombatAwardsXpButFailedActionsDoNot" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="184321521" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005503" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1125" name="EvacuationOverridesWithdrawal" fullname="Reclamation.Tests.CombatTests.EvacuationOverridesWithdrawal" methodname="EvacuationOverridesWithdrawal" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="1157496894" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.034366" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1127" name="ExistingCombatEncounterStartsWithKnownThreats" fullname="Reclamation.Tests.CombatTests.ExistingCombatEncounterStartsWithKnownThreats" methodname="ExistingCombatEncounterStartsWithKnownThreats" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="1680721371" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.007616" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1126" name="HalfSpeedIsDefaultAndQuarterSpeedAdvancesClockProportionally" fullname="Reclamation.Tests.CombatTests.HalfSpeedIsDefaultAndQuarterSpeedAdvancesClockProportionally" methodname="HalfSpeedIsDefaultAndQuarterSpeedAdvancesClockProportionally" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="815189476" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.011329" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1114" name="HoldDoesNotChaseEnemiesOutsideAnchorRadius" fullname="Reclamation.Tests.CombatTests.HoldDoesNotChaseEnemiesOutsideAnchorRadius" methodname="HoldDoesNotChaseEnemiesOutsideAnchorRadius" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="432324007" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005512" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1116" name="IntactFencePreventsMeleeThroughIt" fullname="Reclamation.Tests.CombatTests.IntactFencePreventsMeleeThroughIt" methodname="IntactFencePreventsMeleeThroughIt" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="1160637370" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.008756" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1113" name="IsolationInterruptsAnExistingBite" fullname="Reclamation.Tests.CombatTests.IsolationInterruptsAnExistingBite" methodname="IsolationInterruptsAnExistingBite" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="805927591" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005753" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1133" name="KnockbackStopsAtNavigationWallAndHonorsPause" fullname="Reclamation.Tests.CombatTests.KnockbackStopsAtNavigationWallAndHonorsPause" methodname="KnockbackStopsAtNavigationWallAndHonorsPause" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="1499292673" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.009422" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1121" name="LungeAlertsVictimAndLocalWitnessButNotDistantSurvivor" fullname="Reclamation.Tests.CombatTests.LungeAlertsVictimAndLocalWitnessButNotDistantSurvivor" methodname="LungeAlertsVictimAndLocalWitnessButNotDistantSurvivor" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="333944" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.006618" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1136" name="MissedSweepHasShortRecoveryWithoutBonusDamage" fullname="Reclamation.Tests.CombatTests.MissedSweepHasShortRecoveryWithoutBonusDamage" methodname="MissedSweepHasShortRecoveryWithoutBonusDamage" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="1627042860" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.007930" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1112" name="NeutralizingGrabberReleasesVictim" fullname="Reclamation.Tests.CombatTests.NeutralizingGrabberReleasesVictim" methodname="NeutralizingGrabberReleasesVictim" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="618110370" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.007060" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1109" name="PanickedSurvivorFleesInsteadOfStartingAnAttack" fullname="Reclamation.Tests.CombatTests.PanickedSurvivorFleesInsteadOfStartingAnAttack" methodname="PanickedSurvivorFleesInsteadOfStartingAnAttack" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="306844731" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005372" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1119" name="PausedOutbreakDirectorDoesNotAdvanceCombat" fullname="Reclamation.Tests.CombatTests.PausedOutbreakDirectorDoesNotAdvanceCombat" methodname="PausedOutbreakDirectorDoesNotAdvanceCombat" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="734245702" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.040430" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1108" name="ProximityDoesNotInfectBeforeBiteContact" fullname="Reclamation.Tests.CombatTests.ProximityDoesNotInfectBeforeBiteContact" methodname="ProximityDoesNotInfectBeforeBiteContact" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="250597542" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005881" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1139" name="RankGrowthChangesAttributesButNotHumanHealth" fullname="Reclamation.Tests.CombatTests.RankGrowthChangesAttributesButNotHumanHealth" methodname="RankGrowthChangesAttributesButNotHumanHealth" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="764264060" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005663" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1132" name="RecoveryGivesBonusDamageWithoutShorteningCounterattackWindow" fullname="Reclamation.Tests.CombatTests.RecoveryGivesBonusDamageWithoutShorteningCounterattackWindow" methodname="RecoveryGivesBonusDamageWithoutShorteningCounterattackWindow" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="357200181" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005711" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1131" name="RepeatedHitsDamageBruteWithoutResettingLungeAndBiteStillCanBeRescued" fullname="Reclamation.Tests.CombatTests.RepeatedHitsDamageBruteWithoutResettingLungeAndBiteStillCanBeRescued" methodname="RepeatedHitsDamageBruteWithoutResettingLungeAndBiteStillCanBeRescued" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="311026431" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005550" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1130" name="RestedSurvivorsReserveSeparateSweepEscapePoints" fullname="Reclamation.Tests.CombatTests.RestedSurvivorsReserveSeparateSweepEscapePoints" methodname="RestedSurvivorsReserveSeparateSweepEscapePoints" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="1072093375" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005960" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1118" name="RestedVeteranBreaksGrabBeforeBite" fullname="Reclamation.Tests.CombatTests.RestedVeteranBreaksGrabBeforeBite" methodname="RestedVeteranBreaksGrabBeforeBite" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="1646936605" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005472" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1117" name="StaminaCannotBeOverspentOrCreatedByNegativeCosts" fullname="Reclamation.Tests.CombatTests.StaminaCannotBeOverspentOrCreatedByNegativeCosts" methodname="StaminaCannotBeOverspentOrCreatedByNegativeCosts" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="1461792920" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005033" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1129" name="SweepDoesNotTrackVictimWhoMovesBehindBrute" fullname="Reclamation.Tests.CombatTests.SweepDoesNotTrackVictimWhoMovesBehindBrute" methodname="SweepDoesNotTrackVictimWhoMovesBehindBrute" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="192995815" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005633" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1128" name="SweepHasWindupHitsMultipleSurvivorsAndDoesNotInfect" fullname="Reclamation.Tests.CombatTests.SweepHasWindupHitsMultipleSurvivorsAndDoesNotInfect" methodname="SweepHasWindupHitsMultipleSurvivorsAndDoesNotInfect" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="1086173096" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005868" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1123" name="SymptomsCreateSuspicionWithoutPermissionToAttack" fullname="Reclamation.Tests.CombatTests.SymptomsCreateSuspicionWithoutPermissionToAttack" methodname="SymptomsCreateSuspicionWithoutPermissionToAttack" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="936262665" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005395" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1111" name="TeammateStrikeInterruptsBiteWithoutInfection" fullname="Reclamation.Tests.CombatTests.TeammateStrikeInterruptsBiteWithoutInfection" methodname="TeammateStrikeInterruptsBiteWithoutInfection" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="682927269" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.006671" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1120" name="UnawareSurvivorDoesNotAttackOnSight" fullname="Reclamation.Tests.CombatTests.UnawareSurvivorDoesNotAttackOnSight" methodname="UnawareSurvivorDoesNotAttackOnSight" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="17645839" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.005384" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1140" name="ValidationLabSwitchesPopulationWithoutActivatingOtherScenarios" fullname="Reclamation.Tests.CombatTests.ValidationLabSwitchesPopulationWithoutActivatingOtherScenarios" methodname="ValidationLabSwitchesPopulationWithoutActivatingOtherScenarios" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="1120445824" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.007716" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1124" name="WithdrawalStartsLateInIncubationAndUsesReachableGround" fullname="Reclamation.Tests.CombatTests.WithdrawalStartsLateInIncubationAndUsesReachableGround" methodname="WithdrawalStartsLateInIncubationAndUsesReachableGround" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="2098505364" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.006836" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1122" name="WitnessBehindWallDoesNotReceiveGlobalAlert" fullname="Reclamation.Tests.CombatTests.WitnessBehindWallDoesNotReceiveGlobalAlert" methodname="WitnessBehindWallDoesNotReceiveGlobalAlert" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="1006116687" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.007394" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1110" name="ZeroTimeAndNewOrderCannotSkipGrab" fullname="Reclamation.Tests.CombatTests.ZeroTimeAndNewOrderCannotSkipGrab" methodname="ZeroTimeAndNewOrderCannotSkipGrab" classname="Reclamation.Tests.CombatTests" runstate="Runnable" seed="2096031712" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:35Z" duration="0.006911" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1141" name="CompanionArtPlayTests" fullname="Reclamation.Tests.CompanionArtPlayTests" classname="Reclamation.Tests.CompanionArtPlayTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:37Z" duration="1.166201" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1144" name="AttackGuardAndInjuryPosesKeepGearAttachedAndStatsUnchanged" fullname="Reclamation.Tests.CompanionArtPlayTests.AttackGuardAndInjuryPosesKeepGearAttachedAndStatsUnchanged" methodname="AttackGuardAndInjuryPosesKeepGearAttachedAndStatsUnchanged" classname="Reclamation.Tests.CompanionArtPlayTests" runstate="Runnable" seed="55627461" result="Passed" start-time="2026-09-23 22:43:35Z" end-time="2026-09-23 22:43:36Z" duration="0.533590" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1142" name="CompanionsHaveDistinctGearAndIsolatedMaterials" fullname="Reclamation.Tests.CompanionArtPlayTests.CompanionsHaveDistinctGearAndIsolatedMaterials" methodname="CompanionsHaveDistinctGearAndIsolatedMaterials" classname="Reclamation.Tests.CompanionArtPlayTests" runstate="Runnable" seed="963006163" result="Passed" start-time="2026-09-23 22:43:36Z" end-time="2026-09-23 22:43:36Z" duration="0.315667" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1143" name="LiveCompanionAttackUsesItsOwnWeaponPoseAndPauses" fullname="Reclamation.Tests.CompanionArtPlayTests.LiveCompanionAttackUsesItsOwnWeaponPoseAndPauses" methodname="LiveCompanionAttackUsesItsOwnWeaponPoseAndPauses" classname="Reclamation.Tests.CompanionArtPlayTests" runstate="Runnable" seed="1580517825" result="Passed" start-time="2026-09-23 22:43:36Z" end-time="2026-09-23 22:43:37Z" duration="0.313687" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1145" name="CrowdEscapeTests" fullname="Reclamation.Tests.CrowdEscapeTests" classname="Reclamation.Tests.CrowdEscapeTests" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-09-23 22:43:37Z" end-time="2026-09-23 22:43:47Z" duration="10.281407" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1150" name="CivilianEscapesAlongBoundaryInsteadOfPushingOutside" fullname="Reclamation.Tests.CrowdEscapeTests.CivilianEscapesAlongBoundaryInsteadOfPushingOutside" methodname="CivilianEscapesAlongBoundaryInsteadOfPushingOutside" classname="Reclamation.Tests.CrowdEscapeTests" runstate="Runnable" seed="1352931143" result="Passed" start-time="2026-09-23 22:43:37Z" end-time="2026-09-23 22:43:38Z" duration="1.211483" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1151" name="CornerRouteStaysOnMeshAndAvoidsRunningThroughThreat" fullname="Reclamation.Tests.CrowdEscapeTests.CornerRouteStaysOnMeshAndAvoidsRunningThroughThreat" methodname="CornerRouteStaysOnMeshAndAvoidsRunningThroughThreat" classname="Reclamation.Tests.CrowdEscapeTests" runstate="Runnable" seed="443273808" result="Passed" start-time="2026-09-23 22:43:38Z" end-time="2026-09-23 22:43:38Z" duration="0.005349" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1148" name="ElevatedLabCivilianFindsEscapeAtFootLevel" fullname="Reclamation.Tests.CrowdEscapeTests.ElevatedLabCivilianFindsEscapeAtFootLevel" methodname="ElevatedLabCivilianFindsEscapeAtFootLevel" classname="Reclamation.Tests.CrowdEscapeTests" runstate="Runnable" seed="72590774" result="Passed" start-time="2026-09-23 22:43:38Z" end-time="2026-09-23 22:43:39Z" duration="1.006600" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1149" name="ElevatedLabPursuerReachesElevatedPrey" fullname="Reclamation.Tests.CrowdEscapeTests.ElevatedLabPursuerReachesElevatedPrey" methodname="ElevatedLabPursuerReachesElevatedPrey" classname="Reclamation.Tests.CrowdEscapeTests" runstate="Runnable" seed="1755480599" result="Passed" start-time="2026-09-23 22:43:39Z" end-time="2026-09-23 22:43:43Z" duration="4.006841" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1155" name="EscapeRouteAccountsForASecondPursuer" fullname="Reclamation.Tests.CrowdEscapeTests.EscapeRouteAccountsForASecondPursuer" methodname="EscapeRouteAccountsForASecondPursuer" classname="Reclamation.Tests.CrowdEscapeTests" runstate="Runnable" seed="2043004730" result="Passed" start-time="2026-09-23 22:43:43Z" end-time="2026-09-23 22:43:43Z" duration="0.005750" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1146" name="HumanSprintChangesSpeedAndPauseFreezesStamina" fullname="Reclamation.Tests.CrowdEscapeTests.HumanSprintChangesSpeedAndPauseFreezesStamina" methodname="HumanSprintChangesSpeedAndPauseFreezesStamina" classname="Reclamation.Tests.CrowdEscapeTests" runstate="Runnable" seed="1448759458" result="Passed" start-time="2026-09-23 22:43:43Z" end-time="2026-09-23 22:43:43Z" duration="0.011762" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1152" name="LatentCivilianCanEscapeAndResumeRoutine" fullname="Reclamation.Tests.CrowdEscapeTests.LatentCivilianCanEscapeAndResumeRoutine" methodname="LatentCivilianCanEscapeAndResumeRoutine" classname="Reclamation.Tests.CrowdEscapeTests" runstate="Runnable" seed="732330256" result="Passed" start-time="2026-09-23 22:43:43Z" end-time="2026-09-23 22:43:43Z" duration="0.006573" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1153" name="PauseAndIsolationPreventEscapeMovement" fullname="Reclamation.Tests.CrowdEscapeTests.PauseAndIsolationPreventEscapeMovement" methodname="PauseAndIsolationPreventEscapeMovement" classname="Reclamation.Tests.CrowdEscapeTests" runstate="Runnable" seed="804798431" result="Passed" start-time="2026-09-23 22:43:43Z" end-time="2026-09-23 22:43:43Z" duration="0.004974" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1154" name="PursuerStopsWithinContactRangeWithoutEnteringPreyCenter" fullname="Reclamation.Tests.CrowdEscapeTests.PursuerStopsWithinContactRangeWithoutEnteringPreyCenter" methodname="PursuerStopsWithinContactRangeWithoutEnteringPreyCenter" classname="Reclamation.Tests.CrowdEscapeTests" runstate="Runnable" seed="1042364354" result="Passed" start-time="2026-09-23 22:43:43Z" end-time="2026-09-23 22:43:47Z" duration="4.005498" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1147" name="ZombieBurstRunsOutAndCannotRestartImmediately" fullname="Reclamation.Tests.CrowdEscapeTests.ZombieBurstRunsOutAndCannotRestartImmediately" methodname="ZombieBurstRunsOutAndCannotRestartImmediately" classname="Reclamation.Tests.CrowdEscapeTests" runstate="Runnable" seed="1440327337" result="Passed" start-time="2026-09-23 22:43:47Z" end-time="2026-09-23 22:43:47Z" duration="0.012007" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1156" name="ForwardCrowdPlayTests" fullname="Reclamation.Tests.ForwardCrowdPlayTests" classname="Reclamation.Tests.ForwardCrowdPlayTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-09-23 22:43:47Z" end-time="2026-09-23 22:43:47Z" duration="0.144948" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1158" name="MatchingCrowdActorsShareOneMeshAndKeepIndependentAnimation" fullname="Reclamation.Tests.ForwardCrowdPlayTests.MatchingCrowdActorsShareOneMeshAndKeepIndependentAnimation" methodname="MatchingCrowdActorsShareOneMeshAndKeepIndependentAnimation" classname="Reclamation.Tests.ForwardCrowdPlayTests" runstate="Runnable" seed="2002789732" result="Passed" start-time="2026-09-23 22:43:47Z" end-time="2026-09-23 22:43:47Z" duration="0.041577" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1157" name="TwoHandCutTravelsForwardAndDown" fullname="Reclamation.Tests.ForwardCrowdPlayTests.TwoHandCutTravelsForwardAndDown" methodname="TwoHandCutTravelsForwardAndDown" classname="Reclamation.Tests.ForwardCrowdPlayTests" runstate="Runnable" seed="1942121182" result="Passed" start-time="2026-09-23 22:43:47Z" end-time="2026-09-23 22:43:47Z" duration="0.100345" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1159" name="HaulingIntegrationTests" fullname="Reclamation.Tests.HaulingIntegrationTests" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" testcasecount="14" result="Passed" start-time="2026-09-23 22:43:47Z" end-time="2026-09-23 22:45:57Z" duration="129.671989" total="14" passed="14" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1164" name="CancellingBlueprintReturnsDeliveredAndCarriedWood" fullname="Reclamation.Tests.HaulingIntegrationTests.CancellingBlueprintReturnsDeliveredAndCarriedWood" methodname="CancellingBlueprintReturnsDeliveredAndCarriedWood" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="2142462907" result="Passed" start-time="2026-09-23 22:43:47Z" end-time="2026-09-23 22:43:50Z" duration="2.629095" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1169" name="CriticalFatigueReservesBedSleepsThenWorkResumes" fullname="Reclamation.Tests.HaulingIntegrationTests.CriticalFatigueReservesBedSleepsThenWorkResumes" methodname="CriticalFatigueReservesBedSleepsThenWorkResumes" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="188569267" result="Passed" start-time="2026-09-23 22:43:50Z" end-time="2026-09-23 22:43:55Z" duration="5.635628" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1165" name="DisabledStockpileRetainsCargoAndResumes" fullname="Reclamation.Tests.HaulingIntegrationTests.DisabledStockpileRetainsCargoAndResumes" methodname="DisabledStockpileRetainsCargoAndResumes" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="959077279" result="Passed" start-time="2026-09-23 22:43:55Z" end-time="2026-09-23 22:44:02Z" duration="7.294471" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1166" name="DisablingWorkerReleasesReservationAndPreservesCargo" fullname="Reclamation.Tests.HaulingIntegrationTests.DisablingWorkerReleasesReservationAndPreservesCargo" methodname="DisablingWorkerReleasesReservationAndPreservesCargo" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="992411761" result="Passed" start-time="2026-09-23 22:44:02Z" end-time="2026-09-23 22:44:14Z" duration="11.805333" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1170" name="HarvestedFoodIsStoredThenConsumedAsAMeal" fullname="Reclamation.Tests.HaulingIntegrationTests.HarvestedFoodIsStoredThenConsumedAsAMeal" methodname="HarvestedFoodIsStoredThenConsumedAsAMeal" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="2112187825" result="Passed" start-time="2026-09-23 22:44:14Z" end-time="2026-09-23 22:44:20Z" duration="5.953102" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1160" name="HaulingConservesResourcesAcrossEveryFrame" fullname="Reclamation.Tests.HaulingIntegrationTests.HaulingConservesResourcesAcrossEveryFrame" methodname="HaulingConservesResourcesAcrossEveryFrame" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="895738462" result="Passed" start-time="2026-09-23 22:44:20Z" end-time="2026-09-23 22:44:26Z" duration="5.892720" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1171" name="InjuredWorkerConsumesReservedMedicineThenResumesWork" fullname="Reclamation.Tests.HaulingIntegrationTests.InjuredWorkerConsumesReservedMedicineThenResumesWork" methodname="InjuredWorkerConsumesReservedMedicineThenResumesWork" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="344194162" result="Passed" start-time="2026-09-23 22:44:26Z" end-time="2026-09-23 22:44:32Z" duration="5.832875" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1172" name="PanickedWorkerRecoversAtGatheringSpotThenResumesWork" fullname="Reclamation.Tests.HaulingIntegrationTests.PanickedWorkerRecoversAtGatheringSpotThenResumesWork" methodname="PanickedWorkerRecoversAtGatheringSpotThenResumesWork" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="898259081" result="Passed" start-time="2026-09-23 22:44:32Z" end-time="2026-09-23 22:44:38Z" duration="5.606830" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1173" name="PlayerFocusReleasesFarmAndReplansToConstruction" fullname="Reclamation.Tests.HaulingIntegrationTests.PlayerFocusReleasesFarmAndReplansToConstruction" methodname="PlayerFocusReleasesFarmAndReplansToConstruction" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="1808567469" result="Passed" start-time="2026-09-23 22:44:38Z" end-time="2026-09-23 22:44:39Z" duration="1.759476" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1161" name="ShelterUsesLooseWoodWithoutLoss" fullname="Reclamation.Tests.HaulingIntegrationTests.ShelterUsesLooseWoodWithoutLoss" methodname="ShelterUsesLooseWoodWithoutLoss" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="269035854" result="Passed" start-time="2026-09-23 22:44:39Z" end-time="2026-09-23 22:45:05Z" duration="25.235615" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1163" name="ShelterUsesStoredWoodAndBuilderResumes" fullname="Reclamation.Tests.HaulingIntegrationTests.ShelterUsesStoredWoodAndBuilderResumes" methodname="ShelterUsesStoredWoodAndBuilderResumes" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="1690198267" result="Passed" start-time="2026-09-23 22:45:05Z" end-time="2026-09-23 22:45:22Z" duration="17.286957" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1162" name="ThreeWorkersBuildWithoutOverdelivery" fullname="Reclamation.Tests.HaulingIntegrationTests.ThreeWorkersBuildWithoutOverdelivery" methodname="ThreeWorkersBuildWithoutOverdelivery" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="1632601339" result="Passed" start-time="2026-09-23 22:45:22Z" end-time="2026-09-23 22:45:40Z" duration="17.995889" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1167" name="UnreachableSourceIsSkippedThenRetried" fullname="Reclamation.Tests.HaulingIntegrationTests.UnreachableSourceIsSkippedThenRetried" methodname="UnreachableSourceIsSkippedThenRetried" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="1931203101" result="Passed" start-time="2026-09-23 22:45:40Z" end-time="2026-09-23 22:45:51Z" duration="10.902317" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1168" name="UrgentHungerConsumesOneReservedMealThenWorkResumes" fullname="Reclamation.Tests.HaulingIntegrationTests.UrgentHungerConsumesOneReservedMealThenWorkResumes" methodname="UrgentHungerConsumesOneReservedMealThenWorkResumes" classname="Reclamation.Tests.HaulingIntegrationTests" runstate="Runnable" seed="1778735021" result="Passed" start-time="2026-09-23 22:45:51Z" end-time="2026-09-23 22:45:57Z" duration="5.836323" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1174" name="LabCameraTests" fullname="Reclamation.Tests.LabCameraTests" classname="Reclamation.Tests.LabCameraTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-09-23 22:45:57Z" end-time="2026-09-23 22:45:57Z" duration="0.059133" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1177" name="DisabledTargetReleasesFollowWithoutMovingCamera" fullname="Reclamation.Tests.LabCameraTests.DisabledTargetReleasesFollowWithoutMovingCamera" methodname="DisabledTargetReleasesFollowWithoutMovingCamera" classname="Reclamation.Tests.LabCameraTests" runstate="Runnable" seed="907695136" result="Passed" start-time="2026-09-23 22:45:57Z" end-time="2026-09-23 22:45:57Z" duration="0.022263" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1175" name="FollowTracksMovingTargetWhileClockIsPaused" fullname="Reclamation.Tests.LabCameraTests.FollowTracksMovingTargetWhileClockIsPaused" methodname="FollowTracksMovingTargetWhileClockIsPaused" classname="Reclamation.Tests.LabCameraTests" runstate="Runnable" seed="1442615433" result="Passed" start-time="2026-09-23 22:45:57Z" end-time="2026-09-23 22:45:57Z" duration="0.012409" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1178" name="OverviewRestoresOriginalCameraAndZoom" fullname="Reclamation.Tests.LabCameraTests.OverviewRestoresOriginalCameraAndZoom" methodname="OverviewRestoresOriginalCameraAndZoom" classname="Reclamation.Tests.LabCameraTests" runstate="Runnable" seed="1322019557" result="Passed" start-time="2026-09-23 22:45:57Z" end-time="2026-09-23 22:45:57Z" duration="0.012865" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1176" name="SelectionDoesNotForceCameraFollow" fullname="Reclamation.Tests.LabCameraTests.SelectionDoesNotForceCameraFollow" methodname="SelectionDoesNotForceCameraFollow" classname="Reclamation.Tests.LabCameraTests" runstate="Runnable" seed="2132029972" result="Passed" start-time="2026-09-23 22:45:57Z" end-time="2026-09-23 22:45:57Z" duration="0.007810" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1179" name="ModularHumanPlayTests" fullname="Reclamation.Tests.ModularHumanPlayTests" classname="Reclamation.Tests.ModularHumanPlayTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-09-23 22:45:57Z" end-time="2026-09-23 22:45:57Z" duration="0.453886" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1180" name="GearAndFaceSwitchingKeepsRigAndClips" fullname="Reclamation.Tests.ModularHumanPlayTests.GearAndFaceSwitchingKeepsRigAndClips" methodname="GearAndFaceSwitchingKeepsRigAndClips" classname="Reclamation.Tests.ModularHumanPlayTests" runstate="Runnable" seed="1877799068" result="Passed" start-time="2026-09-23 22:45:57Z" end-time="2026-09-23 22:45:57Z" duration="0.044105" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1181" name="RagdollRecoveryRestoresKinematicAnimationAndAttachments" fullname="Reclamation.Tests.ModularHumanPlayTests.RagdollRecoveryRestoresKinematicAnimationAndAttachments" methodname="RagdollRecoveryRestoresKinematicAnimationAndAttachments" classname="Reclamation.Tests.ModularHumanPlayTests" runstate="Runnable" seed="519579835" result="Passed" start-time="2026-09-23 22:45:57Z" end-time="2026-09-23 22:45:57Z" duration="0.406573" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1182" name="NeighborhoodRoutineTests" fullname="Reclamation.Tests.NeighborhoodRoutineTests" classname="Reclamation.Tests.NeighborhoodRoutineTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-09-23 22:45:57Z" end-time="2026-09-23 22:46:20Z" duration="22.443353" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1183" name="CivilianLeavesHomeAndArrivesAtCafe" fullname="Reclamation.Tests.NeighborhoodRoutineTests.CivilianLeavesHomeAndArrivesAtCafe" methodname="CivilianLeavesHomeAndArrivesAtCafe" classname="Reclamation.Tests.NeighborhoodRoutineTests" runstate="Runnable" seed="1109147903" result="Passed" start-time="2026-09-23 22:45:57Z" end-time="2026-09-23 22:46:04Z" duration="6.895290" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1184" name="PauseStopsClockAndTravelThenResumes" fullname="Reclamation.Tests.NeighborhoodRoutineTests.PauseStopsClockAndTravelThenResumes" methodname="PauseStopsClockAndTravelThenResumes" classname="Reclamation.Tests.NeighborhoodRoutineTests" runstate="Runnable" seed="1032757502" result="Passed" start-time="2026-09-23 22:46:04Z" end-time="2026-09-23 22:46:11Z" duration="7.394725" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1185" name="UnreachableCafeRecoversAfterMovingBack" fullname="Reclamation.Tests.NeighborhoodRoutineTests.UnreachableCafeRecoversAfterMovingBack" methodname="UnreachableCafeRecoversAfterMovingBack" classname="Reclamation.Tests.NeighborhoodRoutineTests" runstate="Runnable" seed="521349722" result="Passed" start-time="2026-09-23 22:46:11Z" end-time="2026-09-23 22:46:20Z" duration="8.149616" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1186" name="OutbreakAgentTests" fullname="Reclamation.Tests.OutbreakAgentTests" classname="Reclamation.Tests.OutbreakAgentTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:20Z" duration="0.036906" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1191" name="InactiveAuthoredZombieCanTurnBeforeAwakeWithoutAbortingEncounterSetup" fullname="Reclamation.Tests.OutbreakAgentTests.InactiveAuthoredZombieCanTurnBeforeAwakeWithoutAbortingEncounterSetup" methodname="InactiveAuthoredZombieCanTurnBeforeAwakeWithoutAbortingEncounterSetup" classname="Reclamation.Tests.OutbreakAgentTests" runstate="Runnable" seed="693682330" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:20Z" duration="0.011889" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Failed to create agent because there is no valid NavMesh
+Failed to create agent because there is no valid NavMesh
+]]></output>
+            </test-case>
+            <test-case id="1188" name="IsolationBlocksSusceptibilityAndContagion" fullname="Reclamation.Tests.OutbreakAgentTests.IsolationBlocksSusceptibilityAndContagion" methodname="IsolationBlocksSusceptibilityAndContagion" classname="Reclamation.Tests.OutbreakAgentTests" runstate="Runnable" seed="1619431196" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:20Z" duration="0.005433" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Failed to create agent because there is no valid NavMesh
+]]></output>
+            </test-case>
+            <test-case id="1187" name="LatentInfectionIsNotPubliclyRevealed" fullname="Reclamation.Tests.OutbreakAgentTests.LatentInfectionIsNotPubliclyRevealed" methodname="LatentInfectionIsNotPubliclyRevealed" classname="Reclamation.Tests.OutbreakAgentTests" runstate="Runnable" seed="1199537746" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:20Z" duration="0.005277" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Failed to create agent because there is no valid NavMesh
+]]></output>
+            </test-case>
+            <test-case id="1190" name="PauseCommandIsSafeWithoutABakedNavMesh" fullname="Reclamation.Tests.OutbreakAgentTests.PauseCommandIsSafeWithoutABakedNavMesh" methodname="PauseCommandIsSafeWithoutABakedNavMesh" classname="Reclamation.Tests.OutbreakAgentTests" runstate="Runnable" seed="784292374" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:20Z" duration="0.005066" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Failed to create agent because there is no valid NavMesh
+]]></output>
+            </test-case>
+            <test-case id="1189" name="TurnedAgentCanBeNeutralizedExactlyOnce" fullname="Reclamation.Tests.OutbreakAgentTests.TurnedAgentCanBeNeutralizedExactlyOnce" methodname="TurnedAgentCanBeNeutralizedExactlyOnce" classname="Reclamation.Tests.OutbreakAgentTests" runstate="Runnable" seed="674561382" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:20Z" duration="0.005761" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Failed to create agent because there is no valid NavMesh
+]]></output>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1192" name="PerimeterTests" fullname="Reclamation.Tests.PerimeterTests" classname="Reclamation.Tests.PerimeterTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:23Z" duration="3.406303" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1199" name="BruteAttacksReachableFenceAndHonorsPause" fullname="Reclamation.Tests.PerimeterTests.BruteAttacksReachableFenceAndHonorsPause" methodname="BruteAttacksReachableFenceAndHonorsPause" classname="Reclamation.Tests.PerimeterTests" runstate="Runnable" seed="526342881" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:20Z" duration="0.841468" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1196" name="BruteBreaksWoodFasterAndDamageIsTimeScaled" fullname="Reclamation.Tests.PerimeterTests.BruteBreaksWoodFasterAndDamageIsTimeScaled" methodname="BruteBreaksWoodFasterAndDamageIsTimeScaled" classname="Reclamation.Tests.PerimeterTests" runstate="Runnable" seed="106052068" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:20Z" duration="0.006619" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1195" name="CancelledWorkRefundsReservedWood" fullname="Reclamation.Tests.PerimeterTests.CancelledWorkRefundsReservedWood" methodname="CancelledWorkRefundsReservedWood" classname="Reclamation.Tests.PerimeterTests" runstate="Runnable" seed="1107617119" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:20Z" duration="0.006341" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1193" name="DestroyedFenceReopensNavigation" fullname="Reclamation.Tests.PerimeterTests.DestroyedFenceReopensNavigation" methodname="DestroyedFenceReopensNavigation" classname="Reclamation.Tests.PerimeterTests" runstate="Runnable" seed="1284299551" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:20Z" duration="0.010284" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1197" name="FenceBlocksContactUntilBroken" fullname="Reclamation.Tests.PerimeterTests.FenceBlocksContactUntilBroken" methodname="FenceBlocksContactUntilBroken" classname="Reclamation.Tests.PerimeterTests" runstate="Runnable" seed="1242010331" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:20Z" duration="0.006152" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1194" name="GateOnlyBlocksWhenClosed" fullname="Reclamation.Tests.PerimeterTests.GateOnlyBlocksWhenClosed" methodname="GateOnlyBlocksWhenClosed" classname="Reclamation.Tests.PerimeterTests" runstate="Runnable" seed="176640750" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:20Z" duration="0.005572" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1198" name="ShelteredWorkerBuildsAndRepairsWithAccountedWood" fullname="Reclamation.Tests.PerimeterTests.ShelteredWorkerBuildsAndRepairsWithAccountedWood" methodname="ShelteredWorkerBuildsAndRepairsWithAccountedWood" classname="Reclamation.Tests.PerimeterTests" runstate="Runnable" seed="2004406506" result="Passed" start-time="2026-09-23 22:46:20Z" end-time="2026-09-23 22:46:23Z" duration="2.526045" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1200" name="RefinedLimbPlayTests" fullname="Reclamation.Tests.RefinedLimbPlayTests" classname="Reclamation.Tests.RefinedLimbPlayTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-09-23 22:46:23Z" end-time="2026-09-23 22:46:25Z" duration="1.909774" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1203" name="BothHandsFollowTheContactWeaponAtEveryAimHeight" fullname="Reclamation.Tests.RefinedLimbPlayTests.BothHandsFollowTheContactWeaponAtEveryAimHeight" methodname="BothHandsFollowTheContactWeaponAtEveryAimHeight" classname="Reclamation.Tests.RefinedLimbPlayTests" runstate="Runnable" seed="111743982" result="Passed" start-time="2026-09-23 22:46:23Z" end-time="2026-09-23 22:46:24Z" duration="0.988891" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1202" name="LowCutRemovesBootAndTrouserRegionAndLeavesCrawlerDangerous" fullname="Reclamation.Tests.RefinedLimbPlayTests.LowCutRemovesBootAndTrouserRegionAndLeavesCrawlerDangerous" methodname="LowCutRemovesBootAndTrouserRegionAndLeavesCrawlerDangerous" classname="Reclamation.Tests.RefinedLimbPlayTests" runstate="Runnable" seed="891516792" result="Passed" start-time="2026-09-23 22:46:24Z" end-time="2026-09-23 22:46:24Z" duration="0.398450" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1201" name="WoundSeverAndResetPreserveLiveSkeleton" fullname="Reclamation.Tests.RefinedLimbPlayTests.WoundSeverAndResetPreserveLiveSkeleton" methodname="WoundSeverAndResetPreserveLiveSkeleton" classname="Reclamation.Tests.RefinedLimbPlayTests" runstate="Runnable" seed="1152176654" result="Passed" start-time="2026-09-23 22:46:24Z" end-time="2026-09-23 22:46:25Z" duration="0.518702" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1204" name="SafeZoneTests" fullname="Reclamation.Tests.SafeZoneTests" classname="Reclamation.Tests.SafeZoneTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-09-23 22:46:25Z" end-time="2026-09-23 22:46:28Z" duration="3.165510" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1211" name="CancelledEvacuationReleasesReservation" fullname="Reclamation.Tests.SafeZoneTests.CancelledEvacuationReleasesReservation" methodname="CancelledEvacuationReleasesReservation" classname="Reclamation.Tests.SafeZoneTests" runstate="Runnable" seed="811968652" result="Passed" start-time="2026-09-23 22:46:25Z" end-time="2026-09-23 22:46:25Z" duration="0.006979" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1210" name="EvacueePhysicallyReachesShelter" fullname="Reclamation.Tests.SafeZoneTests.EvacueePhysicallyReachesShelter" methodname="EvacueePhysicallyReachesShelter" classname="Reclamation.Tests.SafeZoneTests" runstate="Runnable" seed="2137046245" result="Passed" start-time="2026-09-23 22:46:25Z" end-time="2026-09-23 22:46:28Z" duration="3.116130" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1207" name="LatentCaseCanEnterShelterThenCauseBreach" fullname="Reclamation.Tests.SafeZoneTests.LatentCaseCanEnterShelterThenCauseBreach" methodname="LatentCaseCanEnterShelterThenCauseBreach" classname="Reclamation.Tests.SafeZoneTests" runstate="Runnable" seed="483327803" result="Passed" start-time="2026-09-23 22:46:28Z" end-time="2026-09-23 22:46:28Z" duration="0.007741" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1205" name="ShelterCapacityReservesSpaceForEvacuees" fullname="Reclamation.Tests.SafeZoneTests.ShelterCapacityReservesSpaceForEvacuees" methodname="ShelterCapacityReservesSpaceForEvacuees" classname="Reclamation.Tests.SafeZoneTests" runstate="Runnable" seed="810410471" result="Passed" start-time="2026-09-23 22:46:28Z" end-time="2026-09-23 22:46:28Z" duration="0.006614" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1209" name="ShelteredSymptomsCanBeTransferredBeforeTurning" fullname="Reclamation.Tests.SafeZoneTests.ShelteredSymptomsCanBeTransferredBeforeTurning" methodname="ShelteredSymptomsCanBeTransferredBeforeTurning" classname="Reclamation.Tests.SafeZoneTests" runstate="Runnable" seed="1421079438" result="Passed" start-time="2026-09-23 22:46:28Z" end-time="2026-09-23 22:46:28Z" duration="0.007916" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1208" name="TurnedQuarantineCaseRemainsContained" fullname="Reclamation.Tests.SafeZoneTests.TurnedQuarantineCaseRemainsContained" methodname="TurnedQuarantineCaseRemainsContained" classname="Reclamation.Tests.SafeZoneTests" runstate="Runnable" seed="920347925" result="Passed" start-time="2026-09-23 22:46:28Z" end-time="2026-09-23 22:46:28Z" duration="0.007397" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1206" name="VisibleSymptomsRouteToQuarantine" fullname="Reclamation.Tests.SafeZoneTests.VisibleSymptomsRouteToQuarantine" methodname="VisibleSymptomsRouteToQuarantine" classname="Reclamation.Tests.SafeZoneTests" runstate="Runnable" seed="1923972549" result="Passed" start-time="2026-09-23 22:46:28Z" end-time="2026-09-23 22:46:28Z" duration="0.006351" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1212" name="StylizedCharacterPlayTests" fullname="Reclamation.Tests.StylizedCharacterPlayTests" classname="Reclamation.Tests.StylizedCharacterPlayTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-09-23 22:46:28Z" end-time="2026-09-23 22:46:28Z" duration="0.343663" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1214" name="AnimationPreviewCreatesTwoCharactersAndTenClipsEach" fullname="Reclamation.Tests.StylizedCharacterPlayTests.AnimationPreviewCreatesTwoCharactersAndTenClipsEach" methodname="AnimationPreviewCreatesTwoCharactersAndTenClipsEach" classname="Reclamation.Tests.StylizedCharacterPlayTests" runstate="Runnable" seed="650411862" result="Passed" start-time="2026-09-23 22:46:28Z" end-time="2026-09-23 22:46:28Z" duration="0.079120" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1213" name="ArtFollowsSeveredArmAndResetRestoresIt" fullname="Reclamation.Tests.StylizedCharacterPlayTests.ArtFollowsSeveredArmAndResetRestoresIt" methodname="ArtFollowsSeveredArmAndResetRestoresIt" classname="Reclamation.Tests.StylizedCharacterPlayTests" runstate="Runnable" seed="368930189" result="Passed" start-time="2026-09-23 22:46:28Z" end-time="2026-09-23 22:46:28Z" duration="0.261235" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: C:/Users/thoma/AppData/LocalLow/DefaultCompany/Reclamation2\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

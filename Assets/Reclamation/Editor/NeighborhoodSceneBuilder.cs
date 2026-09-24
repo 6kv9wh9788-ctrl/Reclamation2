@@ -15,13 +15,13 @@ namespace Reclamation.Editor
         private static readonly Color Concrete = new Color(0.72f, 0.71f, 0.65f);
         private static readonly Color Grass = new Color(0.29f, 0.43f, 0.31f);
 
-        [MenuItem("Reclamation/Create Living Neighborhood Lab")]
+        [MenuItem("Reclamation/Legacy/Create Living Neighborhood Lab")]
         public static void Create()
         {
             CreateInternal(false);
         }
 
-        [MenuItem("Reclamation/Create Patient Zero Outbreak Lab")]
+        [MenuItem("Reclamation/Legacy/Create Patient Zero Outbreak Lab")]
         public static void CreateOutbreak()
         {
             CreateInternal(true);
