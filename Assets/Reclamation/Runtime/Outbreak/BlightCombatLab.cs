@@ -73,10 +73,10 @@ namespace Reclamation.Blight
             foreach (Actor actor in actors) if (actor.root == actorRoot) return actor.fighter;
             return null;
         }
-        private bool HasSquad => Scenario == BlightScenario.Squad || Scenario == BlightScenario.Hulk || Scenario == BlightScenario.Patrol || Scenario == BlightScenario.Outpost || Scenario == BlightScenario.Skirmish || Scenario == BlightScenario.Horde || Scenario == BlightScenario.Gateway || Scenario == BlightScenario.Company;
+        private bool HasSquad => Founding || Scenario == BlightScenario.Squad || Scenario == BlightScenario.Hulk || Scenario == BlightScenario.Patrol || Scenario == BlightScenario.Outpost || Scenario == BlightScenario.Skirmish || Scenario == BlightScenario.Horde || Scenario == BlightScenario.Gateway || Scenario == BlightScenario.Company;
         private bool Ended => player != null && (!player.fighter.Alive || VillageLost ||
             (Scenario == BlightScenario.Outpost ? MissionStage == OutpostStage.Complete :
-                Scenario != BlightScenario.Patrol && Scenario != BlightScenario.Weapons && Scenario != BlightScenario.Company && LivingEnemies == 0));
+                !Founding && Scenario != BlightScenario.Patrol && Scenario != BlightScenario.Weapons && Scenario != BlightScenario.Company && LivingEnemies == 0));
         private float UiScale => Mathf.Max(0.15f, Mathf.Min(Screen.width / 1200f, Screen.height / 800f));
         private float UiWidth => Screen.width / UiScale;
         private float UiHeight => Screen.height / UiScale;
@@ -91,7 +91,8 @@ namespace Reclamation.Blight
 
         public void SelectScenario(BlightScenario scenario)
         {
-            if (view == null || (int)scenario < 0 || (int)scenario > 10) return;
+            if (view == null || (int)scenario < 0 || (int)scenario > 11) return;
+            ClearFounding();
             ClearLimbDebris();
             ClearCombatFeedback();
             ResetLoot();
@@ -120,7 +121,7 @@ namespace Reclamation.Blight
             player = CreateActor("Company fighter", origin, false);
             if (Scenario != BlightScenario.LimbDamage)
                 InstallHumanVisual(player, BlightHumanLook.Hero);
-            if (HasSquad)
+            if (HasSquad && !Founding)
             {
                 Actor left = CreateActor("Mara - swordswoman", origin + new Vector3(-1.8f, 0, -1.8f), false);
                 left.slot = 0;
@@ -129,7 +130,8 @@ namespace Reclamation.Blight
                 right.slot = 1; Equip(right, BlightWeapon.Spear);
                 InstallHumanVisual(right, BlightHumanLook.Bren);
             }
-            if (Scenario == BlightScenario.Company) BuildCompany();
+            if (Founding) BuildFounding();
+            else if (Scenario == BlightScenario.Company) BuildCompany();
             else if (Scenario == BlightScenario.Outpost) BuildOutpost();
             else if (Scenario == BlightScenario.Skirmish || Scenario == BlightScenario.Horde || Scenario == BlightScenario.Gateway) BuildLargerEncounter();
             else if (Scenario == BlightScenario.Hulk)
@@ -176,6 +178,7 @@ namespace Reclamation.Blight
         public void GiveOrder(SquadOrder order)
         {
             if (player == null || !HasSquad || !player.fighter.Alive || (int)order < 0 || (int)order > 3) return;
+            if (Founding) { IssueFoundingDirective((FoundingDirective)(int)order); return; }
             if (Scenario == BlightScenario.Company)
             { GiveCompanyOrder(selectedPlatoon, order == SquadOrder.Withdraw ? CompanyOrder.Withdraw : order == SquadOrder.Assault ? CompanyOrder.Assault : order == SquadOrder.Follow ? CompanyOrder.Escort : CompanyOrder.Defend, selectedCompanySite); return; }
             if (TacticalScenario && SetTacticalOrder(order)) return;
@@ -210,6 +213,7 @@ namespace Reclamation.Blight
 
         public bool Interact()
         {
+            if (Founding) return InteractFounding();
             if (Scenario == BlightScenario.Company) return ReviewCompanyOperation();
             if (Scenario == BlightScenario.Outpost) return InteractOutpost();
             if (Scenario == BlightScenario.Weapons) return CollectNearbyLoot();
@@ -348,6 +352,7 @@ namespace Reclamation.Blight
                 if (patrol.TryComplete(Vector3.Distance(player.root.position, camp), CampThreatened(), player.fighter.Alive))
                     Say("PATROL COMPLETE — spear recovered. Survivors recover inside camp. R starts a fresh patrol.");
             }
+            if (Founding) UpdateFounding(dt);
             if (Scenario == BlightScenario.Outpost) UpdateOutpost(dt);
             UpdateFallback();
             foreach (Actor actor in actors) Pose(actor);
@@ -384,12 +389,12 @@ namespace Reclamation.Blight
             if (!actor.fighter.CanAct) return;
             if (actor.limbs != null && LimbPractice) return;
             if (ControlEnemyDefense(actor, dt)) return;
-            Actor target = null; float best = Scenario == BlightScenario.Company ? 7 : Scenario == BlightScenario.Outpost ? 9 : Scenario == BlightScenario.Patrol ? 11 : 100;
+            Actor target = null; float best = Founding ? 9 : Scenario == BlightScenario.Company ? 7 : Scenario == BlightScenario.Outpost ? 9 : Scenario == BlightScenario.Patrol ? 11 : 100;
             foreach (Actor other in actors)
             {
                 if (other.enemy || !other.fighter.Alive) continue;
                 // A patrol enemy guards its sector; it cannot chase into the camp indefinitely.
-                if (!VillageDefense && (Scenario == BlightScenario.Patrol || Scenario == BlightScenario.Outpost || Scenario == BlightScenario.Company) && Vector3.Distance(other.root.position, actor.spawn) > 15 * CompanyScale) continue;
+                if (!VillageDefense && (Founding || Scenario == BlightScenario.Patrol || Scenario == BlightScenario.Outpost || Scenario == BlightScenario.Company) && Vector3.Distance(other.root.position, actor.spawn) > 15 * CompanyScale) continue;
                 float distance = Vector3.Distance(other.root.position, actor.root.position);
                 if (distance < best && (Scenario != BlightScenario.Company || TerrainSight(actor.root.position, other.root.position))) { best = distance; target = other; }
             }

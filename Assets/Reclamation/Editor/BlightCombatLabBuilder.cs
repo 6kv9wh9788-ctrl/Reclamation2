@@ -56,7 +56,8 @@ namespace Reclamation.Editor
             if (EditorApplication.isPlayingOrWillChangePlaymode ||
                 !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            new GameObject("Blight Combat Lab").AddComponent<BlightCombatLab>();
+            var lab = new GameObject("Blight Combat Lab").AddComponent<BlightCombatLab>();
+            SidekickPlayerSetup.Configure(lab);
             EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             Debug.Log("Blight Combat Lab ready. Press Play and use Choose scenario: Duel, Squad, Hulk, Weapons, Patrol. The arena is generated at runtime. Save this new scene if desired. Existing labs are unchanged.");
         }

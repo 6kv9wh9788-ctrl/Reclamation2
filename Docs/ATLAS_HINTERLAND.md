@@ -1,0 +1,20 @@
+# Atlas village hinterland
+
+This follow-up replaces the developed human/neutral settlement's single tiny farm and isolated work props with a generated working district. The approved terrain dimensions, strategic model and combat remain unchanged.
+
+Three 24 × 24 m fields provide 1,728 m² of cultivated land beyond the housing footprint. Two use grain and one vegetables. Six farmers divide between those plots. Three woodcutters work designated trees at the accessible edge of a dense woodland patch; three miners work ore faces against a rocky outcrop and rubble apron. Gold/niter scenery appears only for sites already listing that resource. Old developed-site resource props are suppressed, and atlas resource indicators point to the corresponding new district. Underlying strategic deposit records retain their existing quantities and positions; the display translation is presentation-only.
+
+`AtlasVillageLayout.FitHinterland` evaluates eight seeded orientations, penalizing inaccessible field samples and travel paths, and preferring smaller field elevation variation. Fields, paths and quarry ground use combined terrain-following meshes; individual crops are placed on the rendered surface. This is a constrained district template with terrain-aware orientation, not an arbitrary agricultural plot generator, geology simulation, terraforming or player placement UI. The selected plans are tested on the existing map presets; arbitrary future terrain requires revalidation.
+
+Workplace access follows an outer town lane and field-edge branches. Farmers reposition along a row; all resource workers pause, carry loads to collection points and return. The sequence is deterministic by hour and resident, reconstructible after time jumps, and loops through work/reposition/work/pause/carry/unload/return. It is visual activity only: no production, depletion, tree felling, crop growth, stockpile accounting or deliveries into the settlement economy. Short worker routes still do not implement physical crowd avoidance.
+
+The nearest developed settlement uses the existing 18-resident visual pool within 185 m. Shared instanced trees and brush form the forest patch, and background woodland density is increased. The reserved working district keeps random background trees out of fields and travel lanes. Resource and vegetation scenery is not fully collidable. This is not evidence of the final midrange-PC or 1,280-combatant performance target.
+
+Press **H** to cycle the selected settlement's farmland, forest and quarry. WASD/Shift/RMB/wheel retain their survey controls; T skips three hours, the time button accelerates time, Esc pauses and F3 shows diagnostics. Observe a worker for several minutes at 1x or accelerate to see a whole work/delivery cycle. The evening routine and hall entry remain.
+
+Implementation: `AtlasHinterland.cs` generates the working district and shared art, provides the survey shortcut and translates displayed resource positions. `AtlasVillageLayout.cs` owns shared placement/routes; `AtlasVillageRoutine.cs` samples the work sequence; `WorldAtlasArt.cs` selects matching movement, tools and carried loads. `WorldAtlasVillageSmoke.cs` captures both maps, all workplace stops and a high overview, and checks work-route terrain access in the packaged player.
+
+Run PlayMode filter `Reclamation.Tests.AtlasVillageTests;Reclamation.Tests.WorldAtlasTests`, with graphics and without `-quit`. Tests cover multiple field footprints, terrain access, logging/mining paths avoiding cultivated land, continuous worker cycles, midnight wrapping, tools/pause, building clearance and prior atlas behavior. Use the existing WorldAtlasBuild entry point and packaged `--village-smoke` / `--atlas-smoke` checks. Exact delivery results belong in the output report.
+
+## Settlement guard follow-up
+See [Settlement companies](ATLAS_SETTLEMENT_GUARD.md). Field sizes now vary by seed with uneven sides, so the fixed 1,728 square metre total above describes the preceding milestone. Quarry edges are irregular and scenery is spatially batched. The medium eight-faction UI preset is now explicitly validated.

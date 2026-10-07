@@ -112,10 +112,56 @@ namespace Reclamation.Tests
                 lab.Simulate(.1f);
                 if (step%10==0) yield return null;
             }
+            if (lab.CompanyPlanActive)
+            {
+                foreach (string name in soldiers)
+                {
+                    Transform soldier = Actor(name);
+                    TestContext.WriteLine(name + " position=" + soldier.position.ToString("F3") +
+                        " intent=" + lab.GetCompanionIntent(soldier));
+                }
+                TestContext.WriteLine("Main=" + lab.GetCompanyPhase(0) + " / " + lab.GetCompanyReason(0) +
+                    "; flank=" + lab.GetCompanyPhase(1) + " / " + lab.GetCompanyReason(1));
+            }
             Assert.That(lab.CompanyPlanActive,Is.False,"Main and flank must traverse the bridge and reach their rally points within 120 simulated seconds.");
             Assert.That(lab.CompanyLiving(0),Is.EqualTo(2)); Assert.That(lab.CompanyLiving(1),Is.EqualTo(2));
             Assert.That(lab.GetCompanyPhase(0),Is.Not.EqualTo(CompanyPhase.Staging));
             Assert.That(lab.GetCompanyPhase(1),Is.Not.EqualTo(CompanyPhase.Staging));
+        }
+        [UnityTest] public IEnumerator StagingSoldiersPassHeldReserveWithoutMovingIt()
+        {
+            // Recreate the live failure: two held bodies leave a gap narrower
+            // than a soldier, and their opposite avoidance tangents cancel.
+            foreach (int slot in new[] { 1, 0 })
+            {
+                lab.SetExpandedCompany(true);
+                foreach (Transform t in root.transform)
+                {
+                    if (!t.gameObject.activeSelf || t.name == "Company fighter" || System.Array.IndexOf(soldiers, t.name) >= 0) continue;
+                    var fighter = lab.GetFighter(t);
+                    if (fighter != null) fighter.Receive(10000, false, false);
+                }
+                Assert.That(lab.PlanCompanyAssault(true), Is.True);
+                Transform moving = Actor(soldiers[slot]);
+                moving.position = new Vector3(.092f, 0, -16.113f);
+                Actor(soldiers[4]).position = new Vector3(-.682f, 0, -15.826f);
+                Actor(soldiers[5]).position = new Vector3(.919f, 0, -15.878f);
+                Vector3 reserveLeft = Actor(soldiers[4]).position;
+                Vector3 reserveRight = Actor(soldiers[5]).position;
+                for (int step = 0; step < 600; step++)
+                {
+                    Vector3 before = moving.position;
+                    lab.Simulate(1f / 60f);
+                    Assert.That(Vector3.Distance(before, moving.position), Is.LessThan(.12f), "Pass the reserve by walking, not teleporting.");
+                    Assert.That(Vector3.Distance(moving.position, Actor(soldiers[4]).position), Is.GreaterThanOrEqualTo(.81f));
+                    Assert.That(Vector3.Distance(moving.position, Actor(soldiers[5]).position), Is.GreaterThanOrEqualTo(.81f));
+                }
+                Assert.That(moving.position.z, Is.GreaterThan(-12), "Either formation slot must get past the reserve.");
+                Assert.That(Vector3.Distance(Actor(soldiers[4]).position, reserveLeft), Is.LessThan(.1f));
+                Assert.That(Vector3.Distance(Actor(soldiers[5]).position, reserveRight), Is.LessThan(.1f));
+                Assert.That(lab.CompanyReserveHeld, Is.True);
+            }
+            yield return null;
         }
         [UnityTest] public IEnumerator ExpandedRegionHasBridgePatrolsAndResetRestoresBounds()
         {

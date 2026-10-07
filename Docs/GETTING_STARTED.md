@@ -1,3 +1,5 @@
+> Historical prototype notes: the milestones, controls, menu paths and test counts below are retained for context, not the current baseline. For current agent onboarding start with [PROJECT_MAP.md](PROJECT_MAP.md), [COMBAT_ARCHITECTURE.md](COMBAT_ARCHITECTURE.md), [TESTING.md](TESTING.md), and [ONBOARDING_BASELINE.md](ONBOARDING_BASELINE.md). The current game includes Blight combat; legacy creation menus now live under Reclamation > Legacy.
+
 # Reclamation prototype setup
 
 ## Run the autonomous hauling lab

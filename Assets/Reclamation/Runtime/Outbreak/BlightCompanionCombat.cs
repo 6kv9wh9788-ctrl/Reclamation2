@@ -106,6 +106,7 @@ namespace Reclamation.Blight
 
         private void ControlCompanion(Actor actor, float dt)
         {
+            if (Founding) { ControlFoundingSoldier(actor, dt); return; }
             if (Scenario == BlightScenario.Company && actor.platoon >= 0) { ControlCompanySoldier(actor, dt); return; }
             if (ControlTacticalCompanion(actor, dt)) return;
             if (!actor.fighter.CanAct)
@@ -118,6 +119,8 @@ namespace Reclamation.Blight
             Actor threat = Incoming(actor);
             bool withdraw = Order == SquadOrder.Withdraw;
             if (withdraw) actor.target = null;
+            if (Scenario == BlightScenario.Squad || Scenario == BlightScenario.Hulk)
+                UpdateSquadRecovery(actor, threat, withdraw);
             if (DefendCompanion(actor, threat, dt, withdraw) || !actor.fighter.CanAct) return;
             if (withdraw)
             {
@@ -137,6 +140,8 @@ namespace Reclamation.Blight
                     actor.engagementAxis.Normalize();
                 }
             }
+            if ((Scenario == BlightScenario.Squad || Scenario == BlightScenario.Hulk) &&
+                ControlSquadRecovery(actor, target, anchor, dt)) return;
             if (target == null)
             {
                 actor.intent = Order == SquadOrder.Hold ? "Hold" : "Follow";
@@ -174,7 +179,58 @@ namespace Reclamation.Blight
             if (StartAttack(actor, heavy)) { actor.attacks++; actor.delay = 1.1f; actor.intent = "Strike"; }
         }
 
-        private void MoveCompanion(Actor actor, Vector3 goal, float speed, float dt, float stop, bool faceMovement)
+        // Ordinary Squad/Hulk policy only. Tactical/company defense keeps its
+        // existing memory and decisions, and shared fighter/movement rules stay unchanged.
+        private void UpdateSquadRecovery(Actor actor, Actor threat, bool withdrawing)
+        {
+            DefenseMemory memory = actor.defense;
+            if (withdrawing)
+            { memory.recovering = false; memory.nextThink = 0; return; }
+            if (simulationTime < memory.nextThink) return;
+            memory.nextThink = simulationTime + .35f;
+            bool wasRecovering = memory.recovering;
+            memory.recovering = BlightDefenseRules.Recovering(wasRecovering,
+                actor.fighter.Health / actor.fighter.MaximumHealth, actor.fighter.Stamina);
+            if (!memory.recovering || wasRecovering) return;
+
+            Vector3 anchor = Order == SquadOrder.Hold ? actor.anchor : player.root.position;
+            Actor danger = threat ?? CompanionTarget(actor, anchor);
+            Vector3 away = danger == null ? Vector3.zero : actor.root.position - danger.root.position;
+            away.y = 0;
+            if (danger != null && away.sqrMagnitude < .01f) away = -danger.root.forward;
+            // Latch one nearby pocket on entry. Repeated decisions must not
+            // walk a wounded companion farther and farther away from the fight.
+            memory.goal = actor.root.position + away.normalized * 2.1f;
+        }
+
+        private bool ControlSquadRecovery(Actor actor, Actor target, Vector3 anchor, float dt)
+        {
+            DefenseMemory memory = actor.defense;
+            if (!memory.recovering) return false;
+            float leash = Order == SquadOrder.Hold ? 2.5f : Order == SquadOrder.Follow ? 6.5f : 13.5f;
+            Vector3 goal = ClampCompanionGoal(anchor + Vector3.ClampMagnitude(memory.goal - anchor, leash));
+            actor.intent = actor.fighter.Health / actor.fighter.MaximumHealth <= .35f
+                ? "Wounded: yielding ground" : "Recovering stamina";
+            if (Vector3.Distance(actor.root.position, goal) > .3f)
+            {
+                MoveCompanion(actor, goal, 3.2f, dt, .3f, target == null);
+                if (target != null) Face(actor, target.root.position - actor.root.position);
+                return true;
+            }
+
+            if (target != null) Face(actor, target.root.position - actor.root.position);
+            // Wounded soldiers may take a local recovery opening, but never
+            // pursue it or spend their last dodge reserve. Exhaustion must recover first.
+            AttackSpec light = BlightEquipment.Weapon(actor.weapon, false);
+            if (target == null || target.fighter.Action != DuelAction.Recovery || actor.delay > 0 ||
+                target.fighter.Remaining < light.Windup + .1f || actor.fighter.Stamina < 65 || Incoming(actor) != null ||
+                !DuelFighter.InReach(actor.root.position, actor.root.forward, target.root.position, light.Reach - .1f, light.HalfAngle)) return true;
+            if (StartAttack(actor, false))
+            { actor.attacks++; actor.delay = 1.1f; actor.intent = "Defensive opening"; }
+            return true;
+        }
+
+        private void MoveCompanion(Actor actor, Vector3 goal, float speed, float dt, float stop, bool faceMovement, bool stagingTransit = false)
         {
             goal = ClampCompanionGoal(goal);
             Vector3 requestedGoal = goal;
@@ -202,7 +258,11 @@ namespace Reclamation.Blight
                 {
                     Vector3 tangent = Vector3.Cross(Vector3.up, direction);
                     float sign = Vector3.Dot(sideways, tangent);
-                    steering += tangent * (Mathf.Abs(sign) < .05f ? (actor.slot == 0 ? -1 : 1) : -Mathf.Sign(sign)) * 1.2f;
+                    // A staging soldier must pass a held friendly line on one side.
+                    // Independent left/right tangents can cancel at an impassable gap.
+                    float passSide = stagingTransit && !other.enemy ? (actor.slot == 0 ? -1 : 1) :
+                        Mathf.Abs(sign) < .05f ? (actor.slot == 0 ? -1 : 1) : -Mathf.Sign(sign);
+                    steering += tangent * passSide * 1.2f;
                 }
             }
             if (steering.sqrMagnitude < .01f) steering = direction;

@@ -61,7 +61,8 @@ namespace Reclamation.Blight
                 TerrainSight(actor.root.position, nearest.root.position);
             if (!inStrikeRange && (nearest != null || Vector3.Distance(actor.root.position, goal) > .5f))
             {
-                MoveCompanion(actor, goal, actor.fighter.Blocking ? 2.2f : 3.4f, dt, nearest != null ? .08f : .3f, nearest == null && incoming == null);
+                MoveCompanion(actor, goal, actor.fighter.Blocking ? 2.2f : 3.4f, dt, nearest != null ? .08f : .3f, nearest == null && incoming == null,
+                    !VillageDefense && p.phase == CompanyPhase.Staging && nearest == null);
                 if (nearest != null) Face(actor, nearest.root.position - actor.root.position);
                 return;
             }

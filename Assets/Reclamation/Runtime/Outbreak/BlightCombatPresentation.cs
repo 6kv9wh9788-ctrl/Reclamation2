@@ -12,7 +12,7 @@ namespace Reclamation.Blight
         private Rect CommandRect => new Rect(16, UiHeight - (help ? 168 : 92), 780, help ? 152 : 76);
         private Rect ObjectiveRect => new Rect(365, 16, Mathf.Max(180, UiWidth - 690), 88);
         private bool ContainsGuiPoint(Vector2 point) =>
-            CompanyUiContains(point) || StatusRect.Contains(point) || ScenarioRect.Contains(point) ||
+            Founding ? FoundingUiContains(point) : CompanyUiContains(point) || StatusRect.Contains(point) || ScenarioRect.Contains(point) ||
             CommandRect.Contains(point) || ObjectiveRect.Contains(point) || (equipmentMenu && EquipmentRect.Contains(point));
 
         private Material Material(Color color)
@@ -197,7 +197,9 @@ namespace Reclamation.Blight
 
         private void OnGUI()
         {
+            if (SidekickReviewActive) return;
             if (player == null) return;
+            if (Founding) { DrawFounding(); return; }
             EnsureStyles();
             Matrix4x4 old = GUI.matrix; Color oldColor = GUI.color;
             GUI.matrix = Matrix4x4.Scale(new Vector3(UiScale, UiScale, 1));

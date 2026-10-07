@@ -92,8 +92,12 @@ namespace Reclamation.Blight
                     f.tint.Clear();
                     if (strength > 0 && renderer.sharedMaterial != null)
                     {
-                        Color tint = Color.Lerp(renderer.sharedMaterial.color, ImpactColor(f.kind), strength);
-                        f.tint.SetColor("_BaseColor", tint); f.tint.SetColor("_Color", tint);
+                        var material = renderer.sharedMaterial;
+                        // Imported shaders may have neither conventional color property.
+                        if (material.HasProperty("_BaseColor"))
+                            f.tint.SetColor("_BaseColor", Color.Lerp(material.GetColor("_BaseColor"), ImpactColor(f.kind), strength));
+                        else if (material.HasProperty("_Color"))
+                            f.tint.SetColor("_Color", Color.Lerp(material.GetColor("_Color"), ImpactColor(f.kind), strength));
                     }
                     renderer.SetPropertyBlock(f.tint);
                 }
